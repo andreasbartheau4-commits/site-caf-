@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gestion Maison Bartheau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -18,13 +18,13 @@
   --bg:#15110e; --surface:#1f1915; --surface-2:#271f1a; --ink:#f2e9df; --muted:#a8988a; --line:#382e27;
   --accent:#e0915f; --accent-soft:#3a281d; --accent-ink:#1a120d;
   --ok:#6cc58d; --ok-soft:#1d3226; --warn:#e4ad55; --warn-soft:#3a2d17; --bad:#ef7d74; --bad-soft:#3d1f1c; --info:#82aee0; --info-soft:#1c2a3b;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25); color-scheme:dark;
 }}
 :root[data-theme="dark"]{
   --bg:#15110e; --surface:#1f1915; --surface-2:#271f1a; --ink:#f2e9df; --muted:#a8988a; --line:#382e27;
   --accent:#e0915f; --accent-soft:#3a281d; --accent-ink:#1a120d;
   --ok:#6cc58d; --ok-soft:#1d3226; --warn:#e4ad55; --warn-soft:#3a2d17; --bad:#ef7d74; --bad-soft:#3d1f1c; --info:#82aee0; --info-soft:#1c2a3b;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 24px rgba(0,0,0,.25); color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -43,7 +43,7 @@ nav a:hover{background:var(--surface-2)}
 nav a.on{background:var(--accent-soft);color:var(--accent)}
 nav a .pill{font-size:11px;background:var(--bad);color:#fff;border-radius:99px;padding:1px 7px;font-weight:600}
 .side-foot{margin-top:auto;padding:0 10px;font-size:12px;color:var(--muted)}
-main{padding:30px clamp(16px,3vw,40px) 60px;max-width:1240px;width:100%;min-width:0}
+main{padding-block:30px 60px;padding-left:max(clamp(16px,3vw,40px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,3vw,40px),env(safe-area-inset-right,0px));max-width:1240px;width:100%;min-width:0}
 .head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:22px}
 .head p{margin:4px 0 0;color:var(--muted)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -117,7 +117,7 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
 .totals{margin-left:auto;max-width:300px;font-variant-numeric:tabular-nums}
 .totals div{display:flex;justify-content:space-between;padding:3px 0}
 .totals .big{font-weight:650;font-size:17px;border-top:1px solid var(--line);margin-top:4px;padding-top:8px}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:500;opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:calc(100vw - 32px)}
+#toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:500;opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:calc(100vw - 32px)}
 #toast.on{opacity:1;transform:translateX(-50%)}
 .chart text{fill:var(--muted);font-size:11px;font-family:Inter,system-ui,sans-serif}
 .legend{display:flex;gap:16px;font-size:13px;color:var(--muted);flex-wrap:wrap}
@@ -128,13 +128,14 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
 #print{display:none}
 @media (max-width:860px){
   .app{grid-template-columns:minmax(0,1fr)}
-  .side{position:sticky;height:auto;flex-direction:row;align-items:center;padding:10px 12px;gap:12px;z-index:20;border-right:0;border-bottom:1px solid var(--line);overflow:visible}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+  .side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:row;align-items:center;padding-block:10px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));gap:12px;z-index:20;border-right:0;border-bottom:1px solid var(--line);overflow:visible}
   .brand b{font-size:17px}.brand span{display:none}
   nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
   nav::-webkit-scrollbar{display:none}
   nav a{white-space:nowrap;padding:7px 10px}
   .side-foot{display:none}
-  main{padding:20px 16px 50px}
+  main{padding-block:20px 50px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   h1{font-size:25px}
 }
 /* impression devis/facture */
@@ -168,7 +169,7 @@ input[type=checkbox]{width:auto;accent-color:var(--accent)}
   <aside class="side">
     <div class="brand"><b>Maison Bartheau</b><span>Gestion · espace pro</span></div>
     <nav id="nav"></nav>
-    <div class="side-foot">Données enregistrées sur cet appareil.<br><a href="#reglages">Sauvegarder / exporter</a></div>
+    <div class="side-foot"><span id="syncState">Données enregistrées sur cet appareil.</span><br><a href="#reglages">Sauvegarder / exporter</a></div>
   </aside>
   <main id="main"></main>
 </div>
@@ -367,7 +368,61 @@ function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); const b = blank(); return { ...b, ...s, settings: { ...DEFAULT_SETTINGS, ...(s.settings || {}) } }; } } catch (e) { }
   return blank();
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('⚠️ Impossible d\'enregistrer (stockage indisponible) — pense à exporter tes données'); } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { if (!SYNC.col) toast('⚠️ Impossible d\'enregistrer sur cet appareil : pense à exporter tes données'); } SYNC.schedule(); }
+
+/* ============ synchronisation compte (version en ligne) ============ */
+const isArt = () => !!(window.claude && typeof window.claude.use === 'function');
+const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations'];
+const CHUNK = 180000;
+const SYNC = {
+  col: null, last: {}, timer: null, busy: false, again: false, status: 'local',
+  set(st) { this.status = st; const el = $('#syncState'); if (el) el.textContent = syncLabel(); },
+  schedule() { if (!this.col) return; clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), 700); this.set('enregistrement…'); },
+  async push() {
+    if (!this.col) return; if (this.busy) { this.again = true; return; } this.busy = true;
+    try {
+      for (const k of STATE_KEYS) {
+        const json = JSON.stringify(state[k] ?? null); if (json === this.last[k]) continue;
+        const parts = []; for (let i = 0; i < json.length; i += CHUNK) parts.push(json.slice(i, i + CHUNK)); if (!parts.length) parts.push('null');
+        const prevN = this.lastN?.[k] || 1;
+        for (let i = 0; i < parts.length; i++) await this.col.doc(i ? `${k}~${i}` : k).set({ json: parts[i], n: parts.length, at: Date.now() });
+        for (let i = parts.length; i < prevN; i++) await this.col.doc(`${k}~${i}`).delete().catch(() => {});
+        this.last[k] = json; (this.lastN = this.lastN || {})[k] = parts.length;
+      }
+      this.set('synchronisé');
+    } catch (e) { this.set('erreur de synchro'); }
+    this.busy = false; if (this.again) { this.again = false; this.push(); }
+  },
+};
+function syncLabel() {
+  return { 'local': 'Données enregistrées sur cet appareil.', 'connexion…': 'Connexion à ton compte…', 'synchronisé': '✓ Synchronisé avec ton compte (ordi et téléphone).', 'enregistrement…': 'Enregistrement…', 'hors ligne': 'Compte injoignable pour l\'instant : les modifications restent sur cet appareil.', 'erreur de synchro': '⚠️ Erreur de synchro, réessai à la prochaine modification.' }[SYNC.status] || '';
+}
+async function initSync() {
+  if (!isArt()) { if (!initSync.tried) { initSync.tried = true; setTimeout(initSync, 600); } return; }
+  SYNC.set('connexion…');
+  const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]).catch(() => [null, null]);
+  const id = user ? await user.id() : null;
+  if (!db || !id) { SYNC.set('local'); return; }
+  const col = db.collection('data/users/' + id);
+  let first = true; const t = setTimeout(() => { if (first) SYNC.set('hors ligne'); }, 10000);
+  col.onSnapshot(snap => {
+    if (snap.metadata.fromCache || snap.metadata.hasPendingWrites) return;
+    const raw = {}; snap.docs.forEach(d => raw[d.id] = d.data());
+    const remote = {}, ns = {};
+    for (const k of STATE_KEYS) { const h = raw[k]; if (!h) continue; let j = h.json; for (let i = 1; i < (h.n || 1); i++) { if (!raw[`${k}~${i}`]) { j = null; break; } j += raw[`${k}~${i}`].json; } if (j != null) { remote[k] = j; ns[k] = h.n || 1; } }
+    if (first) {
+      first = false; clearTimeout(t); SYNC.col = col; SYNC.lastN = ns;
+      if (!Object.keys(remote).length) { SYNC.set('synchronisé'); SYNC.push(); return; }
+    }
+    let changed = false;
+    for (const [k, j] of Object.entries(remote)) {
+      if (j === SYNC.last[k]) continue;
+      try { const v = JSON.parse(j); state[k] = k === 'settings' ? { ...DEFAULT_SETTINGS, ...v } : v; SYNC.last[k] = j; SYNC.lastN[k] = ns[k]; changed = true; } catch (e) { }
+    }
+    SYNC.set('synchronisé');
+    if (changed) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } render(); }
+  }, () => { clearTimeout(t); SYNC.set('hors ligne'); });
+}
 const S = () => state.settings;
 const client = id => state.clients.find(c => c.id === id);
 const produit = id => state.produits.find(p => p.id === id);
@@ -496,20 +551,28 @@ function compose({ type, types, to, vars, ref, onSent }) {
         <div class="field full"><label>Message</label><textarea id="mBody" rows="16">${esc(m.body)}</textarea></div>
       </div>
       <p class="small muted" style="margin:10px 0 0">💡 Pour joindre le devis ou la facture : clique « PDF » sur le document (Imprimer → Enregistrer en PDF), puis glisse le fichier dans ton email.</p>`,
-    foot: `<button class="btn" data-x="copy">Copier</button><button class="btn" data-x="mark">Marquer comme envoyé</button><button class="btn" data-x="mailto">Ma messagerie</button><button class="btn pri" data-x="gmail">Envoyer avec Gmail</button>`,
+    foot: `<button class="btn" data-x="copy">Copier</button><button class="btn" data-x="mark">Marquer comme envoyé</button><a class="btn" data-x="mailto" href="#">Ma messagerie</a><a class="btn pri" data-x="gmail" href="#" target="_blank" rel="noopener">Envoyer avec Gmail</a>`,
     mount(box) {
       const sel = $('#mTpl', box);
       if (sel) sel.onchange = () => { cur = sel.value; const n = build(); $('#mSub', box).value = n.subject; $('#mBody', box).value = n.body; };
+      const val = () => ({ to: $('#mTo', box).value.trim(), su: $('#mSub', box).value, bo: $('#mBody', box).value });
+      const links = () => { const { to, su, bo } = val();
+        $('[data-x=gmail]', box).href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(su)}&body=${encodeURIComponent(bo)}`;
+        $('[data-x=mailto]', box).href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(su)}&body=${encodeURIComponent(bo)}`; };
+      box.addEventListener('input', links); box.addEventListener('change', links); links();
       const done = how => {
-        const to = $('#mTo', box).value.trim(), su = $('#mSub', box).value, bo = $('#mBody', box).value;
-        if (how === 'copy') { navigator.clipboard?.writeText(`Objet : ${su}\n\n${bo}`).then(() => toast('Email copié ✔'), () => toast('Copie impossible')); return; }
-        if (how === 'gmail') window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(su)}&body=${encodeURIComponent(bo)}`, '_blank');
-        if (how === 'mailto') location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(su)}&body=${encodeURIComponent(bo)}`;
+        const { to, su, bo } = val();
+        if (how === 'copy') {
+          const txt = `Objet : ${su}\n\n${bo}`;
+          const fallback = () => { const ta = $('#mBody', box); ta.focus(); ta.select(); toast('Copie bloquée ici : le texte est sélectionné, fais Ctrl+C / Copier'); };
+          try { navigator.clipboard.writeText(txt).then(() => toast('Email copié ✔'), fallback); } catch (e) { fallback(); }
+          return;
+        }
         logEmail({ type: cur, to, subject: su, ref });
         onSent && onSent(cur);
-        save(); closeModal(); render(); toast('Email enregistré dans le journal ✔');
+        save(); if (how === 'mark') { closeModal(); render(); } else setTimeout(() => { if (box.isConnected) closeModal(); render(); }, 50); toast(how === 'mark' ? 'Marqué comme envoyé ✔' : 'Email ouvert et noté dans le journal ✔');
       };
-      $$('[data-x]', box).forEach(b => b.onclick = () => done(b.dataset.x));
+      $$('[data-x]', box).forEach(b => b.addEventListener('click', e => { if (b.dataset.x === 'copy' || b.dataset.x === 'mark') e.preventDefault(); links(); done(b.dataset.x); }));
     }
   });
 }
@@ -551,6 +614,7 @@ function render() {
   }).join('');
   const on = $('#nav a.on'); on && on.scrollIntoView({ block: 'nearest', inline: 'center' });
   $('#main').innerHTML = VIEW[r]();
+  const ss = $('#syncState'); if (ss) ss.textContent = syncLabel();
   bindView[r] && bindView[r]();
 }
 const bindView = {};
@@ -765,6 +829,12 @@ function editDoc(kind, id, preset) {
       <div class="field"><label>Date</label><input type="date" id="eDate" value="${doc.date}"></div>
       <div class="field"><label>${isDevis ? 'Valable jusqu\'au' : 'Échéance'}</label><input type="date" id="eEnd" value="${isDevis ? doc.expire : doc.echeance}"></div>
     </div>
+    <div id="eNewC" class="fg note" style="margin-top:12px;align-items:end" hidden>
+      <div class="field"><label for="ncNom">Nom du nouveau client</label><input id="ncNom" placeholder="Entreprise ou particulier"></div>
+      <div class="field"><label for="ncMail">Email</label><input id="ncMail" type="email" placeholder="facultatif"></div>
+      <div class="field"><label for="ncType">Type</label><select id="ncType"><option value="pro">Professionnel</option><option value="particulier">Particulier</option></select></div>
+      <div class="field row"><button class="btn pri" id="ncOk">Ajouter</button><button class="btn ghost" id="ncNo">Annuler</button></div>
+    </div>
     <div class="tbl-wrap" style="margin-top:18px"><table class="lines"><thead><tr><th>Désignation</th><th>Type</th><th>Qté</th><th>Prix unit. HT</th>${doc.assujetti ? '<th>TVA</th>' : ''}<th class="n">Total HT</th><th></th></tr></thead><tbody id="eLines">${doc.lignes.map(lineRow).join('')}</tbody></table></div>
     <div class="row" style="margin-top:10px"><button class="btn sm" id="eAdd">+ Ligne libre</button>
       ${state.produits.length ? `<select id="eProd" style="width:auto;max-width:280px"><option value="">+ Ajouter un article du stock…</option>${state.produits.map(p => `<option value="${p.id}">${esc(p.nom)} — ${eur(p.prixVente)} (stock ${num(p.qte)})</option>`).join('')}</select>` : ''}</div>
@@ -791,7 +861,12 @@ function editDoc(kind, id, preset) {
       $('#eAdd', box).onclick = () => { sync(); doc.lignes.push({ desc: '', type: 'vente', qte: 1, pu: 0, tva: 20 }); redraw(); $$('[data-k="desc"]', tbody).pop().focus(); };
       const pp = $('#eProd', box); if (pp) pp.onchange = () => { const p = produit(pp.value); if (!p) return; sync(); doc.lignes = doc.lignes.filter(l => l.desc || l.pu); doc.lignes.push({ desc: p.nom, type: 'vente', qte: 1, pu: +p.prixVente || 0, tva: +p.tva || 5.5, produitId: p.id }); pp.value = ''; redraw(); };
       const cs = $('#eClient', box);
-      cs.onchange = () => { if (cs.value === '__new') { cs.value = doc.clientId; quickClient(c => { doc.clientId = c.id; cs.innerHTML = clientOpts(); }); } else doc.clientId = cs.value; };
+      const nc = $('#eNewC', box);
+      cs.onchange = () => { if (cs.value === '__new') { cs.value = doc.clientId; nc.hidden = false; $('#ncNom', box).focus(); } else doc.clientId = cs.value; };
+      $('#ncNo', box).onclick = () => { nc.hidden = true; };
+      $('#ncOk', box).onclick = () => { const nom = $('#ncNom', box).value.trim(); if (!nom) return toast('Indique le nom du client');
+        const c = { id: uid(), nom, email: $('#ncMail', box).value.trim(), type: $('#ncType', box).value, contact: '', tel: '', adresse: '', siret: '', notes: '', cree: today() };
+        state.clients.push(c); save(); doc.clientId = c.id; cs.innerHTML = clientOpts(); nc.hidden = true; toast('Client ajouté, tu pourras compléter sa fiche dans Clients'); };
       $('[data-close2]', box).onclick = closeModal;
       const persist = () => {
         sync(); doc.clientId = cs.value === '__new' ? '' : cs.value; doc.date = $('#eDate', box).value || today(); doc.notes = $('#eNotes', box).value.trim();
@@ -808,13 +883,6 @@ function editDoc(kind, id, preset) {
       sync();
     }
   });
-}
-function quickClient(cb) {
-  // sous-modale légère : on mémorise la modale courante
-  const nom = prompt('Nom du nouveau client (entreprise ou particulier) :'); if (!nom || !nom.trim()) return;
-  const email = prompt('Email du client (facultatif) :') || '';
-  const c = { id: uid(), nom: nom.trim(), email: email.trim(), type: 'pro', contact: '', tel: '', adresse: '', notes: '', cree: today() };
-  state.clients.push(c); save(); cb(c); toast('Client ajouté — tu pourras compléter sa fiche dans Clients');
 }
 ACT.newDevis = id => editDoc('devis', null, newDoc('devis', id && client(id) ? id : ''));
 ACT.newFacture = id => editDoc('facture', null, newDoc('facture', id && client(id) ? id : ''));
@@ -913,8 +981,20 @@ function printDoc(kind, d) {
     ${isF && s.iban ? `<p style="margin-top:18px"><b>Règlement par virement</b><br>IBAN : ${esc(s.iban)}${s.bic ? ' · BIC : ' + esc(s.bic) : ''}<br>Référence à indiquer : ${esc(d.numero || '')}</p>` : ''}
     ${!isF ? `<div class="sign"><div>Bon pour accord — date et signature :</div></div>` : ''}
     <div class="legal">${legal.join('<br>')}</div></div>`;
-  const old = document.title; document.title = `${isF ? 'Facture' : 'Devis'} ${d.numero || 'brouillon'} - ${c.nom || ''}`;
-  setTimeout(() => { window.print(); document.title = old; }, 60);
+  const name = `${isF ? 'Facture' : 'Devis'} ${d.numero || 'brouillon'} - ${c.nom || ''}`.trim();
+  const docHtml = $('#print').innerHTML;
+  openModal({ title: esc(name), wide: true,
+    body: `<div style="background:#fff;border-radius:10px;padding:24px;overflow-x:auto">${docHtml}</div>`,
+    foot: `<span class="small muted" style="margin-right:auto;align-self:center">${isArt() ? 'Télécharge le document, ouvre-le puis Imprimer → Enregistrer en PDF.' : 'Imprimer → « Enregistrer en PDF » pour obtenir le fichier.'}</span><button class="btn" data-dl>Télécharger</button>${isArt() ? '' : '<button class="btn pri" data-pr>Imprimer / PDF</button>'}`,
+    mount(b) {
+      const pr = $('[data-pr]', b); if (pr) pr.onclick = () => { const old = document.title; document.title = name; window.print(); document.title = old; };
+      $('[data-dl]', b).onclick = () => download(name.replace(/[\\/:*?"<>|]/g, '') + '.html', standaloneDoc(name, docHtml), 'text/html');
+    } });
+}
+
+function standaloneDoc(title, inner) {
+  const css = [...document.querySelectorAll('style')].map(x => x.textContent).join('\n').split('\n').filter(l => l.trim().startsWith('.doc')).join('\n');
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${esc(title)}</title><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;background:#fff}table{width:100%;border-collapse:collapse}th,td{text-align:left}.n{text-align:right}@page{margin:14mm}@media print{body{padding:0}}${css}</style></head><body>${inner}<script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script></body></html>`;
 }
 
 /* ----- stock ----- */
@@ -1185,7 +1265,7 @@ VIEW.reglages = () => {
     <div class="fg"><div class="field full"><label>Objet</label><input id="tplSub" value="${esc(t.subject)}"></div><div class="field full"><label>Message</label><textarea id="tplBody" rows="14">${esc(t.body)}</textarea></div></div>
     <div class="small muted" style="margin:10px 0 6px">Variables (clic pour insérer) :</div><div class="ph">${PLACEHOLDERS.map(p => `<code data-ph="${p}">{${p}}</code>`).join('')}</div>
     <div class="row" style="margin-top:14px;justify-content:flex-end">${custom ? '<button class="btn" data-act="tplReset">Rétablir le modèle d\'origine</button>' : ''}<button class="btn pri" data-act="tplSave">Enregistrer le modèle</button></div></div>
-  <div class="card" style="margin-top:14px"><h2>Données</h2><p class="muted small" style="margin-top:0">Tout est enregistré dans ce navigateur, sur cet appareil. Exporte régulièrement une sauvegarde (et pour passer d'un appareil à l'autre).</p>
+  <div class="card" style="margin-top:14px"><h2>Données</h2><p class="muted small" style="margin-top:0">${SYNC.col ? 'Tes données sont synchronisées avec ton compte Claude : tu les retrouves sur ton ordi et ton téléphone. Une sauvegarde de temps en temps reste une bonne idée.' : 'Tout est enregistré dans ce navigateur, sur cet appareil. Exporte régulièrement une sauvegarde (et pour passer d\'un appareil à l\'autre).'}</p>
     <div class="row"><button class="btn pri" data-act="exportJson">Exporter une sauvegarde</button><button class="btn" data-act="importJson">Importer une sauvegarde</button><button class="btn" data-act="exportCsv">Export comptable (CSV)</button><button class="btn" data-act="demo">Charger des données d'exemple</button><button class="btn danger" data-act="resetAll">Tout effacer</button></div></div>`;
 };
 bindView.reglages = () => {
@@ -1196,7 +1276,14 @@ bindView.reglages = () => {
 ACT.saveSettings = () => { const v = formData($('#settingsForm')); Object.assign(state.settings, v); save(); render(); toast('Réglages enregistrés ✔'); };
 ACT.tplSave = () => { state.settings.templates[tplSel] = { subject: $('#tplSub').value, body: $('#tplBody').value }; save(); render(); toast('Modèle enregistré ✔'); };
 ACT.tplReset = () => { delete state.settings.templates[tplSel]; save(); render(); toast('Modèle d\'origine rétabli'); };
-function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+async function download(name, text, type) {
+  if (isArt()) {
+    const dl = await claude.use('downloads').catch(() => null);
+    if (!dl) { toast('Téléchargement indisponible ici'); return; }
+    try { await dl.save({ filename: name, data: new Blob([text], { type }) }); } catch (e) { if (e && e.code !== 'declined') toast('Téléchargement annulé'); }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
 ACT.exportJson = () => { download(`maison-bartheau-sauvegarde-${today()}.json`, JSON.stringify(state, null, 2), 'application/json'); toast('Sauvegarde téléchargée'); };
 ACT.importJson = () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.json,application/json';
   i.onchange = () => { const f = i.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const d = JSON.parse(r.result); if (!d.settings || !Array.isArray(d.factures)) throw 0;
@@ -1247,6 +1334,7 @@ ACT.demo = () => {
 };
 
 render();
+initSync();
 </script>
 </body>
 </html>
