@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Remplacez VOTRE-DOMAINE.fr par votre vrai nom de domaine avant la mise en ligne -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://VOTRE-DOMAINE.fr/</loc><priority>1.0</priority></url>
+  <url><loc>https://VOTRE-DOMAINE.fr/cgv.html</loc><priority>0.3</priority></url>
+  <url><loc>https://VOTRE-DOMAINE.fr/mentions-legales.html</loc><priority>0.2</priority></url>
+  <url><loc>https://VOTRE-DOMAINE.fr/confidentialite.html</loc><priority>0.2</priority></url>
+</urlset>

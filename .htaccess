@@ -1,0 +1,30 @@
+# Réglages pour les hébergeurs Apache (OVH, o2switch, Hostinger, IONOS...). Ignoré ailleurs.
+ErrorDocument 404 /404.html
+DirectoryIndex index.html
+AddDefaultCharset UTF-8
+AddType application/manifest+json .webmanifest
+
+# Forcer le HTTPS (décommentez une fois le certificat SSL actif)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml application/manifest+json
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>

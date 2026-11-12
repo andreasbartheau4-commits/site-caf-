@@ -1,0 +1,37 @@
+SITE MAISON BARTHEAU CAFÉ — MODE D'EMPLOI
+
+CE QUE CONTIENT LE DOSSIER
+- index.html ............ le site : accueil, commander, professionnels, questions, contact, mon compte
+- pro.html .............. l'espace professionnel complet (accès par code)
+- cgv.html, mentions-legales.html, confidentialite.html ... pages légales
+- 404.html .............. page « introuvable »
+- assets/config.js ...... VOS COORDONNÉES ET LE PRIX (le seul fichier à modifier en général)
+- assets/style.css ...... le design (couleurs en haut du fichier : --accent, --bg)
+- assets/site.js ........ menu mobile, thème clair/sombre, coordonnées
+- assets/img/ ........... icônes, logo détouré, image de partage réseaux sociaux
+- logo.jpg .............. le logo
+- robots.txt, sitemap.xml, site.webmanifest, .htaccess ... fichiers techniques (référencement, hébergement)
+
+VOIR LE SITE
+- Double-cliquez sur index.html : il s'ouvre dans votre navigateur.
+
+AVANT LA MISE EN LIGNE (obligatoire en France)
+1. Ouvrez assets/config.js et remplissez : nom, SIRET, adresse, téléphone,
+   hébergeur, médiateur de la consommation (et Instagram si vous en avez un).
+   Tant qu'un champ est vide, le site affiche « à compléter ».
+2. Faites relire cgv.html par un professionnel si possible (modèle sérieux, mais générique).
+3. Quand vous avez votre nom de domaine : remplacez VOTRE-DOMAINE.fr dans robots.txt
+   et sitemap.xml.
+
+METTRE EN LIGNE
+- Déposez TOUT le contenu du dossier (y compris le dossier assets et le fichier .htaccess)
+  chez votre hébergeur, à la racine du site.
+- Alternatives gratuites : Netlify (glisser-déposer le dossier) ou GitHub Pages.
+
+CHANGER LE PRIX
+- assets/config.js : "var PRICE = 12;"
+- puis dans index.html, cherchez « 12 € » (héros, carte de prix, formule) et « 48 € le kilo ».
+
+À NE PAS MODIFIER À LA MAIN
+- Le tarif professionnel et les codes d'accès sont chiffrés ("var VAULT" dans index.html et pro.html).
+  Pour les changer, il faut les régénérer.

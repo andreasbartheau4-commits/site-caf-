@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Espace professionnels · Maison Bartheau Café</title>
+<meta name="description" content="Espace réservé aux cafés, hôtels, restaurants et chambres d'hôtes : tarif unique au kilo, dégustation offerte sur votre machine, livraison locale.">
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#160e09">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=localStorage.getItem("bc-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}document.documentElement.classList.add("js")</script>
+</head>
+<body>
+<a class="skip" href="#haut">Aller au contenu</a>
+<header class="barwrap">
+  <div class="bar">
+    <a class="brand" href="index.html" aria-label="Maison Bartheau Café, retour au site"><span class="mark" aria-hidden="true"></span><span class="bn"><b>Maison Bartheau</b><small>Espace professionnels</small></span></a>
+    <nav class="menu" id="nav" aria-label="Navigation de l'espace pro">
+      <a class="portal" href="#calcul" hidden>Estimer</a>
+      <a class="portal" href="#commande" hidden>Commander</a>
+      <a class="portal" href="#degust" hidden>Dégustation</a>
+      <a class="portal" href="#infos" hidden>Infos</a>
+      <a class="portal" href="#contact" hidden>Contact</a>
+      <a href="index.html">Retour au site</a>
+    </nav>
+    <div class="tools">
+      <button class="iconbtn" id="themeBtn" type="button" aria-label="Changer le thème clair ou sombre"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+      <button class="acctbtn portal" id="lockBtn" type="button" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0"/></svg><span>Quitter</span></button>
+      <button class="iconbtn burger" id="burger" type="button" aria-label="Ouvrir le menu" aria-controls="nav" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main id="haut">
+
+<!-- ======== ACCÈS ======== -->
+<div id="gate">
+  <section class="band k herowrap">
+    <div class="in hero">
+      <p class="eyebrow">Cafés, hôtels, restaurants, chambres d'hôtes</p>
+      <h1>L'espace des <em>professionnels.</em></h1>
+      <p class="lead">Un tarif unique, une livraison locale, un café adapté à votre machine. Entrez votre code pour accéder à votre espace.</p>
+    </div>
+  </section>
+  <section class="band g">
+    <div class="in">
+      <div class="duo" style="margin-top:0">
+        <div class="stack">
+          <div class="card">
+            <h3>J'ai un code</h3>
+            <div class="field"><label for="codeIn">Code d'accès</label><input type="text" id="codeIn" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PRO-XXXX-XXXX-XXXX"></div>
+            <button class="btn solid" type="button" id="codeBtn">Entrer</button>
+            <p class="status" id="codeStatus" role="status"></p>
+          </div>
+          <ol class="steps">
+            <li><span><b>Demandez votre accès</b> avec le formulaire.</span></li>
+            <li><span><b>Nous vérifions</b> votre établissement et vous envoyons un code personnel.</span></li>
+            <li><span><b>Entrez votre code</b> : tarif, calculateur et commande s'affichent. Une dégustation vous est offerte.</span></li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>Demander mon accès</h3>
+          <div class="field"><label for="pEtab">Établissement</label><input type="text" id="pEtab" autocomplete="organization" placeholder="Nom de l'établissement"></div>
+          <div class="field"><label for="pType">Activité</label>
+            <select id="pType"><option>Café</option><option>Restaurant</option><option>Hôtel</option><option>Chambre d'hôtes</option><option>Épicerie / commerce</option><option>Autre</option></select></div>
+          <div class="field"><label for="pSiret">SIRET (14 chiffres)</label><input type="text" id="pSiret" inputmode="numeric" autocomplete="off" placeholder="000 000 000 00000"></div>
+          <div class="field"><label for="pNom">Votre nom et fonction</label><input type="text" id="pNom" autocomplete="name" placeholder="Prénom Nom, gérant"></div>
+          <div class="field"><label for="pContact">E-mail ou téléphone</label><input type="text" id="pContact" autocomplete="email" placeholder="Pour vous envoyer le code"></div>
+          <div class="field"><label for="pVol">Volume de café par mois (estimation)</label>
+            <select id="pVol"><option>Moins de 5 kg</option><option>5 à 10 kg</option><option>10 à 20 kg</option><option>Plus de 20 kg</option></select></div>
+          <div class="field"><label for="reqText">Votre demande, prête à envoyer</label><textarea class="copybox" id="reqText" readonly></textarea></div>
+          <div class="cta"><button class="btn solid" type="button" id="reqCopy">Copier la demande</button><a class="btn" id="reqMail" href="#haut">Envoyer par e-mail</a></div>
+          <p class="status" id="reqStatus" role="status"></p>
+          <p class="note">Ces informations servent uniquement à vérifier votre établissement et à vous répondre.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ======== ESPACE ======== -->
+<div id="portal" hidden>
+  <section class="band k herowrap">
+    <div class="in hero">
+      <p class="eyebrow">Bienvenue dans votre espace</p>
+      <h1>Votre café, <em>un seul prix.</em></h1>
+      <p class="lead">Dès le premier kilo, sans palier ni remise à négocier.</p>
+      <div class="pricebig"><span class="price" id="hPrix">–</span><small>le kilo, HT · livraison locale incluse</small></div>
+      <div class="cta"><a class="btn solid" href="#commande">Commander</a><a class="btn" href="#calcul">Estimer mes besoins</a></div>
+    </div>
+  </section>
+
+  <section class="band w slim" aria-label="En bref">
+    <div class="strip">
+      <div><b>Un seul prix</b><span id="sPrix">Au kilo, HT</span></div>
+      <div><b id="sMin">Dès 3 kg</b><span>Par livraison</span></div>
+      <div><b>Livraison locale</b><span>Incluse dans le prix</span></div>
+      <div><b>Paiement à 30 jours</b><span>Facture à chaque livraison</span></div>
+    </div>
+  </section>
+
+  <section class="band g" id="calcul">
+    <div class="in">
+      <div class="center">
+        <p class="eyebrow">Estimer</p>
+        <h2>Combien de café <em>vous faut-il ?</em></h2>
+        <p class="lead">Dites-nous combien de cafés vous servez, nous calculons la quantité.</p>
+      </div>
+      <div class="shop">
+        <div class="card">
+          <div class="field"><label for="cpj">Cafés servis par jour</label>
+            <select id="cpj"><option value="20">20</option><option value="40">40</option><option value="60">60</option><option value="80">80</option><option value="100" selected>100</option><option value="150">150</option><option value="200">200</option><option value="300">300</option></select></div>
+          <div class="field"><label for="jpm">Jours d'ouverture par mois</label>
+            <select id="jpm"><option value="30">30 (tous les jours)</option><option value="26" selected>26</option><option value="22">22</option><option value="15">15 (saisonnier)</option><option value="8">8 (week-ends)</option></select></div>
+          <p class="note" id="gNote"></p>
+        </div>
+        <div class="card slip" style="position:static">
+          <h3>Votre besoin</h3>
+          <dl>
+            <dt>Cafés par mois</dt><dd id="eCafes">–</dd>
+            <dt>Café nécessaire</dt><dd id="eKg">–</dd>
+            <dt>Coût d'un café</dt><dd id="eCup">–</dd>
+          </dl>
+          <dl class="total"><dt>Par mois, HT</dt><dd id="eTot">–</dd></dl>
+          <button class="btn solid" type="button" id="useQty">Commander cette quantité</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band w" id="commande">
+    <div class="in">
+      <div class="center">
+        <p class="eyebrow">Commander</p>
+        <h2>Votre <em>commande.</em></h2>
+        <p class="lead">Choisissez, nous préparons le reste. Aucun paiement en ligne : nous confirmons avec vous.</p>
+      </div>
+      <div class="shop">
+        <div class="card">
+          <h3>Le café de la Maison</h3>
+          <div class="field"><label for="fmt">Format</label><select id="fmt"><option value="grains">Grains</option><option value="moulu">Moulu</option></select></div>
+          <div id="mouBox" hidden class="stack">
+            <div class="field"><label for="mach">Votre machine</label>
+              <select id="mach"><option>Machine espresso (groupe)</option><option>Machine filtre / batch brew</option><option>Cafetière à piston</option><option>Autre (précisez)</option></select></div>
+            <div class="field"><label for="machMod">Marque et modèle</label><input type="text" id="machMod" placeholder="Ex : La Marzocco Linea, Moccamaster KBG"></div>
+          </div>
+          <div class="field">
+            <span class="lbl" id="qLbl">Quantité (kg par livraison)</span>
+            <div class="qty" aria-labelledby="qLbl">
+              <button type="button" id="minus" aria-label="Retirer un kilo">–</button>
+              <output id="qtyOut" aria-live="polite">5</output>
+              <button type="button" id="plus" aria-label="Ajouter un kilo">+</button>
+            </div>
+            <div class="chips" id="chips"></div>
+          </div>
+          <div class="field"><label for="rhy">Rythme</label>
+            <select id="rhy"><option value="0">Commande ponctuelle</option><option value="52">Toutes les semaines</option><option value="26">Toutes les 2 semaines</option><option value="12">Tous les mois</option></select></div>
+          <div class="field"><label for="when">Livraison souhaitée</label><input type="text" id="when" placeholder="Ex : lundi matin, avant 10 h"></div>
+          <p class="note">Prix HT. Commande minimum par livraison, voir plus haut. Vous pouvez modifier ou arrêter avant la livraison suivante.</p>
+        </div>
+
+        <div class="card slip">
+          <h3>Votre commande</h3>
+          <dl>
+            <dt id="lineLabel">5 kg · Grains</dt><dd id="lineAmt">–</dd>
+            <dt>Prix au kilo</dt><dd id="unitAmt">–</dd>
+            <dt>Livraison</dt><dd>locale incluse</dd>
+            <dt id="cupLbl">Soit</dt><dd id="cupAmt">–</dd>
+          </dl>
+          <dl class="total"><dt id="totLbl">Total HT</dt><dd id="total">–</dd></dl>
+          <div class="gift" id="gift" hidden><span class="gl">Sur la durée</span><b id="giftAmt"></b></div>
+          <div class="field"><label for="cEtab">Établissement</label><input type="text" id="cEtab" autocomplete="organization"></div>
+          <div class="two">
+            <div class="field"><label for="cNom">Votre nom</label><input type="text" id="cNom" autocomplete="name"></div>
+            <div class="field"><label for="cTel">Téléphone</label><input type="text" inputmode="tel" id="cTel" autocomplete="tel"></div>
+          </div>
+          <div class="field"><label for="cMail">E-mail</label><input type="text" inputmode="email" id="cMail" autocomplete="email"></div>
+          <div class="field"><label for="cAdr">Adresse de livraison</label><input type="text" id="cAdr" autocomplete="street-address"></div>
+          <div class="two">
+            <div class="field"><label for="cCp">Code postal</label><input type="text" inputmode="numeric" id="cCp" autocomplete="postal-code"></div>
+            <div class="field"><label for="cVille">Ville</label><input type="text" id="cVille" autocomplete="address-level2"></div>
+          </div>
+          <div class="field"><label for="cRem">Précisions (facultatif)</label><input type="text" id="cRem" placeholder="Accès, horaires, remarque"></div>
+          <div class="field"><label for="ordText">Votre commande, prête à envoyer</label><textarea class="copybox" id="ordText" readonly></textarea></div>
+          <div class="cta"><button class="btn solid" type="button" id="ordCopy">Copier la commande</button><a class="btn" id="ordMail" href="#commande">Envoyer par e-mail</a></div>
+          <p class="status" id="ordStatus" role="status"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band g" id="degust">
+    <div class="in">
+      <div class="split">
+        <div>
+          <p class="eyebrow">Dégustation offerte</p>
+          <h2>On vient <em>chez vous.</em></h2>
+          <p class="lead" style="margin-inline:0">Nous préparons le café sur votre machine, avec la mouture adaptée. Vous goûtez, vous décidez.</p>
+          <div class="cta" style="margin-top:22px"><button class="btn solid" type="button" id="dgCopy">Copier la demande</button><a class="btn" id="dgMail" href="#degust">Envoyer par e-mail</a></div>
+          <p class="status" id="dgStatus" role="status"></p>
+        </div>
+        <div class="matches">
+          <div><b>1. Vous demandez</b><span>Un message prêt</span></div>
+          <div><b>2. Nous convenons d'un créneau</b><span>Chez vous</span></div>
+          <div><b>3. Nous préparons sur votre machine</b><span>Mouture adaptée</span></div>
+          <p>La demande reprend les informations saisies dans le formulaire de commande.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band w" id="infos">
+    <div class="in">
+      <div class="center"><p class="eyebrow">Infos pratiques</p><h2>Ce qu'il faut <em>savoir.</em></h2></div>
+      <div class="faq">
+        <details><summary>Quel est le prix, et que comprend-il ?</summary><p id="fPrix">Un tarif unique au kilo, hors taxes, livraison locale incluse.</p></details>
+        <details><summary>Quelle commande minimum ?</summary><p id="fMin">Une commande minimum par livraison.</p></details>
+        <details><summary>Comment se passe le paiement ?</summary><p>Vous payez à 30 jours, sur facture. Une facture est émise à chaque livraison.</p></details>
+        <details><summary>Comment fonctionne une livraison régulière ?</summary><p>Vous choisissez le rythme (chaque semaine, toutes les 2 semaines ou chaque mois) et la quantité. Vous pouvez modifier ou arrêter avant la livraison suivante, en nous prévenant.</p></details>
+        <details><summary>Le café est-il adapté à ma machine ?</summary><p>Oui. En grains, vous gardez votre moulin. En moulu, nous réglons la mouture selon votre machine : indiquez la marque et le modèle dans la commande.</p></details>
+        <details><summary>Comment suivre la fraîcheur ?</summary><p>Le café est préparé en petits lots numérotés et datés. Le numéro de lot et la date figurent sur chaque sac.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band g" id="contact">
+    <div class="in center">
+      <p class="eyebrow">Contact</p>
+      <h2>Une question ?</h2>
+      <p class="lead">Écrivez-nous, nous répondons vite.</p>
+      <div class="contact">
+        <div class="row"><span class="muted">E-mail</span><code id="ctMail"></code></div>
+        <div class="row"><span class="muted">Secteur</span><code>Noirmoutier-en-l'Île (Vendée)</code></div>
+      </div>
+      <p style="margin-top:30px"><a class="btn" href="index.html">Retour au site Maison Bartheau Café</a></p>
+    </div>
+  </section>
+</div>
+</main>
+<footer class="site">
+  <div class="fgrid">
+    <div class="fbrand">
+      <span class="mark" aria-hidden="true"></span>
+      <p class="fname">Maison Bartheau Café</p>
+      <p>Torréfaction artisanale. Une recette de famille, préparée en petits lots à Noirmoutier-en-l'Île.</p>
+    </div>
+    <div>
+      <h4>La Maison</h4>
+      <ul>
+        <li><a href="index.html#accueil">Notre histoire</a></li>
+        <li><a href="index.html#preparer">Guide de préparation</a></li>
+        <li><a href="index.html#questions">Questions fréquentes</a></li>
+        <li><a href="index.html#compte">Mon compte et fidélité</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Commander</h4>
+      <ul>
+        <li><a href="index.html#boutique">Le sachet de 250 g</a></li>
+        <li><a href="index.html#boutique" data-abo>L'abonnement</a></li>
+        <li><a href="index.html#pro">Espace professionnels</a></li>
+        <li><a href="pro.html">Accès pro avec code</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Nous joindre</h4>
+      <ul>
+        <li><a data-mailto href="index.html#contact"></a></li>
+        <li data-optional><a data-tel href="index.html#contact"></a></li>
+        <li>Noirmoutier-en-l'Île, Vendée</li>
+        <li><a data-insta href="#" target="_blank" rel="noopener">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="fbottom">
+    <span>© <span data-year></span> Maison Bartheau Café · Noirmoutier-en-l'Île · TVA non applicable, art. 293 B du CGI</span>
+    <span><a href="mentions-legales.html">Mentions légales</a> · <a href="cgv.html">Conditions de vente</a> · <a href="confidentialite.html">Confidentialité</a></span>
+  </div>
+</footer>
+<button class="iconbtn" id="toTop" type="button" aria-label="Revenir en haut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+<script src="assets/config.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function(){
+  /* Coordonnées : voir assets/config.js */
+  var SITE = "index.html";
+  var VAULT = {"it": 150000, "iv": "oe3L4xpvXddY2s+m", "ct": "WoPHmpDEmM0O78CcwehjhuN30/HwgOo7nudWIJFjej7kwOlPNr2H3yRV1yEB7f3vgCdr", "w": [{"s": "Wcub6RgOmWeBK16AOjLZhQ==", "i": "zdno6D1nPWP+NS1q", "k": "DkhFfwHFWHLteFPB1catxXS78gA3eI/YHP1Z/uhy7ULvPc1u7XqZcBHVkk9Up6T8"}, {"s": "yq53UeDMlCTWnJO6gI3Ykg==", "i": "2UyYu8gJjt8gEoMB", "k": "YJq2AakB+aAS7KROfRtnwgIgOUIZDJhWQfrtXOVHzStRLxvIZKOaovdHrvojN3YA"}, {"s": "xO11/X52BAwmp5/ERti3Sg==", "i": "YfwhFkf8k9BhodEi", "k": "A07fP8AgN95kWxC01N2Lo0uyXuo3lIk745n2n1SuJcaG9XgAKvXZsiRhQ8dNyv2B"}, {"s": "QNTpyf4Wpn2FYwaw/2tCTg==", "i": "vnnh4V/WBCoIkEz0", "k": "sEn93Jx9OcMWH9cJCkI/EmGY/sgsredLVO64xHwRPxeXANLVqSSe8Cs0aKrV6/we"}, {"s": "KEtBUqpOCiGm1BTsG3MW0g==", "i": "ufHz5b5+k+fU6xeU", "k": "KEJ4S7CcagoQ0mOsrjfU+6hjTz7cm6SHduV7Xb/i1o6+hGQ6xZpiRu5y76uDwtoB"}]};
+  var D = null, qty = 5;
+  var $ = function(i){ return document.getElementById(i); };
+  var enc = new TextEncoder(), dec = new TextDecoder();
+  function b64(s){ var bin = atob(s), a = new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+  async function tryUnlock(code){
+    var norm = code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if(norm.length < 8 || !window.crypto || !crypto.subtle) return null;
+    var base = await crypto.subtle.importKey("raw", enc.encode(norm), "PBKDF2", false, ["deriveKey"]);
+    for(var i=0;i<VAULT.w.length;i++){
+      var w = VAULT.w[i];
+      try{
+        var k = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64(w.s), iterations:VAULT.it, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+        var raw = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(w.i)}, k, b64(w.k));
+        var dk = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+        var plain = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64(VAULT.iv)}, dk, b64(VAULT.ct));
+        return JSON.parse(dec.decode(plain));
+      }catch(e){}
+    }
+    return null;
+  }
+  function eur(n){ return n.toFixed(2).replace(".", ",") + " €"; }
+  function eur0(n){ return Math.round(n).toLocaleString("fr-FR") + " €"; }
+  function nb(n){ return Math.round(n).toLocaleString("fr-FR"); }
+  function kgTxt(n){ return (Math.round(n*10)/10).toString().replace(".", ",") + " kg"; }
+  function show(on){
+    $("gate").hidden = on; $("portal").hidden = !on;
+    document.querySelectorAll(".portal").forEach(function(e){ e.hidden = !on; });
+    window.scrollTo(0, 0);
+  }
+  function setup(d){
+    D = d;
+    var cup = d.prix * d.gEsp / 1000;
+    $("hPrix").textContent = eur0(d.prix).replace(" €", " €");
+    $("sPrix").textContent = eur(d.prix) + " le kilo, HT";
+    $("sMin").textContent = "Dès " + d.minKg + " kg";
+    $("fPrix").textContent = "Un tarif unique de " + eur(d.prix) + " le kilo, hors taxes, livraison locale incluse. Le même prix dès le premier kilo.";
+    $("fMin").textContent = "La commande minimum est de " + d.minKg + " kg par livraison.";
+    $("gNote").textContent = "Calcul sur " + d.gEsp + " g de café par espresso. Ajustez avec votre dosage réel.";
+    $("ctMail").textContent = INFO.email;
+    if(qty < d.minKg) qty = d.minKg;
+    var ch = $("chips"); ch.textContent = "";
+    [d.minKg, 5, 10, 20, 40].filter(function(v, i, a){ return v >= d.minKg && a.indexOf(v) === i; }).forEach(function(v){
+      var b = document.createElement("button"); b.type = "button"; b.textContent = v + " kg"; b.dataset.v = v;
+      b.addEventListener("click", function(){ qty = v; render(); }); ch.appendChild(b);
+    });
+    show(true); calc(); render();
+  }
+  function calc(){
+    if(!D) return;
+    var cafes = parseInt($("cpj").value, 10) * parseInt($("jpm").value, 10);
+    var kg = Math.max(D.minKg, Math.ceil(cafes * D.gEsp / 1000));
+    var exact = cafes * D.gEsp / 1000;
+    $("eCafes").textContent = nb(cafes);
+    $("eKg").textContent = kgTxt(exact) + " (à commander : " + kg + " kg)";
+    $("eCup").textContent = eur(D.prix * D.gEsp / 1000).replace(/(\d),(\d\d)/, "$1,$2");
+    $("eTot").textContent = eur0(kg * D.prix);
+    calc.kg = kg;
+  }
+  function fmtText(){ return $("fmt").value === "moulu" ? "Moulu" : "Grains"; }
+  function rhy(){ var v = parseInt($("rhy").value, 10); return v; }
+  function rhyTxt(){ var v = rhy(); return v === 52 ? "toutes les semaines" : v === 26 ? "toutes les 2 semaines" : v === 12 ? "tous les mois" : "une seule fois"; }
+  var ref = (function(){ var d = new Date(), z = function(x){ return (x < 10 ? "0" : "") + x; }, a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = ""; for(var i=0;i<4;i++) r += a.charAt(Math.floor(Math.random()*a.length)); return "PRO-" + z(d.getDate()) + z(d.getMonth()+1) + "-" + r; })();
+  function today(){ return new Date().toLocaleDateString("fr-FR"); }
+  function cust(){ var g = function(i){ return $(i).value.trim(); }; return { etab:g("cEtab"), nom:g("cNom"), tel:g("cTel"), mail:g("cMail"), adr:g("cAdr"), cp:g("cCp"), ville:g("cVille"), rem:g("cRem") }; }
+  function render(){
+    if(!D) return;
+    $("qtyOut").textContent = qty;
+    $("mouBox").hidden = $("fmt").value !== "moulu";
+    document.querySelectorAll("#chips button").forEach(function(b){ b.classList.toggle("on", parseInt(b.dataset.v, 10) === qty); });
+    var tot = qty * D.prix, r = rhy(), cups = qty * 1000 / D.gEsp;
+    $("lineLabel").textContent = qty + " kg · " + fmtText();
+    $("lineAmt").textContent = eur(tot);
+    $("unitAmt").textContent = eur(D.prix);
+    $("cupLbl").textContent = "Soit environ";
+    $("cupAmt").textContent = nb(cups) + " cafés";
+    $("totLbl").textContent = r ? "Par livraison, HT" : "Total HT";
+    $("total").textContent = eur(tot);
+    $("gift").hidden = !r;
+    if(r){ var perM = r / 12; $("giftAmt").textContent = "≈ " + kgTxt(qty * perM) + " et " + eur0(tot * perM) + " HT par mois"; }
+    var C = cust(), mouture = $("fmt").value === "moulu" ? "\nMachine : " + $("mach").value + ($("machMod").value.trim() ? " (" + $("machMod").value.trim() + ")" : "") : "";
+    var txt = "COMMANDE PROFESSIONNELLE MAISON BARTHEAU CAFÉ, réf. " + ref + "\nDate : " + today() +
+      "\n\nÀ PRÉPARER\n" + qty + " kg de café " + fmtText().toLowerCase() + mouture +
+      "\nRythme : " + rhyTxt() + "\nLivraison souhaitée : " + ($("when").value.trim() || "à convenir") +
+      "\n\nPrix : " + eur(D.prix) + " HT le kilo, livraison locale incluse\nTOTAL : " + eur(tot) + " HT" + (r ? " par livraison" : "") + "\nPaiement à 30 jours sur facture" +
+      "\n\nCLIENT\nÉtablissement : " + (C.etab || "à compléter") + "\nContact : " + [C.nom, C.tel, C.mail].filter(Boolean).join(" · ") +
+      "\nAdresse : " + ([C.adr, (C.cp + " " + C.ville).trim()].filter(Boolean).join(", ") || "à compléter") + (C.rem ? "\nPrécisions : " + C.rem : "") +
+      "\n\nMerci de confirmer la disponibilité et la date de livraison.";
+    $("ordText").value = txt;
+    var to = INFO.emailCommande || INFO.email;
+    $("ordMail").href = "mailto:" + to + "?subject=" + encodeURIComponent("Commande pro " + ref + " · " + (C.etab || "établissement")) + "&body=" + encodeURIComponent(txt);
+    var dg = "Bonjour,\n\nJe souhaite une dégustation offerte chez moi.\n\nÉtablissement : " + (C.etab || "à compléter") + "\nContact : " + [C.nom, C.tel, C.mail].filter(Boolean).join(" · ") + "\nAdresse : " + ([C.adr, (C.cp + " " + C.ville).trim()].filter(Boolean).join(", ") || "à compléter") + "\nMachine : " + $("mach").value + ($("machMod").value.trim() ? " (" + $("machMod").value.trim() + ")" : "") + "\n\nMerci de me proposer un créneau.";
+    $("dgMail").href = "mailto:" + to + "?subject=" + encodeURIComponent("Demande de dégustation · " + (C.etab || "établissement")) + "&body=" + encodeURIComponent(dg);
+    render.dg = dg;
+  }
+  function copy(txt, st, msg){
+    function ok(){ st.textContent = msg; }
+    function fb(){ var t = document.createElement("textarea"); t.value = txt; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select(); try{ document.execCommand("copy"); ok(); }catch(e){ st.textContent = "Sélectionnez puis copiez le texte."; } t.remove(); }
+    try{ navigator.clipboard.writeText(txt).then(ok, fb); }catch(e){ fb(); }
+  }
+  async function unlock(code, silent){
+    var st = $("codeStatus");
+    if(!silent) st.textContent = "Vérification du code…";
+    var d = await tryUnlock(code);
+    if(d){ st.textContent = ""; st.classList.remove("err"); try{ localStorage.setItem("bartheauProEspace", code); }catch(e){} setup(d); }
+    else if(!silent){ st.textContent = "Code non reconnu. Vérifiez la saisie ou demandez votre accès."; st.classList.add("err"); }
+  }
+  $("codeBtn").addEventListener("click", function(){ unlock($("codeIn").value, false); });
+  $("codeIn").addEventListener("keydown", function(e){ if(e.key === "Enter") unlock(this.value, false); });
+  $("lockBtn").addEventListener("click", function(){ D = null; try{ localStorage.removeItem("bartheauProEspace"); }catch(e){} $("codeIn").value = ""; show(false); });
+  $("minus").addEventListener("click", function(){ if(D && qty > D.minKg){ qty--; render(); } });
+  $("plus").addEventListener("click", function(){ if(qty < 500){ qty++; render(); } });
+  ["fmt","mach","machMod","rhy","when","cEtab","cNom","cTel","cMail","cAdr","cCp","cVille","cRem"].forEach(function(id){ $(id).addEventListener("input", render); $(id).addEventListener("change", render); });
+  ["cpj","jpm"].forEach(function(id){ $(id).addEventListener("change", calc); });
+  $("useQty").addEventListener("click", function(){ if(calc.kg){ qty = calc.kg; render(); $("commande").scrollIntoView({behavior:"smooth"}); } });
+  $("ordCopy").addEventListener("click", function(){ copy($("ordText").value, $("ordStatus"), "Commande copiée. Collez-la dans un e-mail ou un message."); });
+  $("dgCopy").addEventListener("click", function(){ copy(render.dg || "", $("dgStatus"), "Demande copiée. Collez-la dans un message."); });
+  // demande d'accès
+  function renderReq(){
+    var g = function(id){ return $(id).value.trim(); };
+    var txt = "Bonjour,\nJe souhaite accéder à l'espace professionnel de Maison Bartheau Café.\n- Établissement : " + (g("pEtab") || "…") + " (" + g("pType") + ")\n- SIRET : " + (g("pSiret") || "…") + "\n- Contact : " + (g("pNom") || "…") + ", " + (g("pContact") || "…") + "\n- Volume estimé : " + g("pVol") + " par mois\nMerci de me confirmer mon accès et de m'envoyer mon code.";
+    $("reqText").value = txt;
+    $("reqMail").href = "mailto:" + INFO.email + "?subject=" + encodeURIComponent("Demande d'accès professionnel") + "&body=" + encodeURIComponent(txt);
+  }
+  ["pEtab","pType","pSiret","pNom","pContact","pVol"].forEach(function(id){ $(id).addEventListener("input", renderReq); $(id).addEventListener("change", renderReq); });
+  $("reqCopy").addEventListener("click", function(){ copy($("reqText").value, $("reqStatus"), "Demande copiée. Collez-la dans un message ou un e-mail."); });
+  renderReq();
+  var bw = document.querySelector(".barwrap"); window.addEventListener("scroll", function(){ bw.classList.toggle("scrolled", (window.scrollY || 0) > 8); }, {passive:true});
+  try{ var saved = localStorage.getItem("bartheauProEspace"); if(saved) unlock(saved, true); }catch(e){}
+})();
+</script>
+
+</body>
+</html>

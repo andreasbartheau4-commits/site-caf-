@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /pro.html
+
+# Quand vous avez votre nom de domaine, remplacez VOTRE-DOMAINE.fr ici et dans sitemap.xml
+Sitemap: https://VOTRE-DOMAINE.fr/sitemap.xml
