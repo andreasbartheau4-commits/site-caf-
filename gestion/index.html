@@ -336,7 +336,7 @@ Adresse de livraison :
 Merci d'avance pour votre retour.
 
 Bien cordialement,
-{signature}` },
+{signature_courte}` },
   bienvenue_client: { nom: 'Bienvenue nouveau client', subject: 'Bienvenue chez {entreprise}', body:
 `Bonjour {client_contact},
 
@@ -349,7 +349,7 @@ Au plaisir d'échanger avec vous très prochainement.
 Bien cordialement,
 {signature}` },
 };
-const PLACEHOLDERS = ['client', 'client_contact', 'numero', 'date', 'echeance', 'validite', 'montant_ht', 'montant_ttc', 'reste', 'montant_paye', 'jours_retard', 'derniere_relance', 'lignes', 'produits', 'infos_paiement', 'entreprise', 'signature', 'adresse_complete', 'taux_penalites'];
+const PLACEHOLDERS = ['client', 'client_contact', 'numero', 'date', 'echeance', 'validite', 'montant_ht', 'montant_ttc', 'reste', 'montant_paye', 'jours_retard', 'derniere_relance', 'lignes', 'produits', 'infos_paiement', 'entreprise', 'signature', 'signature_courte', 'adresse_complete', 'taux_penalites'];
 
 /* ============ état ============ */
 const KEY = 'maison-bartheau-gestion-v1';
@@ -514,7 +514,8 @@ function baseVars() {
   const s = S();
   const adr = [s.adresse, [s.cp, s.ville].filter(Boolean).join(' ')].filter(Boolean).join('\n');
   const pay = s.iban ? `Règlement par virement bancaire :\nIBAN : ${s.iban}${s.bic ? '\nBIC : ' + s.bic : ''}\nTitulaire : ${s.nom}` : '';
-  return { entreprise: s.nom, signature: signature(), adresse_complete: adr || '(à compléter)', infos_paiement: pay, taux_penalites: s.tauxPenalites };
+  const courte = [s.proprio || s.nom, s.tel, s.email].filter(Boolean).join('\n');
+  return { entreprise: s.nom, signature: signature(), signature_courte: courte, adresse_complete: adr || '(à compléter)', infos_paiement: pay, taux_penalites: s.tauxPenalites };
 }
 function docVars(doc, kind) {
   const c = client(doc.clientId) || {}; const t = totals(doc);
