@@ -1058,7 +1058,7 @@ ACT.commander = fo => {
 };
 
 /* ----- achats ----- */
-const ACHAT_CATS = ['Marchandises', 'Matières premières', 'Emballages', 'Matériel', 'Fournitures', 'Autre'];
+const ACHAT_CATS = ['Café vert', 'Torréfaction à façon', 'Marchandises', 'Emballages', 'Transport', 'Matériel', 'Fournitures', 'Autre'];
 VIEW.achats = () => {
   const y = new Date().getFullYear(); const list = state.achats.slice().sort((a, b) => b.date.localeCompare(a.date));
   const tot = depAchats(ymd(y, 0, 1), ymd(y, 11, 31)); const nonPaye = list.filter(a => !a.paye);
@@ -1364,45 +1364,53 @@ ACT.resetAll = () => confirmBox('⚠️ Effacer <b>toutes</b> les données (clie
 ACT.demo = () => {
   const go = () => {
     const s = state.settings; const keep = { ...s };
-    state = blank(); state.settings = { ...keep, adresse: keep.adresse || '12 rue des Torréfacteurs', cp: keep.cp || '13001', ville: keep.ville || 'Marseille', activiteDesc: keep.activiteDesc || 'Torréfaction artisanale · café · thé', iban: keep.iban || 'FR76 0000 0000 0000 0000 0000 000', siret: keep.siret || '000 000 000 00000' };
+    state = blank(); state.settings = { ...keep, adresse: keep.adresse || '8 rue Sainte', cp: keep.cp || '13001', ville: keep.ville || 'Marseille', activiteDesc: keep.activiteDesc || 'Cafés de spécialité · torréfiés à façon', iban: keep.iban || 'FR76 0000 0000 0000 0000 0000 000', siret: keep.siret || '000 000 000 00000' };
     const t = today(); const D = n => addDays(t, n);
     const C = (nom, type, contact, email) => { const c = { id: uid(), nom, type, contact, email, tel: '', adresse: type === 'pro' ? '5 cours Julien\n13006 Marseille' : '', siret: '', notes: '', cree: D(-120) }; state.clients.push(c); return c.id; };
     const c1 = C('Le Comptoir des Halles', 'pro', 'M. Rossi', 'contact@comptoir-exemple.fr'), c2 = C('Hôtel Les Tilleuls', 'pro', 'Mme Garnier', 'direction@tilleuls-exemple.fr'), c3 = C('Claire Dumas', 'particulier', '', 'claire.dumas@exemple.fr'), c4 = C('Agence Nord Créative', 'pro', 'Sophie Laurent', 'sophie@nordcreative-exemple.fr');
     const P = (nom, cat, unite, qte, seuil, pa, pv, four, fe) => { const p = { id: uid(), nom, ref: '', categorie: cat, unite, qte, seuil, prixAchat: pa, prixVente: pv, tva: 5.5, fournisseur: four, fournisseurEmail: fe }; state.produits.push(p); return p.id; };
-    const p1 = P('Café grains Éthiopie Sidamo 1 kg', 'Cafés', 'sachet', 24, 8, 14.5, 32, 'Green Coffee Import', 'commandes@greencoffee-exemple.fr');
-    const p2 = P('Espresso Maison 1 kg', 'Cafés', 'sachet', 6, 10, 11, 26, 'Green Coffee Import', 'commandes@greencoffee-exemple.fr');
-    const p3 = P('Café moulu Brésil 250 g', 'Cafés', 'sachet', 40, 15, 3.2, 8.9, 'Green Coffee Import', 'commandes@greencoffee-exemple.fr');
-    P('Thé vert Sencha 100 g', 'Thés', 'boîte', 3, 5, 4.5, 11, 'Les Jardins de Thé', 'pro@jardinsthe-exemple.fr');
-    P('Tasse espresso grès', 'Accessoires', 'u', 18, 6, 4, 12, 'Atelier Céramique', '');
+    const FAC = 'Torréfaction du Sud (façonnier)', FACM = 'atelier@torrefaction-sud-exemple.fr', VERT = 'Green Coffee Import', VERTM = 'commandes@greencoffee-exemple.fr';
+    const p1 = P('Café grains Éthiopie Sidamo 1 kg', 'Cafés torréfiés', 'sachet', 24, 8, 13.2, 32, FAC, FACM);
+    const p2 = P('Espresso Maison 1 kg', 'Cafés torréfiés', 'sachet', 6, 10, 10.4, 26, FAC, FACM);
+    const p3 = P('Café moulu Brésil 250 g', 'Cafés torréfiés', 'sachet', 40, 15, 2.9, 8.9, FAC, FACM);
+    P('Décaféiné Colombie 250 g', 'Cafés torréfiés', 'sachet', 4, 6, 3.4, 9.9, FAC, FACM);
+    P('Café vert Brésil Cerrado', 'Café vert', 'kg', 48, 60, 6.9, 0, VERT, VERTM);
+    P('Café vert Éthiopie Sidamo', 'Café vert', 'kg', 75, 30, 9.2, 0, VERT, VERTM);
     const L = (desc, qte, pu, type = 'vente', produitId) => ({ desc, qte, pu, type, tva: type === 'vente' ? 5.5 : 20, produitId });
     const F = (cid, date, lignes, pay, rel) => { const f = newDoc('facture', cid); Object.assign(f, { date, echeance: addDays(date, 30), lignes, statut: 'envoyee', numero: nextNumero('facture'), stockDeduit: true, valideLe: date, relances: rel || [] }); if (pay) f.paiements = [{ id: uid(), date: pay, montant: totals(f).ttc, mode: 'Virement' }]; state.factures.push(f); return f; };
+    const A = (date, fournisseur, desc, categorie, ht, taux, paye = true) => state.achats.push({ id: uid(), date, fournisseur, desc, categorie, ht: r2(ht), taux, paye, produitId: '', qte: '' });
     const y = new Date().getFullYear(); const mo = new Date().getMonth();
-    const c5 = C('Ventes boutique (comptoir)', 'particulier', '', '');
+    const c5 = C('Ventes directes (site & marchés)', 'particulier', '', '');
     const saison = [0.85, 0.8, 0.95, 1, 1.05, 0.95, 0.75, 0.6, 1.05, 1.1, 1.15, 1.4];
-    for (let m = 0; m < mo; m++) { const k = saison[m];
+    for (let m = 0; m <= mo; m++) { const k = saison[m]; const enCours = m === mo;
+      // achats : café vert, façonnier (torréfaction à façon), transport vers l'atelier, emballages
+      const kg = Math.round(120 * k);
+      A(ymd(y, m, 2), VERT, `Café vert ${kg} kg (Brésil, Éthiopie, Colombie)`, 'Café vert', kg * 7.6, 5.5);
+      A(ymd(y, m, 3), 'Transports Rhône-Provence', `Livraison du café vert chez le façonnier (${kg} kg)`, 'Transport', 85, 20);
+      if (!enCours || new Date().getDate() >= 9) A(ymd(y, m, 9), FAC, `Torréfaction à façon ${kg} kg + conditionnement`, 'Torréfaction à façon', kg * 4.5, 20, !enCours);
+      if (m % 3 === 0) A(ymd(y, m, 18), 'Emballages du Sud', 'Sachets kraft à valve + étiquettes', 'Emballages', 165, 20);
+      if (enCours) continue;
+      // ventes
       F(c1, ymd(y, m, 5), [L('Espresso Maison 1 kg', Math.round(22 * k), 26, 'vente', p2), L('Café grains Éthiopie Sidamo 1 kg', Math.round(6 * k), 32, 'vente', p1)], ymd(y, m, 25));
       F(c2, ymd(y, m, 10), [L('Abonnement mensuel café — 15 kg', 1, 360), L('Café moulu Brésil 250 g', Math.round(30 * k), 8.9, 'vente', p3)], ymd(y, m + 1, 2) < t ? ymd(y, m + 1, 2) : null);
-      F(c5, ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : ymd(y, m, 28), [L('Ventes comptoir du mois (cafés, thés, accessoires)', 1, Math.round(2600 * k), 'vente')], ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : null);
-      if (m % 2 === 1) F(c4, ymd(y, m, 15), [L('Atelier dégustation & initiation barista (2 h)', 1, 380, 'service')], ymd(y, m + 1, 5) < t ? ymd(y, m + 1, 5) : null);
-      state.achats.push({ id: uid(), date: ymd(y, m, 2), fournisseur: 'Green Coffee Import', desc: `Café vert ${Math.round(80 * k)} kg`, categorie: 'Matières premières', ht: Math.round(80 * k * 11.5), taux: 5.5, paye: true, produitId: '', qte: '' });
-      if (m % 3 === 0) state.achats.push({ id: uid(), date: ymd(y, m, 18), fournisseur: 'Emballages du Sud', desc: 'Sachets kraft à valve + étiquettes', categorie: 'Emballages', ht: 165, taux: 20, paye: true, produitId: '', qte: '' });
+      F(c5, ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : ymd(y, m, 28), [L('Ventes du mois en direct (site internet & marchés)', 1, Math.round(1900 * k), 'vente')], ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : null);
+      if (m % 2 === 1) F(c4, ymd(y, m, 15), [L('Atelier dégustation café (2 h)', 1, 380, 'service')], ymd(y, m + 1, 5) < t ? ymd(y, m + 1, 5) : null);
     }
     F(c2, D(-50), [L('Service café événement — séminaire 60 pers.', 1, 640, 'service'), L('Café moulu Brésil 250 g', 10, 8.9, 'vente', p3)], null);
     F(c1, D(-12), [L('Espresso Maison 1 kg', 8, 26, 'vente', p2)], null);
-    const fb = newDoc('facture', c3); fb.lignes = [L('Coffret découverte 3 origines', 1, 45), L('Tasse espresso grès', 2, 12)]; state.factures.push(fb);
+    const fb = newDoc('facture', c3); fb.lignes = [L('Coffret découverte 3 origines', 1, 45), L('Décaféiné Colombie 250 g', 2, 9.9)]; state.factures.push(fb);
     const Dv = (cid, date, lignes, statut) => { const d = newDoc('devis', cid); Object.assign(d, { date, expire: addDays(date, 30), lignes, statut, numero: nextNumero('devis'), envoyeLe: statut !== 'brouillon' ? date : null }); state.devis.push(d); };
-    Dv(c4, D(-10), [L('Atelier team-building café (3 h, 12 pers.)', 1, 720, 'service'), L('Café grains Éthiopie Sidamo 1 kg', 12, 32)], 'envoye');
+    Dv(c4, D(-10), [L('Atelier dégustation team-building (3 h, 12 pers.)', 1, 720, 'service'), L('Café grains Éthiopie Sidamo 1 kg', 12, 32)], 'envoye');
     Dv(c2, D(-3), [L('Abonnement mensuel café — 15 kg', 1, 360)], 'accepte');
-    Dv(c3, D(0), [L('Machine espresso reconditionnée + formation', 1, 520)], 'brouillon');
-    state.achats.push({ id: uid(), date: D(-20), fournisseur: 'Green Coffee Import', desc: '30 kg café vert assortiment', categorie: 'Matières premières', ht: 390, taux: 5.5, paye: true, produitId: '', qte: '' });
-    state.achats.push({ id: uid(), date: D(-6), fournisseur: 'Emballages du Sud', desc: '500 sachets kraft à valve', categorie: 'Emballages', ht: 145, taux: 20, paye: false, produitId: '', qte: '' });
+    Dv(c3, D(0), [L('Coffrets cadeaux de fin d\'année (3 origines)', 6, 42)], 'brouillon');
     for (let m = 0; m <= mo; m++) {
-      state.frais.push({ id: uid(), date: ymd(y, m, 3), categorie: 'Loyer', desc: 'Loyer boutique & atelier', ttc: 950, tva: 0, justif: true });
-      state.frais.push({ id: uid(), date: ymd(y, m, 12), categorie: 'Énergie', desc: 'Électricité torréfacteur', ttc: 140, tva: 23.33, justif: m !== mo });
-      state.frais.push({ id: uid(), date: ymd(y, m, 6), categorie: 'Télécom & internet', desc: 'Box + mobile pro', ttc: 45, tva: 7.5, justif: true });
-      state.frais.push({ id: uid(), date: ymd(y, m, 15), categorie: 'Assurance', desc: 'Assurance RC pro & local', ttc: 62, tva: 0, justif: true });
-      state.frais.push({ id: uid(), date: ymd(y, m, 20), categorie: 'Banque', desc: 'Compte pro + terminal CB', ttc: 29, tva: 0, justif: true });
-      if (m % 2 === 0) state.frais.push({ id: uid(), date: ymd(y, m, 22), categorie: 'Marketing & pub', desc: 'Publicité réseaux sociaux', ttc: 80, tva: 13.33, justif: m !== mo });
+      state.frais.push({ id: uid(), date: ymd(y, m, 6), categorie: 'Télécom & internet', desc: 'Forfait mobile pro', ttc: 20, tva: 3.33, justif: true });
+      state.frais.push({ id: uid(), date: ymd(y, m, 8), categorie: 'Logiciels', desc: 'Site e-commerce (abonnement)', ttc: 29, tva: 4.83, justif: true });
+      state.frais.push({ id: uid(), date: ymd(y, m, 15), categorie: 'Assurance', desc: 'Assurance RC pro', ttc: 32, tva: 0, justif: true });
+      state.frais.push({ id: uid(), date: ymd(y, m, 20), categorie: 'Banque', desc: 'Compte pro + paiements en ligne', ttc: 24, tva: 0, justif: true });
+      state.frais.push({ id: uid(), date: ymd(y, m, 24), categorie: 'Transport & carburant', desc: 'Livraisons clients pros (carburant)', ttc: 70, tva: 11.67, justif: m !== mo });
+      if (m % 2 === 0) state.frais.push({ id: uid(), date: ymd(y, m, 22), categorie: 'Marketing & pub', desc: 'Publicité réseaux sociaux', ttc: 60, tva: 10, justif: m !== mo });
+      if (m % 3 === 1) state.frais.push({ id: uid(), date: ymd(y, m, 12), categorie: 'Autre', desc: 'Emplacement marché de producteurs', ttc: 45, tva: 0, justif: true });
     }
     save(); location.hash = '#aujourdhui'; render(); toast('Données d\'exemple chargées');
   };
