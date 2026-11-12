@@ -1380,7 +1380,7 @@ ACT.demo = () => {
     const F = (cid, date, lignes, pay, rel) => { const f = newDoc('facture', cid); Object.assign(f, { date, echeance: addDays(date, 30), lignes, statut: 'envoyee', numero: nextNumero('facture'), stockDeduit: true, valideLe: date, relances: rel || [] }); if (pay) f.paiements = [{ id: uid(), date: pay, montant: totals(f).ttc, mode: 'Virement' }]; state.factures.push(f); return f; };
     const A = (date, fournisseur, desc, categorie, ht, taux, paye = true) => state.achats.push({ id: uid(), date, fournisseur, desc, categorie, ht: r2(ht), taux, paye, produitId: '', qte: '' });
     const y = new Date().getFullYear(); const mo = new Date().getMonth();
-    const c5 = C('Ventes directes (site & marchés)', 'particulier', '', '');
+    const c5 = C('Ventes en ligne (site)', 'particulier', '', '');
     const saison = [0.85, 0.8, 0.95, 1, 1.05, 0.95, 0.75, 0.6, 1.05, 1.1, 1.15, 1.4];
     for (let m = 0; m <= mo; m++) { const k = saison[m]; const enCours = m === mo;
       // achats : café vert, façonnier (torréfaction à façon), transport vers l'atelier, emballages
@@ -1393,7 +1393,7 @@ ACT.demo = () => {
       // ventes
       F(c1, ymd(y, m, 5), [L('Espresso Maison 1 kg', Math.round(22 * k), 26, 'vente', p2), L('Café grains Éthiopie Sidamo 1 kg', Math.round(6 * k), 32, 'vente', p1)], ymd(y, m, 25));
       F(c2, ymd(y, m, 10), [L('Abonnement mensuel café — 15 kg', 1, 360), L('Café moulu Brésil 250 g', Math.round(30 * k), 8.9, 'vente', p3)], ymd(y, m + 1, 2) < t ? ymd(y, m + 1, 2) : null);
-      F(c5, ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : ymd(y, m, 28), [L('Ventes du mois en direct (site internet & marchés)', 1, Math.round(1900 * k), 'vente')], ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : null);
+      F(c5, ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : ymd(y, m, 28), [L('Ventes du mois sur le site internet', 1, Math.round(1900 * k), 'vente')], ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : null);
       if (m % 2 === 1) F(c4, ymd(y, m, 15), [L('Atelier dégustation café (2 h)', 1, 380, 'service')], ymd(y, m + 1, 5) < t ? ymd(y, m + 1, 5) : null);
     }
     F(c2, D(-50), [L('Service café événement — séminaire 60 pers.', 1, 640, 'service'), L('Café moulu Brésil 250 g', 10, 8.9, 'vente', p3)], null);
@@ -1404,13 +1404,9 @@ ACT.demo = () => {
     Dv(c2, D(-3), [L('Abonnement mensuel café — 15 kg', 1, 360)], 'accepte');
     Dv(c3, D(0), [L('Coffrets cadeaux de fin d\'année (3 origines)', 6, 42)], 'brouillon');
     for (let m = 0; m <= mo; m++) {
-      state.frais.push({ id: uid(), date: ymd(y, m, 6), categorie: 'Télécom & internet', desc: 'Forfait mobile pro', ttc: 20, tva: 3.33, justif: true });
       state.frais.push({ id: uid(), date: ymd(y, m, 8), categorie: 'Logiciels', desc: 'Site e-commerce (abonnement)', ttc: 29, tva: 4.83, justif: true });
       state.frais.push({ id: uid(), date: ymd(y, m, 15), categorie: 'Assurance', desc: 'Assurance RC pro', ttc: 32, tva: 0, justif: true });
-      state.frais.push({ id: uid(), date: ymd(y, m, 20), categorie: 'Banque', desc: 'Compte pro + paiements en ligne', ttc: 24, tva: 0, justif: true });
-      state.frais.push({ id: uid(), date: ymd(y, m, 24), categorie: 'Transport & carburant', desc: 'Livraisons clients pros (carburant)', ttc: 70, tva: 11.67, justif: m !== mo });
       if (m % 2 === 0) state.frais.push({ id: uid(), date: ymd(y, m, 22), categorie: 'Marketing & pub', desc: 'Publicité réseaux sociaux', ttc: 60, tva: 10, justif: m !== mo });
-      if (m % 3 === 1) state.frais.push({ id: uid(), date: ymd(y, m, 12), categorie: 'Autre', desc: 'Emplacement marché de producteurs', ttc: 45, tva: 0, justif: true });
     }
     save(); location.hash = '#aujourdhui'; render(); toast('Données d\'exemple chargées');
   };
