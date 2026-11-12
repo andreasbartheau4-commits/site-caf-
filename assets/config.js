@@ -6,7 +6,7 @@
 var INFO = {
   nom:           "",                               /* Prénom NOM de l'entrepreneur */
   siret:         "",                               /* 14 chiffres */
-  adresse:       "Noirmoutier-en-l'Île (Vendée)",  /* Adresse postale complète */
+  adresse:       "Pays de la Loire",               /* Adresse postale complète (mentions légales) */
   email:         "andreasbartheau@gmail.com",      /* Contact affiché sur le site */
   emailCommande: "andreasbartheau@gmail.com",      /* Où arrivent les commandes */
   tel:           "",                               /* Ex. 06 12 34 56 78 */
