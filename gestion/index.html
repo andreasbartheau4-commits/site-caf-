@@ -356,7 +356,7 @@ const KEY = 'maison-bartheau-gestion-v1';
 const DEFAULT_SETTINGS = {
   nom: 'Maison Bartheau', proprio: '', activiteDesc: '', adresse: '', cp: '', ville: '', siret: '', tvaIntra: '', email: '', tel: '', site: '', iban: '', bic: '',
   regimeTva: 'franchise', tvaPeriode: 'mensuel', urssafPeriode: 'trimestriel',
-  tauxVente: 12.3, tauxService: 21.2, vl: false, tauxVlVente: 1, tauxVlService: 1.7,
+  tauxVente: 12.3, tauxService: 21.2, vl: false, tauxVlVente: 1, tauxVlService: 1.7, tauxIR: 0, abattVente: 71, abattService: 50, objectifMois: 0,
   plafondVente: 188700, plafondService: 77700, seuilTvaVente: 85000, seuilTvaService: 37500,
   delaiPaiement: 30, validiteDevis: 30, prefixDevis: 'D', prefixFacture: 'F',
   relanceDevisJours: 7, relance1: 3, relance2: 15, relance3: 30, merciAuto: true,
@@ -598,7 +598,7 @@ function confirmBox(msg, ok, label = 'Confirmer') {
 /* ============ navigation ============ */
 const ROUTES = [
   ['aujourdhui', "Aujourd'hui"], ['tableau', 'Tableau de bord'], ['devis', 'Devis'], ['factures', 'Factures'], ['stock', 'Stock'], ['achats', 'Achats'],
-  ['frais', 'Frais'], ['tva', 'TVA'], ['urssaf', 'URSSAF'], ['clients', 'Clients'], ['reglages', 'Réglages']
+  ['frais', 'Frais'], ['poche', 'Ce qui me reste'], ['tva', 'TVA'], ['urssaf', 'URSSAF'], ['clients', 'Clients'], ['reglages', 'Réglages']
 ];
 const route = () => { const h = location.hash.slice(1); return ROUTES.some(r => r[0] === h) ? h : 'aujourdhui'; };
 window.addEventListener('hashchange', () => { closeModal(); render(); window.scrollTo(0, 0); });
@@ -729,7 +729,7 @@ VIEW.tableau = () => {
   <div class="grid g4" style="margin-bottom:16px">
     <div class="card kpi"><div class="l">Chiffre d'affaires encaissé</div><div class="v">${eur(encY.ca)}</div><div class="s">HT · base URSSAF</div></div>
     <div class="card kpi"><div class="l">Dépenses (achats + frais)</div><div class="v">${eur(depY.ht)}</div><div class="s">HT</div></div>
-    <div class="card kpi"><div class="l">Résultat estimé</div><div class="v" style="color:${encY.ca - depY.ht >= 0 ? 'var(--ok)' : 'var(--bad)'}">${eur(encY.ca - depY.ht)}</div><div class="s">avant cotisations (≈ ${eur(encY.vente * s.tauxVente / 100 + encY.service * s.tauxService / 100)})</div></div>
+    ${(() => { const r = poche(yFrom, yTo); return `<a class="card kpi" href="#poche" style="text-decoration:none;color:inherit"><div class="l">Dans ma poche ${y}</div><div class="v" style="color:${r.net >= 0 ? 'var(--ok)' : 'var(--bad)'}">${eur(r.net)}</div><div class="s">après achats, frais, cotisations${r.impot ? ', impôt' : ''}${r.tva ? ', TVA' : ''} →</div></a>`; })()}
     <div class="card kpi"><div class="l">Impayés en retard</div><div class="v" style="color:${impaye.length ? 'var(--bad)' : 'inherit'}">${eur(impaye.reduce((a, f) => a + reste(f), 0))}</div><div class="s">${impaye.length} facture${impaye.length > 1 ? 's' : ''}</div></div>
   </div>
   <div class="card" style="margin-bottom:16px"><div class="sec-title"><h2>Encaissements vs dépenses</h2><div class="legend"><span><i style="background:var(--accent)"></i>Encaissé (HT)</span><span><i style="background:var(--muted);opacity:.55"></i>Dépenses (HT)</span></div></div>${svg}</div>
@@ -1183,6 +1183,65 @@ VIEW.urssaf = () => {
 ACT.copyUrssaf = key => { const s = S(); const [, y, k] = key.split('-'); const p = periods(+y, s.urssafPeriode, 'urssaf').find(x => x.key === key); const c = urssafCalc(p);
   navigator.clipboard?.writeText(`Déclaration URSSAF ${p.label}\nVentes de marchandises (BIC) : ${Math.round(c.vente)} €\nPrestations de services : ${Math.round(c.service)} €\nCotisations estimées : ${eur(c.total)}`).then(() => toast('Montants copiés (arrondis à l\'euro)'), () => toast('Copie impossible')); };
 
+/* ----- ce qui me reste ----- */
+function poche(from, to) {
+  const s = S(); const e = encaissements(from, to); const d = depenses(from, to);
+  const achats = r2(state.achats.filter(a => inRange(a.date, from, to)).reduce((x, a) => x + (+a.ht || 0) + achatTva(a), 0));
+  const frais = r2(state.frais.filter(f => inRange(f.date, from, to)).reduce((x, f) => x + (+f.ttc || 0), 0));
+  const cot = r2(e.vente * s.tauxVente / 100 + e.service * s.tauxService / 100);
+  const impot = r2(s.vl ? e.vente * s.tauxVlVente / 100 + e.service * s.tauxVlService / 100
+    : (e.vente * (1 - s.abattVente / 100) + e.service * (1 - s.abattService / 100)) * (+s.tauxIR || 0) / 100);
+  const tva = s.regimeTva === 'reel' ? Math.max(0, tvaCalc({ from, to }).net) : 0;
+  const net = r2(e.ttc - achats - frais - cot - impot - tva);
+  return { enc: e.ttc, achats, frais, cot, impot, tva, net, aMettre: r2(cot + impot + tva) };
+}
+VIEW.poche = () => {
+  const s = S(); const y = ui.year; const now = new Date(); const curY = now.getFullYear();
+  const lastM = y === curY ? now.getMonth() : 11;
+  const months = [...Array(lastM + 1)].map((_, m) => ({ m, ...poche(ymd(y, m, 1), ymd(y, m + 1, 0)) }));
+  const yr = poche(ymd(y, 0, 1), y === curY ? today() : ymd(y, 11, 31));
+  const done = y === curY ? months.slice(0, -1) : months; const moy = done.length ? r2(done.reduce((x, m) => x + m.net, 0) / done.length) : (months[0]?.net || 0);
+  const cur = y === curY ? months[months.length - 1] : null;
+  const prev = y === curY && months.length > 1 ? months[months.length - 2] : null;
+  const obj = +s.objectifMois || 0;
+  const yearTabs = `<div class="tabs">${[curY - 1, curY].map(v => `<button class="${v === y ? 'on' : ''}" data-act="year" data-id="${v}">${v}</button>`).join('')}</div>`;
+  // graphique : reste net par mois
+  const W = 720, H = 200, pl = 50, pb = 24, bw = (W - pl) / 12;
+  const vals = months.map(x => x.net); const hi = Math.max(1, ...vals, obj), lo = Math.min(0, ...vals);
+  const Y = v => 10 + (hi - v) / (hi - lo) * (H - 10);
+  const ticks = [lo, 0, hi].filter((v, i, a) => a.indexOf(v) === i && (v === 0 || Math.abs(Y(v) - Y(0)) > 14));
+  const svg = `<svg class="chart" viewBox="0 0 ${W} ${H + pb}" width="100%" role="img" aria-label="Ce qui reste chaque mois">
+    ${ticks.map(v => `<line x1="${pl}" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${pl - 6}" y="${Y(v) + 4}" text-anchor="end">${Math.abs(v) >= 1000 ? (v / 1000).toFixed(1).replace('.0', '') + 'k' : Math.round(v)}</text>`).join('')}
+    <line x1="${pl}" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--muted)" stroke-width="1"/>
+    ${obj ? `<line x1="${pl}" x2="${W}" y1="${Y(obj)}" y2="${Y(obj)}" stroke="var(--info)" stroke-dasharray="5 4"/><text x="${W - 4}" y="${Y(obj) < 24 ? Y(obj) + 14 : Y(obj) - 5}" text-anchor="end" style="fill:var(--info)">objectif ${eur(obj)}</text>` : ''}
+    ${months.map(x => { const top = Math.min(Y(x.net), Y(0)), h = Math.max(1, Math.abs(Y(x.net) - Y(0)));
+      return `<rect x="${pl + x.m * bw + bw * .2}" y="${top}" width="${bw * .6}" height="${h}" rx="3" fill="${x.net >= 0 ? 'var(--ok)' : 'var(--bad)'}"><title>${MONTHS[x.m]} : ${eur(x.net)}</title></rect>`; }).join('')}
+    ${MS.map((l, i) => `<text x="${pl + i * bw + bw / 2}" y="${H + 16}" text-anchor="middle">${l}</text>`).join('')}
+  </svg>`;
+  const flow = r => {
+    const rows = [['Argent encaissé', r.enc, ''], ['Achats', -r.achats, ''], ['Frais', -r.frais, ''], ['Cotisations URSSAF', -r.cot, ''], r.impot ? [s.vl ? 'Impôt (versement libératoire)' : 'Impôt estimé', -r.impot, ''] : null, r.tva ? ['TVA à reverser', -r.tva, ''] : null].filter(Boolean);
+    return `<table><tbody>${rows.map(([l, v]) => `<tr><td>${l}</td><td class="n" style="color:${v < 0 ? 'var(--muted)' : 'inherit'}">${v < 0 ? '−' + eur(-v) : eur(v)}</td></tr>`).join('')}
+      <tr><td style="font-weight:650;border-top:2px solid var(--ink)">Dans ta poche</td><td class="n" style="font-weight:650;border-top:2px solid var(--ink);color:${r.net >= 0 ? 'var(--ok)' : 'var(--bad)'}">${eur(r.net)}</td></tr></tbody></table>`;
+  };
+  return `<div class="head"><div><h1>Ce qui me reste</h1><p>L'argent qui te reste vraiment une fois achats, frais, cotisations${s.vl || s.tauxIR ? ', impôt' : ''}${s.regimeTva === 'reel' ? ' et TVA' : ''} payés</p></div>${yearTabs}</div>
+  <div class="grid g4" style="margin-bottom:16px">
+    ${cur ? `<div class="card kpi"><div class="l">Ce mois-ci (${MONTHS[cur.m].toLowerCase()})</div><div class="v" style="color:${cur.net >= 0 ? 'var(--ok)' : 'var(--bad)'}">${eur(cur.net)}</div><div class="s">${prev ? `${cur.net >= prev.net ? '▲' : '▼'} ${eur(Math.abs(cur.net - prev.net))} vs ${MONTHS[prev.m].toLowerCase()}` : 'mois en cours'}</div></div>` : ''}
+    <div class="card kpi"><div class="l">${y === curY ? 'Depuis janvier' : 'Sur l\'année ' + y}</div><div class="v" style="color:${yr.net >= 0 ? 'var(--ok)' : 'var(--bad)'}">${eur(yr.net)}</div><div class="s">sur ${eur(yr.enc)} encaissés · ${yr.enc ? Math.round(yr.net / yr.enc * 100) : 0} % gardés</div></div>
+    <div class="card kpi"><div class="l">Moyenne par mois${y === curY && done.length ? ' (mois terminés)' : ''}</div><div class="v">${eur(moy)}</div><div class="s">${obj ? `objectif ${eur(obj)} · ${moy >= obj ? 'atteint ✓' : 'manque ' + eur(obj - moy)}` : '<a href="#reglages">fixer un objectif mensuel</a>'}</div></div>
+    ${cur ? `<div class="card kpi"><div class="l">À mettre de côté ce mois</div><div class="v">${eur(cur.aMettre)}</div><div class="s">pour l'URSSAF${cur.impot ? ', l\'impôt' : ''}${cur.tva ? ', la TVA' : ''} : ne le dépense pas</div></div>` : ''}
+  </div>
+  <div class="card" style="margin-bottom:16px"><div class="sec-title"><h2>Mois par mois</h2><div class="legend"><span><i style="background:var(--ok)"></i>Il te reste</span><span><i style="background:var(--bad)"></i>Tu perds</span></div></div>${svg}</div>
+  <div class="grid g2" style="margin-bottom:16px">
+    ${cur ? `<div class="card"><h2>Détail de ${MONTHS[cur.m].toLowerCase()}</h2>${flow(cur)}</div>` : ''}
+    <div class="card"><h2>Détail ${y === curY ? 'depuis janvier' : y}</h2>${flow(yr)}</div>
+  </div>
+  <div class="card"><h2>Tableau ${y}</h2><div class="tbl-wrap"><table><thead><tr><th>Mois</th><th class="n">Encaissé</th><th class="n">Achats</th><th class="n">Frais</th><th class="n">Cotisations</th>${s.vl || s.tauxIR ? '<th class="n">Impôt</th>' : ''}${s.regimeTva === 'reel' ? '<th class="n">TVA</th>' : ''}<th class="n">Il te reste</th></tr></thead><tbody>
+    ${months.map(x => `<tr><td>${MONTHS[x.m]}</td><td class="n">${eur(x.enc)}</td><td class="n">${eur(x.achats)}</td><td class="n">${eur(x.frais)}</td><td class="n">${eur(x.cot)}</td>${s.vl || s.tauxIR ? `<td class="n">${eur(x.impot)}</td>` : ''}${s.regimeTva === 'reel' ? `<td class="n">${eur(x.tva)}</td>` : ''}<td class="n"><b style="color:${x.net >= 0 ? 'var(--ok)' : 'var(--bad)'}">${eur(x.net)}</b></td></tr>`).join('')}
+    <tr><td><b>Total</b></td><td class="n"><b>${eur(yr.enc)}</b></td><td class="n"><b>${eur(yr.achats)}</b></td><td class="n"><b>${eur(yr.frais)}</b></td><td class="n"><b>${eur(yr.cot)}</b></td>${s.vl || s.tauxIR ? `<td class="n"><b>${eur(yr.impot)}</b></td>` : ''}${s.regimeTva === 'reel' ? `<td class="n"><b>${eur(yr.tva)}</b></td>` : ''}<td class="n"><b style="color:${yr.net >= 0 ? 'var(--ok)' : 'var(--bad)'}">${eur(yr.net)}</b></td></tr>
+  </tbody></table></div>
+  <p class="small muted" style="margin:12px 0 0">Calculé sur l'argent réellement encaissé et dépensé dans le mois (dates de paiement, d'achat et de frais), toutes taxes comprises. Les cotisations sont comptées le mois où l'argent rentre, même si tu les déclares au trimestre. ${s.vl ? '' : s.tauxIR ? `Impôt estimé à ${num(s.tauxIR)} % du revenu après abattement.` : 'Sans versement libératoire, l\'impôt sur le revenu n\'est pas compté : indique un taux estimé dans les <a href="#reglages">réglages</a> pour l\'inclure.'}</p></div>`;
+};
+
 /* ----- clients ----- */
 VIEW.clients = () => {
   const q = ui.q.toLowerCase();
@@ -1251,6 +1310,7 @@ VIEW.reglages = () => {
     ${f('tauxVente', 'Taux cotisations ventes (%)', 'number')}${f('tauxService', 'Taux cotisations prestations (%)', 'number')}
     <div class="field"><label class="check" style="margin-top:26px"><input type="checkbox" name="vl" ${s.vl ? 'checked' : ''}> Versement libératoire de l'impôt</label></div>
     ${f('tauxVlVente', 'VL ventes (%)', 'number')}${f('tauxVlService', 'VL prestations (%)', 'number')}
+    ${f('tauxIR', 'Sans VL : taux d\'impôt estimé (%)', 'number')}${f('abattVente', 'Abattement fiscal ventes (%)', 'number')}${f('abattService', 'Abattement fiscal prestations (%)', 'number')}${f('objectifMois', 'Objectif « dans ma poche » par mois (€)', 'number')}
     ${f('plafondVente', 'Plafond micro — ventes (€)', 'number')}${f('plafondService', 'Plafond micro — prestations (€)', 'number')}${f('seuilTvaVente', 'Seuil franchise TVA — ventes (€)', 'number')}${f('seuilTvaService', 'Seuil franchise TVA — prestations (€)', 'number')}
   </div><p class="small muted" style="margin:12px 0 0">Les taux et seuils évoluent : vérifie-les sur autoentrepreneur.urssaf.fr et impots.gouv.fr. Changer le régime de TVA ne modifie pas les documents déjà créés.</p></div>
   <div class="card"><h2>Emails automatiques & relances</h2><p class="muted small" style="margin-top:0">L'app prépare les emails toute seule au bon moment et te les propose dans « Aujourd'hui » : un clic pour vérifier et envoyer.</p><div class="fg">
@@ -1317,7 +1377,16 @@ ACT.demo = () => {
     const L = (desc, qte, pu, type = 'vente', produitId) => ({ desc, qte, pu, type, tva: type === 'vente' ? 5.5 : 20, produitId });
     const F = (cid, date, lignes, pay, rel) => { const f = newDoc('facture', cid); Object.assign(f, { date, echeance: addDays(date, 30), lignes, statut: 'envoyee', numero: nextNumero('facture'), stockDeduit: true, valideLe: date, relances: rel || [] }); if (pay) f.paiements = [{ id: uid(), date: pay, montant: totals(f).ttc, mode: 'Virement' }]; state.factures.push(f); return f; };
     const y = new Date().getFullYear(); const mo = new Date().getMonth();
-    for (let m = 0; m < mo; m++) { const d = ymd(y, m, 8); F(m % 2 ? c1 : c2, d, [L('Espresso Maison 1 kg', 6 + m % 4, 26, 'vente', p2), L('Café grains Éthiopie Sidamo 1 kg', 3, 32, 'vente', p1)], ymd(y, m, 28)); if (m % 3 === 1) F(c4, ymd(y, m, 15), [L('Atelier dégustation & initiation barista (2 h)', 1, 380, 'service')], ymd(y, m + 1, 5) < t ? ymd(y, m + 1, 5) : null); }
+    const c5 = C('Ventes boutique (comptoir)', 'particulier', '', '');
+    const saison = [0.85, 0.8, 0.95, 1, 1.05, 0.95, 0.75, 0.6, 1.05, 1.1, 1.15, 1.4];
+    for (let m = 0; m < mo; m++) { const k = saison[m];
+      F(c1, ymd(y, m, 5), [L('Espresso Maison 1 kg', Math.round(22 * k), 26, 'vente', p2), L('Café grains Éthiopie Sidamo 1 kg', Math.round(6 * k), 32, 'vente', p1)], ymd(y, m, 25));
+      F(c2, ymd(y, m, 10), [L('Abonnement mensuel café — 15 kg', 1, 360), L('Café moulu Brésil 250 g', Math.round(30 * k), 8.9, 'vente', p3)], ymd(y, m + 1, 2) < t ? ymd(y, m + 1, 2) : null);
+      F(c5, ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : ymd(y, m, 28), [L('Ventes comptoir du mois (cafés, thés, accessoires)', 1, Math.round(2600 * k), 'vente')], ymd(y, m + 1, 0) < t ? ymd(y, m + 1, 0) : null);
+      if (m % 2 === 1) F(c4, ymd(y, m, 15), [L('Atelier dégustation & initiation barista (2 h)', 1, 380, 'service')], ymd(y, m + 1, 5) < t ? ymd(y, m + 1, 5) : null);
+      state.achats.push({ id: uid(), date: ymd(y, m, 2), fournisseur: 'Green Coffee Import', desc: `Café vert ${Math.round(80 * k)} kg`, categorie: 'Matières premières', ht: Math.round(80 * k * 11.5), taux: 5.5, paye: true, produitId: '', qte: '' });
+      if (m % 3 === 0) state.achats.push({ id: uid(), date: ymd(y, m, 18), fournisseur: 'Emballages du Sud', desc: 'Sachets kraft à valve + étiquettes', categorie: 'Emballages', ht: 165, taux: 20, paye: true, produitId: '', qte: '' });
+    }
     F(c2, D(-50), [L('Service café événement — séminaire 60 pers.', 1, 640, 'service'), L('Café moulu Brésil 250 g', 10, 8.9, 'vente', p3)], null);
     F(c1, D(-12), [L('Espresso Maison 1 kg', 8, 26, 'vente', p2)], null);
     const fb = newDoc('facture', c3); fb.lignes = [L('Coffret découverte 3 origines', 1, 45), L('Tasse espresso grès', 2, 12)]; state.factures.push(fb);
@@ -1327,7 +1396,14 @@ ACT.demo = () => {
     Dv(c3, D(0), [L('Machine espresso reconditionnée + formation', 1, 520)], 'brouillon');
     state.achats.push({ id: uid(), date: D(-20), fournisseur: 'Green Coffee Import', desc: '30 kg café vert assortiment', categorie: 'Matières premières', ht: 390, taux: 5.5, paye: true, produitId: '', qte: '' });
     state.achats.push({ id: uid(), date: D(-6), fournisseur: 'Emballages du Sud', desc: '500 sachets kraft à valve', categorie: 'Emballages', ht: 145, taux: 20, paye: false, produitId: '', qte: '' });
-    for (let m = 0; m <= mo; m++) { state.frais.push({ id: uid(), date: ymd(y, m, 3), categorie: 'Loyer', desc: 'Loyer atelier', ttc: 650, tva: 0, justif: true }); state.frais.push({ id: uid(), date: ymd(y, m, 12), categorie: 'Énergie', desc: 'Électricité torréfacteur', ttc: 96, tva: 16, justif: m !== mo }); }
+    for (let m = 0; m <= mo; m++) {
+      state.frais.push({ id: uid(), date: ymd(y, m, 3), categorie: 'Loyer', desc: 'Loyer boutique & atelier', ttc: 950, tva: 0, justif: true });
+      state.frais.push({ id: uid(), date: ymd(y, m, 12), categorie: 'Énergie', desc: 'Électricité torréfacteur', ttc: 140, tva: 23.33, justif: m !== mo });
+      state.frais.push({ id: uid(), date: ymd(y, m, 6), categorie: 'Télécom & internet', desc: 'Box + mobile pro', ttc: 45, tva: 7.5, justif: true });
+      state.frais.push({ id: uid(), date: ymd(y, m, 15), categorie: 'Assurance', desc: 'Assurance RC pro & local', ttc: 62, tva: 0, justif: true });
+      state.frais.push({ id: uid(), date: ymd(y, m, 20), categorie: 'Banque', desc: 'Compte pro + terminal CB', ttc: 29, tva: 0, justif: true });
+      if (m % 2 === 0) state.frais.push({ id: uid(), date: ymd(y, m, 22), categorie: 'Marketing & pub', desc: 'Publicité réseaux sociaux', ttc: 80, tva: 13.33, justif: m !== mo });
+    }
     save(); location.hash = '#aujourdhui'; render(); toast('Données d\'exemple chargées');
   };
   (state.factures.length || state.clients.length) ? confirmBox('Remplacer tes données actuelles par des données d\'exemple ? (tes réglages d\'entreprise sont conservés)', go, 'Charger') : go();
