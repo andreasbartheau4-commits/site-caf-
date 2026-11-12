@@ -994,7 +994,7 @@ function printDoc(kind, d) {
 
 function standaloneDoc(title, inner) {
   const css = [...document.querySelectorAll('style')].map(x => x.textContent).join('\n').split('\n').filter(l => l.trim().startsWith('.doc')).join('\n');
-  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${esc(title)}</title><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;background:#fff}table{width:100%;border-collapse:collapse}th,td{text-align:left}.n{text-align:right}@page{margin:14mm}@media print{body{padding:0}}${css}</style></head><body>${inner}<script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script></body></html>`;
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${esc(title)}</title><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Inter:wght@400;600&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;background:#fff}table{width:100%;border-collapse:collapse}th,td{text-align:left}.n{text-align:right}@page{margin:14mm}@media print{body{padding:0}}${css}<\/style><\/head><body>${inner}<script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script><\/body><\/html>`;
 }
 
 /* ----- stock ----- */
