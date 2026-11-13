@@ -7,8 +7,8 @@ var INFO = {
   nom:           "",                               /* Prénom NOM de l'entrepreneur */
   siret:         "",                               /* 14 chiffres */
   adresse:       "Pays de la Loire",               /* Adresse postale complète (mentions légales) */
-  email:         "andreasbartheau@gmail.com",      /* Contact affiché sur le site */
-  emailCommande: "andreasbartheau@gmail.com",      /* Où arrivent les commandes */
+  email:         "maisonbartheau.cafe@gmail.com",      /* Contact affiché sur le site */
+  emailCommande: "maisonbartheau.cafe@gmail.com",      /* Où arrivent les commandes */
   tel:           "",                               /* Ex. 06 12 34 56 78 */
   instagram:     "",                               /* Ex. https://instagram.com/maisonbartheau */
   hebergeur:     "",                               /* Nom, adresse et téléphone de l'hébergeur */
