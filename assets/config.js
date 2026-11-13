@@ -19,28 +19,18 @@ var INFO = {
 var PRICE = 12;
 
 /* =====================================================================
-   PAIEMENT SÉCURISÉ
-   Le site ne voit jamais la carte bancaire : le client paie sur la page
-   sécurisée de Stripe ou PayPal (HTTPS, 3-D Secure). Remplissez au moins
-   un moyen ; ceux laissés vides n'apparaissent pas.
+   LIVRAISON (utilisé par le site ET par le paiement en ligne)
+   Le paiement par carte, Apple Pay et Google Pay passe par Stripe :
+   voir LISEZ-MOI.txt pour l'activer. Aucune clé secrète ne va dans ce fichier.
    ===================================================================== */
-var PAIEMENT = {
-  /* Stripe : créez un « Lien de paiement » avec l'option
-     « Laisser le client choisir le montant », puis collez-le ici.
-     Ex. "https://buy.stripe.com/xxxxxxxx" */
-  stripe: "",
-
-  /* PayPal : votre lien PayPal.Me, ex. "https://paypal.me/maisonbartheau" */
-  paypal: "",
-
-  /* Virement bancaire (facultatif) */
-  virement: { titulaire: "", iban: "", bic: "" },
-
-  /* Frais d'envoi d'un colis, en euros TTC, ex. 6.90.
-     Laissez null si vous préférez les calculer avec chaque client :
-     le client paie alors après votre confirmation. */
+var LIVRAISON = {
+  /* Frais d'envoi d'un colis en France, en euros TTC, ex. 6.90.
+     OBLIGATOIRE pour vendre en livraison (laissé à null : seul le retrait est payable). */
   fraisEnvoi: null,
 
-  /* Livraison offerte à partir de ce montant (ex. 45), ou null */
-  livraisonOfferteDes: null
+  /* Livraison offerte à partir de ce montant d'achat (ex. 45), ou null */
+  offerteDes: null,
+
+  /* true = le client peut choisir « Retrait en main propre » (sans frais) */
+  retrait: true
 };

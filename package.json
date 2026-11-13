@@ -1,0 +1,12 @@
+{
+  "name": "maison-bartheau-cafe",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Site Maison Bartheau Café : boutique, paiement Stripe et stock.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.9",
+    "stripe": "^23.1.0"
+  }
+}

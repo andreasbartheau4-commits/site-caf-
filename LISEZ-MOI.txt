@@ -7,7 +7,10 @@ CE QUE CONTIENT LE DOSSIER
 - 404.html .............. page « introuvable »
 - assets/config.js ...... VOS COORDONNÉES ET LE PAIEMENT
 - assets/produits.js .... VOS CAFÉS : noms, descriptions, photos, prix
-- assets/catalogue.js ... fonctionnement de « Nos cafés » et du paiement (ne pas modifier)
+- assets/catalogue.js, assets/shop.js ... « Nos cafés », panier et paiement (ne pas modifier)
+- gestion.html .......... VOTRE PAGE PRIVÉE DE GESTION DU STOCK (mot de passe)
+- netlify/functions/ .... le serveur : paiement Stripe, stock (ne pas modifier)
+- netlify.toml, package.json ... réglages d'hébergement Netlify (ne pas modifier)
 - assets/style.css ...... le design (couleurs en haut du fichier : --accent, --bg)
 - assets/site.js ........ menu mobile, thème clair/sombre, coordonnées
 - assets/img/ ........... icônes, logo détouré, image de partage réseaux sociaux
@@ -26,9 +29,9 @@ AVANT LA MISE EN LIGNE (obligatoire en France)
    et sitemap.xml.
 
 METTRE EN LIGNE
-- Déposez TOUT le contenu du dossier (y compris le dossier assets et le fichier .htaccess)
-  chez votre hébergeur, à la racine du site.
-- Alternatives gratuites : Netlify (glisser-déposer le dossier) ou GitHub Pages.
+- Hébergement recommandé : Netlify relié à GitHub (gratuit), voir « BOUTIQUE EN LIGNE » plus bas.
+  C'est indispensable pour le paiement direct et le stock.
+- Pour brancher votre nom de domaine : Netlify > Domain management > Add a domain.
 
 NOS CAFÉS (ajouter photos et descriptions)
 - Ouvrez assets/produits.js : chaque bloc { ... } est un café.
@@ -38,22 +41,61 @@ NOS CAFÉS (ajouter photos et descriptions)
 - Le prix de chaque café se règle dans son bloc (prix: 12). Le « 12 € » de la page d'accueil
   (pastille et formule « Le sachet ») est écrit dans index.html : modifiez-le aussi si besoin.
 
-PAIEMENT SÉCURISÉ (à activer)
-Le site n'encaisse rien lui-même : le client paie sur la page sécurisée de Stripe ou PayPal
-(connexion chiffrée, 3-D Secure). Vous ne voyez jamais sa carte. Dans assets/config.js, « PAIEMENT » :
-1. Stripe (carte bancaire, recommandé) : créez un compte sur stripe.com, puis
-   Produits > Liens de paiement > Nouveau > « Laisser le client choisir le montant ».
-   Collez le lien (https://buy.stripe.com/...) dans « stripe ».
-   La référence de commande (BC-...) vous arrive dans Stripe (champ « client_reference_id »).
-2. PayPal : collez votre lien PayPal.Me dans « paypal » (le montant est prérempli).
-3. Virement : remplissez titulaire, IBAN, BIC.
-4. Frais d'envoi : mettez un montant (ex. 6.90) dans « fraisEnvoi » pour que les clients puissent
-   payer dès la commande. Laissé à null : ils paient après votre confirmation.
-Tant qu'aucun moyen n'est rempli, la page Paiement indique « en cours d'activation ».
+BOUTIQUE EN LIGNE : PAIEMENT DIRECT ET STOCK (à activer une seule fois, ~30 minutes)
+Le client remplit son panier, paie par carte bancaire (CB, Visa, Mastercard), Apple Pay
+ou Google Pay sur la page sécurisée de Stripe, et le stock du site baisse tout seul.
+Le site ne voit jamais les cartes bancaires. Coût : aucun abonnement, Stripe prend
+environ 1,5 % + 0,25 € par paiement par carte européenne (voir stripe.com/fr/pricing).
+Samsung Pay : non proposé par Stripe en France ; les téléphones Samsung paient
+avec Google Pay ou la carte, ce qui revient au même pour le client.
 
-Envoyer un lien de paiement à un client (après confirmation) :
-  https://VOTRE-DOMAINE.fr/#paiement?ref=BC-1311-ABCD&m=30.90
-  (ref = référence de sa commande, m = montant à payer). Tout est prérempli pour lui.
+ÉTAPE 1 · Stripe (encaisser l'argent)
+  1. Créez un compte sur https://dashboard.stripe.com/register et activez-le
+     (identité, SIRET, IBAN où recevoir l'argent).
+  2. Paramètres > Moyens de paiement : vérifiez que Cartes, Apple Pay et Google Pay sont activés.
+  3. Paramètres > E-mails clients : activez « Paiements réussis » (le client reçoit son reçu).
+  4. Développeurs > Clés API : gardez la « Clé secrète » (commence par sk_test_ en mode test,
+     sk_live_ en mode réel). Ne la mettez JAMAIS dans un fichier du site.
+
+ÉTAPE 2 · Netlify (héberger le site et le paiement)
+  1. Créez un compte sur https://app.netlify.com (connexion avec GitHub).
+  2. « Add new site » > « Import an existing project » > GitHub > choisissez le dépôt « site-caf- ».
+     Laissez les réglages proposés (ils sont lus dans netlify.toml) et cliquez « Deploy ».
+     (Le glisser-déposer d'un dossier ne suffit pas : le paiement a besoin de l'import GitHub.)
+  3. Site configuration > Environment variables, ajoutez :
+       STRIPE_SECRET_KEY  = votre clé secrète Stripe (sk_test_... pour commencer)
+       ADMIN_PASSWORD     = un mot de passe long, pour la page de gestion du stock
+  4. Stripe > Développeurs > Webhooks > « Ajouter une destination » :
+       URL : https://VOTRE-SITE.netlify.app/api/stripe-webhook
+       Événements : checkout.session.completed, checkout.session.expired,
+                    checkout.session.async_payment_failed, invoice.paid
+     Copiez le « Secret de signature » (whsec_...) et ajoutez dans Netlify :
+       STRIPE_WEBHOOK_SECRET = whsec_...
+  5. Netlify > Deploys > « Trigger deploy » pour prendre en compte les variables.
+
+ÉTAPE 3 · Le stock et la livraison
+  1. assets/config.js : mettez vos frais d'envoi dans LIVRAISON.fraisEnvoi (ex. 6.90).
+     Tant qu'il reste à null, seul le retrait en main propre se paie en ligne.
+  2. Ouvrez https://VOTRE-SITE.netlify.app/gestion.html, entrez ADMIN_PASSWORD,
+     indiquez combien de sachets vous avez, « Enregistrer ». C'est en ligne aussitôt.
+     Un café à 0 s'affiche « Épuisé » et ne peut plus être acheté.
+
+ÉTAPE 4 · Tester, puis passer en réel
+  1. En mode test, payez avec la carte 4242 4242 4242 4242 (date future, code 123).
+  2. Vérifiez : la commande apparaît dans Stripe, le stock a baissé dans gestion.html.
+  3. Remplacez STRIPE_SECRET_KEY par la clé sk_live_..., refaites l'étape 2.4 en mode réel
+     (nouveau secret whsec_), puis « Trigger deploy ». Vous vendez pour de vrai.
+
+AU QUOTIDIEN
+  - Nouvelle commande : notification Stripe (appli Stripe sur téléphone) avec le détail :
+    cafés, mouture, machine, adresse, téléphone, précision du client.
+  - Réassort : gestion.html. Chaque vente retire les sachets automatiquement.
+  - Fidélité : quand un client réclame son sachet offert, créez un « code promo » dans
+    Stripe (Produits > Coupons) et envoyez-le-lui ; il le saisit au paiement.
+  - Remboursement : depuis la commande dans Stripe, bouton « Rembourser »
+    (remettez ensuite le sachet en stock dans gestion.html s'il revient).
+  - Sans Stripe configuré (ou en ouvrant index.html sur votre ordinateur), le panier
+    propose automatiquement d'envoyer la commande par e-mail : rien n'est jamais bloqué.
 
 À NE PAS MODIFIER À LA MAIN
 - Le tarif professionnel et les codes d'accès sont chiffrés ("var VAULT" dans index.html et pro.html).

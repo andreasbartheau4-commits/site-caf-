@@ -492,3 +492,44 @@ body.dlgopen{overflow:hidden}
 .recap summary{font-family:var(--sans);font-size:.9rem;font-weight:600;padding:12px 40px 12px 0}
 .recap summary::after{width:22px;height:22px;margin-top:-11px}
 .recap pre{white-space:pre-wrap;font-size:.8rem;color:var(--soft);margin:0 0 14px;font-family:ui-monospace,Menlo,Consolas,monospace}
+
+/* ---------- Panier ---------- */
+.cartcount{font-family:var(--sans);font-size:.8rem;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:999px;vertical-align:middle;margin-left:6px}
+.cartcount:empty{display:none}
+.cartempty{margin:0;color:var(--soft);padding:18px;border:1px dashed var(--line);border-radius:var(--r-md);text-align:center}
+.cart{list-style:none;margin:0;padding:0;display:grid}
+.cline{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}
+.cline:first-child{padding-top:0}
+.cline img{width:56px;height:56px;border-radius:12px;object-fit:cover}
+.cmid{display:grid;gap:4px;min-width:0}
+.cmid b{font-family:var(--serif);font-size:1.25rem;font-weight:600;line-height:1.15}
+.cmid>span{font-size:.84rem;color:var(--soft);overflow-wrap:anywhere}
+.qty.mini{margin-top:4px;padding:2px}
+.qty.mini button{width:32px;height:32px;font-size:1.1rem}
+.qty.mini output{min-width:30px;font-size:.95rem}
+.cright{display:grid;justify-items:end;gap:6px;font-variant-numeric:tabular-nums}
+.cright .toggle{font-size:.8rem;padding:0}
+.stockline{margin:-6px 0 0;font-size:.86rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.stockline::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.stockline.ok{color:#3f7d4a} .stockline.low{color:#b8741a} .stockline.out{color:var(--warn)}
+:root[data-theme="dark"] .stockline.ok{color:#8fcf98}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .stockline.ok{color:#8fcf98}}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.paybtn{width:100%;padding:17px 24px;font-size:1.05rem}
+.paybtn svg{width:18px;height:18px}
+.paybtn.loading{opacity:.75;cursor:progress}
+.paymarks{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:0}
+.paymarks span{font-size:.72rem;font-weight:700;letter-spacing:.02em;padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--field);color:var(--ink)}
+.fidnote{margin:0;font-size:.88rem;padding:12px 14px;border-radius:12px;background:var(--accent-soft);color:var(--ink)}
+.pbadge.low{background:#b8741a;color:#fff}
+/* Gestion du stock */
+.admtable{display:grid;margin-top:24px;border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--card)}
+.admrow{display:grid;grid-template-columns:minmax(0,1fr) 80px auto;gap:14px;align-items:center;padding:14px 18px;border-top:1px solid var(--line)}
+.admrow:first-child{border-top:0}
+.admrow.head{font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);padding-block:10px}
+.admrow b{display:block;font-family:var(--serif);font-size:1.3rem}
+.admrow small{color:var(--soft);font-size:.8rem}
+.admrow.low{background:rgba(184,116,26,.08)} .admrow.out{background:rgba(164,63,23,.08)}
+.admrow input[type=number]{width:72px;text-align:center;font:inherit;font-weight:700;border:0;background:transparent;color:var(--ink);-moz-appearance:textfield}
+.admrow input::-webkit-inner-spin-button{-webkit-appearance:none}
+@media (max-width:520px){.admrow{grid-template-columns:minmax(0,1fr) auto}.admrow>span:nth-child(2){display:none}}
