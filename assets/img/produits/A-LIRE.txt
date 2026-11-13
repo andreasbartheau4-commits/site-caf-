@@ -1,0 +1,3 @@
+Déposez ici les photos de vos cafés (JPG ou WEBP, environ 1200 px de large),
+puis indiquez leur chemin dans assets/produits.js, champ « image ».
+Exemple : image: "assets/img/produits/maison.jpg"

@@ -5,7 +5,9 @@ CE QUE CONTIENT LE DOSSIER
 - pro.html .............. l'espace professionnel complet (accès par code)
 - cgv.html, mentions-legales.html, confidentialite.html ... pages légales
 - 404.html .............. page « introuvable »
-- assets/config.js ...... VOS COORDONNÉES ET LE PRIX (le seul fichier à modifier en général)
+- assets/config.js ...... VOS COORDONNÉES ET LE PAIEMENT
+- assets/produits.js .... VOS CAFÉS : noms, descriptions, photos, prix
+- assets/catalogue.js ... fonctionnement de « Nos cafés » et du paiement (ne pas modifier)
 - assets/style.css ...... le design (couleurs en haut du fichier : --accent, --bg)
 - assets/site.js ........ menu mobile, thème clair/sombre, coordonnées
 - assets/img/ ........... icônes, logo détouré, image de partage réseaux sociaux
@@ -28,9 +30,30 @@ METTRE EN LIGNE
   chez votre hébergeur, à la racine du site.
 - Alternatives gratuites : Netlify (glisser-déposer le dossier) ou GitHub Pages.
 
-CHANGER LE PRIX
-- assets/config.js : "var PRICE = 12;"
-- puis dans index.html, cherchez « 12 € » (héros, carte de prix, formule) et « 48 € le kilo ».
+NOS CAFÉS (ajouter photos et descriptions)
+- Ouvrez assets/produits.js : chaque bloc { ... } est un café.
+- Photos : déposez-les dans assets/img/produits/ puis écrivez leur chemin dans « image ».
+- Mettez disponible: true pour qu'un café puisse être commandé ; false l'affiche « Bientôt disponible ».
+- Les champs origine, torréfaction, notes, intensité n'apparaissent que si vous les remplissez.
+- Le prix de chaque café se règle dans son bloc (prix: 12). Le « 12 € » de la page d'accueil
+  (pastille et formule « Le sachet ») est écrit dans index.html : modifiez-le aussi si besoin.
+
+PAIEMENT SÉCURISÉ (à activer)
+Le site n'encaisse rien lui-même : le client paie sur la page sécurisée de Stripe ou PayPal
+(connexion chiffrée, 3-D Secure). Vous ne voyez jamais sa carte. Dans assets/config.js, « PAIEMENT » :
+1. Stripe (carte bancaire, recommandé) : créez un compte sur stripe.com, puis
+   Produits > Liens de paiement > Nouveau > « Laisser le client choisir le montant ».
+   Collez le lien (https://buy.stripe.com/...) dans « stripe ».
+   La référence de commande (BC-...) vous arrive dans Stripe (champ « client_reference_id »).
+2. PayPal : collez votre lien PayPal.Me dans « paypal » (le montant est prérempli).
+3. Virement : remplissez titulaire, IBAN, BIC.
+4. Frais d'envoi : mettez un montant (ex. 6.90) dans « fraisEnvoi » pour que les clients puissent
+   payer dès la commande. Laissé à null : ils paient après votre confirmation.
+Tant qu'aucun moyen n'est rempli, la page Paiement indique « en cours d'activation ».
+
+Envoyer un lien de paiement à un client (après confirmation) :
+  https://VOTRE-DOMAINE.fr/#paiement?ref=BC-1311-ABCD&m=30.90
+  (ref = référence de sa commande, m = montant à payer). Tout est prérempli pour lui.
 
 À NE PAS MODIFIER À LA MAIN
 - Le tarif professionnel et les codes d'accès sont chiffrés ("var VAULT" dans index.html et pro.html).

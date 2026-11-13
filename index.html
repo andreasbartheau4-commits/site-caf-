@@ -46,6 +46,7 @@
     <a class="brand" href="#accueil" aria-label="Maison Bartheau Café, accueil"><span class="mark" aria-hidden="true"></span><span class="bn"><b>Maison Bartheau</b><small>Café · Pays de la Loire</small></span></a>
     <nav class="menu" id="nav" aria-label="Navigation principale">
       <a href="#accueil" data-nav="accueil">La maison</a>
+      <a href="#produits" data-nav="produits">Nos cafés</a>
       <a href="#boutique" data-nav="boutique">Commander</a>
       <a href="#pro" data-nav="pro">Professionnels</a>
       <a href="#questions" data-nav="questions">Questions</a>
@@ -73,7 +74,7 @@
         </div>
         <div class="hero-meta">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Livré partout en France</span>
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Rien à payer en ligne</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Paiement sécurisé</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/></svg>Rétractation 14 jours</span>
         </div>
       </div>
@@ -106,7 +107,19 @@
     </div>
   </section>
 
-  <section class="band g" id="procede" data-page="accueil">
+  <section class="band g" id="cafes" data-page="accueil">
+    <div class="in">
+      <div class="center">
+        <p class="eyebrow">Nos cafés</p>
+        <h2>La collection <em>de la Maison.</em></h2>
+        <p class="lead">Chaque café a son caractère. Découvrez-les, puis choisissez le vôtre, en grains ou moulu pour votre machine.</p>
+      </div>
+      <div class="pgrid" id="prodGridHome" data-max="3"></div>
+      <div class="cta" style="justify-content:center;margin-top:36px"><a class="btn" href="#produits">Voir tous nos cafés <span class="arr" aria-hidden="true">→</span></a></div>
+    </div>
+  </section>
+
+  <section class="band w" id="procede" data-page="accueil">
     <div class="in center">
       <p class="eyebrow">Du grain à la tasse</p>
       <h2>Chaque sachet passe <em>entre nos mains.</em></h2>
@@ -121,7 +134,7 @@
     </div>
   </section>
 
-  <section class="band w" id="machine" data-page="accueil">
+  <section class="band g" id="machine" data-page="accueil">
     <div class="in split">
       <div>
         <p class="eyebrow">Mouture sur mesure</p>
@@ -143,7 +156,7 @@
     </div>
   </section>
 
-  <section class="band g" id="offres" data-page="accueil">
+  <section class="band w" id="offres" data-page="accueil">
     <div class="in">
       <div class="center">
         <p class="eyebrow">Nos formules</p>
@@ -177,7 +190,7 @@
     </div>
   </section>
 
-  <section class="band w" id="preparer" data-page="accueil">
+  <section class="band g" id="preparer" data-page="accueil">
     <div class="in">
       <div class="center">
         <p class="eyebrow">Le guide de la Maison</p>
@@ -206,18 +219,79 @@
     </div>
   </section>
 
+  <!-- ================= NOS CAFÉS ================= -->
+  <section class="band w" id="produits" data-page="produits">
+    <div class="in">
+      <div class="center">
+        <p class="eyebrow">Nos cafés</p>
+        <h2>Découvrez <em>nos cafés.</em></h2>
+        <p class="lead">Torréfiés artisanalement en petits lots, en grains ou moulus pour votre machine. Touchez un café pour voir sa fiche complète.</p>
+      </div>
+      <div class="pgrid" id="prodGrid"></div>
+      <ul class="trustrow">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg><span><b>Lots numérotés</b>Lot et date sur chaque sachet</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10l-1 5H8zM8 8h8v4a4 4 0 0 1-8 0zM9 21h6M12 16v5"/></svg><span><b>Mouture sur mesure</b>Selon votre machine</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/></svg><span><b>Paiement sécurisé</b>Carte, PayPal ou virement</span></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span><b>Livré partout</b>En France, colis suivi</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= PAIEMENT ================= -->
+  <section class="band g" id="paiement" data-page="paiement">
+    <div class="in">
+      <div class="center">
+        <p class="eyebrow">Paiement sécurisé</p>
+        <h2>Régler <em>votre commande.</em></h2>
+        <p class="lead">Vous payez sur la page sécurisée de notre prestataire de paiement. Vos données bancaires ne passent jamais par notre site.</p>
+      </div>
+      <div class="duo">
+        <div class="card">
+          <h3>Votre commande</h3>
+          <div class="two">
+            <div class="field"><label for="payRef">Référence</label><input type="text" id="payRef" autocomplete="off" spellcheck="false" placeholder="BC-0000-XXXX"></div>
+            <div class="field"><label for="payAmt">Montant TTC (€)</label><input type="text" id="payAmt" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+          </div>
+          <p class="note">La référence et le montant figurent dans votre commande ou dans notre e-mail de confirmation.</p>
+          <div id="payOrder" class="stack" hidden>
+            <div class="divider"></div>
+            <ol class="steps" style="margin:0">
+              <li><span><b>Envoyez votre bon de commande</b> pour que nous préparions le bon café et la bonne mouture.<br><a class="btn small solid" id="payMail" href="#paiement" style="margin-top:10px">Envoyer le bon de commande</a></span></li>
+              <li><span><b>Réglez en ligne</b> avec le moyen de votre choix, ci-contre.</span></li>
+            </ol>
+            <details class="recap"><summary>Voir le détail de la commande</summary><pre id="payRecap"></pre></details>
+          </div>
+          <p class="status" id="payStatus" role="status"></p>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h3>Moyen de paiement</h3>
+            <div id="payOpts" class="stack"></div>
+            <div id="payNone" class="offer" hidden><strong>Paiement en ligne en cours d'activation.</strong><br><span class="muted">Envoyez votre commande : nous vous répondons avec un lien de paiement sécurisé.</span></div>
+          </div>
+          <ul class="trustrow mini">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/></svg><span><b>Connexion chiffrée</b>HTTPS de bout en bout</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span><b>3-D Secure</b>Validation par votre banque</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg><span><b>Aucune carte stockée</b>Rien n'est conservé sur ce site</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= BOUTIQUE ================= -->
   <section class="band g" id="boutique" data-page="boutique">
     <div class="in">
       <div class="center">
         <p class="eyebrow">Particuliers</p>
         <h2>Commander <em>votre café.</em></h2>
-        <p class="lead">Choisissez votre format, nous préparons le reste. Aucun paiement en ligne : nous confirmons tout avec vous.</p>
+        <p class="lead">Choisissez votre café et votre format, nous préparons le reste. Paiement sécurisé, jamais sans votre accord.</p>
       </div>
       <div class="shop">
         <div class="card">
-          <div class="prodhead"><img src="logo.jpg" alt="" width="96" height="96"><div><h3>Le café de la Maison</h3><p class="note" style="margin-top:4px">Recette de famille · torréfaction artisanale</p></div></div>
-          <div class="price">12 €<small>le sachet de 250 g · 48 € le kilo</small></div>
+          <div class="prodhead"><img id="pImg" src="logo.jpg" alt="" width="96" height="96"><div><h3 id="pName">Le café de la Maison</h3><p class="note" id="pSub" style="margin-top:4px">Recette de famille · torréfaction artisanale</p></div></div>
+          <div class="price" id="pPrice">12 €<small>le sachet de 250 g · 48 € le kilo</small></div>
+          <div class="field" id="prodField" hidden><label for="prod">Café</label><select id="prod"></select></div>
           <div class="field"><label for="fmt">Format</label><select id="fmt"><option value="grains">Grains</option><option value="moulu">Moulu</option></select></div>
           <div id="finderS" hidden></div>
           <div class="field">
@@ -240,7 +314,7 @@
           </div>
           <label class="fidchk" id="fidBox" hidden><input type="checkbox" id="fidUse"><span>Utiliser mon sachet offert <b>(fidélité)</b></span></label>
           <ul class="reassure">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Paiement après confirmation</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Paiement sécurisé</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/></svg>Rétractation 14 jours</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Colis suivi</li>
           </ul>
@@ -253,7 +327,7 @@
             <dt id="lineLabel">2 sachets · Grains</dt><dd id="lineAmt">24,00 €</dd>
             <dt id="discLbl" hidden>Remise abonnement</dt><dd id="discAmt" hidden></dd>
             <dt id="fidLbl" hidden>Sachet offert (fidélité)</dt><dd id="fidAmt" hidden></dd>
-            <dt>Envoi</dt><dd>calculé avec vous</dd>
+            <dt>Envoi</dt><dd id="shipAmt">calculé avec vous</dd>
           </dl>
           <dl class="total">
             <dt id="totLbl">Total sachets</dt><dd id="total">24,00 €</dd>
@@ -292,7 +366,13 @@
             <button class="btn" type="button" id="copyBtn">Copier la demande</button>
           </div>
           <p class="status" id="status" role="status"></p>
-          <p class="note">Cette page prépare votre demande. Elle ne prélève rien : nous confirmons la disponibilité, l'envoi et le paiement avec vous avant de préparer le colis. En envoyant votre demande, vous acceptez nos <a href="cgv.html">conditions de vente</a> et notre <a href="confidentialite.html">politique de confidentialité</a>.</p>
+          <div class="paybox" id="payBox">
+            <p class="paybox-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/></svg><b>Paiement sécurisé</b></p>
+            <p class="note" id="payNote">Après confirmation de votre commande, vous réglez en ligne sur notre page de paiement sécurisée.</p>
+            <button class="btn solid" type="button" id="payNow" hidden>Commander et payer <span id="payNowAmt"></span> <span class="arr" aria-hidden="true">→</span></button>
+            <p class="paymeans" id="payMeans"></p>
+          </div>
+          <p class="note">Cette page prépare votre demande et ne prélève rien elle-même : le paiement se fait uniquement sur la page sécurisée de notre prestataire, et nous confirmons la disponibilité et l'envoi avec vous. En envoyant votre demande, vous acceptez nos <a href="cgv.html">conditions de vente</a> et notre <a href="confidentialite.html">politique de confidentialité</a>.</p>
         </div>
       </div>
     </div>
@@ -369,11 +449,12 @@
         <h2>Avant de <em>commander.</em></h2>
       </div>
       <div class="faq">
-        <details><summary>Comment se passe une commande ?</summary><p>Vous composez votre commande sur la page « Commander », puis vous l'envoyez par e-mail en un clic (ou vous la copiez dans un message). Cette page ne prélève rien : nous vous répondons pour confirmer la disponibilité, les frais d'envoi et le mode de paiement, puis nous préparons le colis.</p></details>
+        <details><summary>Comment se passe une commande ?</summary><p>Choisissez votre café sur la page « Commander », puis envoyez votre bon de commande par e-mail en un clic. Quand les frais d'envoi sont connus, vous pouvez payer tout de suite sur notre page de paiement sécurisée ; sinon, nous vous confirmons la disponibilité et l'envoi, puis vous réglez en ligne avec votre référence de commande. Le colis est préparé dès réception du paiement.</p></details>
         <details><summary>Quelle mouture choisir ?</summary><p>Choisissez « Moulu », puis indiquez la marque et le modèle de votre machine : nous moulons le café au bon format. Si votre machine a un broyeur intégré, prenez des grains, le café garde mieux ses arômes.</p></details>
         <details><summary>Comment fonctionne l'abonnement ?</summary><p>Vous choisissez un rythme (tous les mois ou toutes les 2 semaines) et une durée d'engagement : 3 mois (−5 %), 6 mois (−10 %) ou 12 mois (−15 %), ou sans engagement. Vous payez au fil des livraisons, jamais la somme totale d'avance, et le prix est garanti pendant tout l'engagement.</p></details>
         <details><summary>Comment conserver le café ?</summary><p>Gardez le sachet bien fermé, à l'abri de la lumière, de l'air et de l'humidité. Une fois ouvert, buvez-le dans les quatre semaines pour garder tout son goût. La date de durabilité minimale est imprimée sur chaque sachet, avec le numéro de lot.</p></details>
         <details><summary>Comment se passe la livraison ?</summary><p>Nous expédions en France par colis suivi. Le délai et les frais d'envoi vous sont donnés avant tout paiement. Un retrait ou une remise en main propre est aussi possible sur rendez-vous.</p></details>
+        <details><summary>Le paiement est-il sécurisé ?</summary><p>Oui. Vous réglez par carte bancaire ou PayPal sur la page sécurisée de notre prestataire de paiement (connexion chiffrée, validation 3-D Secure par votre banque), ou par virement. Vos données bancaires ne passent jamais par notre site et ne sont jamais conservées par la Maison.</p></details>
         <details><summary>Comment marche la carte de fidélité ?</summary><p>Créez votre compte client (sans mot de passe, gardé sur votre appareil) : tous les 10 sachets achetés, le suivant est offert. Seules les commandes confirmées par la Maison comptent ; les achats par abonnement, déjà remisés, ne sont pas comptés.</p></details>
         <details><summary>Puis-je retourner un sachet ?</summary><p>Vous disposez de 14 jours après réception pour vous rétracter, sans donner de motif. Nous reprenons les sachets non ouverts, dans leur emballage d'origine. Pour des raisons d'hygiène, les sachets ouverts ne sont ni repris ni remboursés. Si votre colis arrive abîmé ou si le produit n'est pas conforme, écrivez-nous : la garantie légale de conformité de 2 ans s'applique.</p></details>
         <details><summary>Fournissez-vous les cafés et restaurants ?</summary><p>Oui. Les tarifs et conditions sont réservés aux professionnels inscrits : demandez votre accès dans l'<a href="#pro">espace professionnels</a> et recevez votre code après vérification. Nous nous adaptons à votre machine actuelle.</p></details>
@@ -466,6 +547,7 @@
       <h4>La Maison</h4>
       <ul>
         <li><a href="#accueil">Notre histoire</a></li>
+        <li><a href="#produits">Nos cafés</a></li>
         <li><a href="#preparer">Guide de préparation</a></li>
         <li><a href="#questions">Questions fréquentes</a></li>
         <li><a href="#compte">Mon compte et fidélité</a></li>
@@ -477,6 +559,7 @@
         <li><a href="#boutique">Le sachet de 250 g</a></li>
         <li><a href="#boutique" data-abo>L'abonnement</a></li>
         <li><a href="#pro">Espace professionnels</a></li>
+        <li><a href="#paiement">Paiement sécurisé</a></li>
         <li><a href="pro.html">Accès pro avec code</a></li>
       </ul>
     </div>
@@ -497,14 +580,30 @@
 </footer>
 
 
+<dialog class="pdlg" id="pDlg" aria-labelledby="dName">
+  <button class="iconbtn pclose" type="button" id="dClose" aria-label="Fermer la fiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div class="pdlg-in">
+    <div class="pdlg-vis" id="dVis"></div>
+    <div class="pdlg-body">
+      <p class="eyebrow" id="dAcc"></p>
+      <h2 id="dName"></h2>
+      <p id="dDesc"></p>
+      <dl class="pspecs" id="dSpecs"></dl>
+      <div class="pnotes" id="dNotes"></div>
+      <div class="pdlg-foot"><span class="pp" id="dPrice"></span><span id="dCta"></span></div>
+    </div>
+  </div>
+</dialog>
+
 <div class="mbar" id="mbar" aria-hidden="true"><span id="mbarTxt"><b>12 €</b>le sachet de 250 g</span><a class="btn" id="mbarBtn" href="#boutique" tabindex="-1">Commander</a></div>
 <button class="iconbtn" id="toTop" type="button" aria-label="Revenir en haut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 
 <script src="assets/config.js"></script>
+<script src="assets/produits.js"></script>
 <script src="assets/site.js"></script>
 <script>
 (function(){
-  var PAGES = ["accueil","boutique","pro","questions","contact","compte"], ALIAS = {histoire:"accueil", machine:"accueil", haut:"accueil", procede:"accueil", offres:"accueil", preparer:"accueil"};
+  var PAGES = ["accueil","produits","boutique","paiement","pro","questions","contact","compte"], ALIAS = {cafes:"accueil", histoire:"accueil", machine:"accueil", haut:"accueil", procede:"accueil", offres:"accueil", preparer:"accueil"};
   var FK = "bc-fid";
   function fLoad(){ try{ var o = JSON.parse(localStorage.getItem(FK) || "null"); if(o && o.orders) return o; }catch(e){} return {orders:[]}; }
   function fSave(o){ try{ localStorage.setItem(FK, JSON.stringify(o)); }catch(e){} }
@@ -538,8 +637,8 @@
   }
   var CK = "bc-client", MAP = {aPre:"pre",aNom:"nom",aMail:"mail",aTel:"tel",aRec:"rec",aAdr:"adr",aCp:"cp",aVille:"ville"};
   var $ = function(i){ return document.getElementById(i); };
-  function current(){ var h = (location.hash || "#accueil").slice(1); return PAGES.indexOf(h) >= 0 ? h : (ALIAS[h] || "accueil"); }
-  function titleFor(p){ return {accueil:"Maison Bartheau Café", boutique:"Commander · Maison Bartheau Café", pro:"Professionnels · Maison Bartheau Café", questions:"Questions · Maison Bartheau Café", contact:"Contact · Maison Bartheau Café", compte:"Mon compte · Maison Bartheau Café"}[p]; }
+  function current(){ var h = (location.hash || "#accueil").slice(1).split("?")[0]; return PAGES.indexOf(h) >= 0 ? h : (ALIAS[h] || "accueil"); }
+  function titleFor(p){ return {accueil:"Maison Bartheau Café", produits:"Nos cafés · Maison Bartheau Café", paiement:"Paiement sécurisé · Maison Bartheau Café", boutique:"Commander · Maison Bartheau Café", pro:"Professionnels · Maison Bartheau Café", questions:"Questions · Maison Bartheau Café", contact:"Contact · Maison Bartheau Café", compte:"Mon compte · Maison Bartheau Café"}[p]; }
   function show(){
     var p = current();
     document.querySelectorAll("[data-page]").forEach(function(s){ s.hidden = s.getAttribute("data-page") !== p; });
@@ -547,7 +646,7 @@
     try{ document.title = titleFor(p); }catch(e){}
     if(p === "compte"){ loadAcct(); renderFid(); }
     document.body.setAttribute("data-current", p);
-    var h = (location.hash || "").slice(1), tgt = ALIAS[h] && h !== "haut" ? document.getElementById(h) : null;
+    var h = (location.hash || "").slice(1).split("?")[0], tgt = ALIAS[h] && h !== "haut" ? document.getElementById(h) : null;
     if(tgt) requestAnimationFrame(function(){ tgt.scrollIntoView(); }); else window.scrollTo(0, 0);
     window.dispatchEvent(new Event("bc-page"));
   }
@@ -791,6 +890,7 @@
     var fidAvail = window.BCFID ? BCFID.stats(sRef).avail : 0, fidOk = !A.abo && fidAvail > 0;
     document.getElementById("fidBox").hidden = !fidOk; if(!fidOk) document.getElementById("fidUse").checked = false;
     var useFid = fidOk && document.getElementById("fidUse").checked, fidOff = useFid ? Math.min(PRICE, total) : 0; total -= fidOff;
+    var SH = shipInfo(total); total += SH.amt; document.getElementById("shipAmt").textContent = SH.txt;
     document.getElementById("fidLbl").hidden = document.getElementById("fidAmt").hidden = !useFid; document.getElementById("fidAmt").textContent = "−" + eur(fidOff);
     document.getElementById("aboBox").hidden = !A.abo;
     document.getElementById("qtyOut").textContent = qty;
@@ -800,7 +900,7 @@
     document.getElementById("discLbl").textContent = "Offert par la Maison −" + A.disc + " %";
     document.getElementById("discAmt").textContent = esp(off) + " offerts";
     var every = A.per === 2 ? "à chaque livraison" : "chaque mois";
-    document.getElementById("totLbl").textContent = A.abo ? (A.per === 2 ? "Par livraison" : "Par mois") : "Total sachets";
+    document.getElementById("totLbl").textContent = A.abo ? (A.per === 2 ? "Par livraison" : "Par mois") : (SH.known ? "Total TTC" : "Total sachets");
     document.getElementById("total").textContent = eur(total);
     var el = document.getElementById("engLbl"), ea = document.getElementById("engAmt");
     document.getElementById("gift").hidden = !(A.abo && A.months && A.disc);
@@ -810,7 +910,7 @@
       : "Vous réglez " + eur(total) + " " + every + ", sans engagement : vous arrêtez quand vous voulez avant la livraison suivante.";
     var C = cust(), who = (C.pre + " " + C.nom).trim() + (C.ville ? ", " + C.ville : "");
     var fm = document.getElementById("fmt").value === "moulu", rr = fm ? fS.get() : null;
-    var prep = qty + " × sachet 250 g, " + (fm && !(rr.complete && rr.type === "grains") ? "MOULU" : "GRAINS");
+    var P = curProd(), prep = qty + " × " + P.nom + ", sachet " + (P.poids || "250 g") + ", " + (fm && !(rr.complete && rr.type === "grains") ? "MOULU" : "GRAINS");
     if(fm){
       if(rr.complete){ if(rr.type !== "grains") prep += "\n   Mouture : " + rr.grind; prep += "\n   Machine : " + rr.machine; }
       else prep += "\n   Mouture : à préciser";
@@ -818,10 +918,23 @@
     var head = A.abo ? "ABONNEMENT MAISON BARTHEAU CAFÉ" : "COMMANDE MAISON BARTHEAU CAFÉ";
     var abosec = !A.abo ? "" : "\n\nABONNEMENT\nRythme : " + (A.per === 2 ? "toutes les 2 semaines" : "tous les mois") + "\nEngagement : " + (A.months ? A.months + " mois (" + A.n + " livraisons)" : "sans engagement") + "\nRemise : " + A.disc + " %";
     var txt = head + ", réf. " + sRef + "\nType : particulier" + (A.abo ? " (abonnement)" : "") + "\nDate : " + today() + "\n\nÀ PRÉPARER" + (A.abo ? " (à chaque livraison)" : "") + "\n1. " + prep + abosec + (useFid ? "\n\nFIDÉLITÉ : 1 sachet offert utilisé, déduit du total" : "") +
-      "\n\nTOTAL : " + eur(total) + " TTC" + (A.abo ? " " + every + ", payé au fil des livraisons (pas d'avance)" + (A.months ? "\nSur l'engagement : " + A.n + " livraisons, " + eur(total * A.n) + " au total\nOffert par la Maison : " + esp(off * A.n) + " (" + sach(off * A.n) + ")" : "") : "") + "\n(envoi à confirmer)\n\nCLIENT" + (document.getElementById("acct").value === "account" ? " (compte client)" : " (invité)") + "\nNom : " + ((C.pre + " " + C.nom).trim() || "à compléter") + "\nContact : " + [C.mail, C.tel].filter(Boolean).join(" · ") + "\nRéception : " + (C.rec === "retrait" ? "retrait en main propre (à convenir)" : "livraison") + (C.rec === "livraison" ? "\nAdresse : " + ([C.adr, (C.cp + " " + C.ville).trim()].filter(Boolean).join(", ") || "à compléter") : "") + "\n\nMerci de confirmer la disponibilité, les frais d'envoi et le mode de paiement.";
+      "\n\nTOTAL : " + eur(total) + " TTC" + (A.abo ? " " + every + ", payé au fil des livraisons (pas d'avance)" + (A.months ? "\nSur l'engagement : " + A.n + " livraisons, " + eur(total * A.n) + " au total\nOffert par la Maison : " + esp(off * A.n) + " (" + sach(off * A.n) + ")" : "") : "") + (SH.known ? "\nEnvoi : " + SH.txt + " (inclus)" : "\n(envoi à confirmer)") + "\n\nCLIENT" + (document.getElementById("acct").value === "account" ? " (compte client)" : " (invité)") + "\nNom : " + ((C.pre + " " + C.nom).trim() || "à compléter") + "\nContact : " + [C.mail, C.tel].filter(Boolean).join(" · ") + "\nRéception : " + (C.rec === "retrait" ? "retrait en main propre (à convenir)" : "livraison") + (C.rec === "livraison" ? "\nAdresse : " + ([C.adr, (C.cp + " " + C.ville).trim()].filter(Boolean).join(", ") || "à compléter") : "") + "\n\nMerci de confirmer la disponibilité, les frais d'envoi et le mode de paiement.";
     document.getElementById("orderText").value = txt;
     var mail = document.getElementById("mailBtn");
     var to = INFO.emailCommande || INFO.email; if(to){ mail.href = "mailto:" + to + "?subject=" + encodeURIComponent((A.abo ? "Abonnement " : "Commande ") + sRef + " · " + (who || "client") + " · " + qty + (qty > 1 ? " sachets" : " sachet") + (fm ? " moulu" : " grains")) + "&body=" + encodeURIComponent(txt); }
+    window.BC_ORDER = {ref: sRef, total: total, known: SH.known, abo: A.abo, txt: txt, mail: C.mail, href: mail.getAttribute("href")};
+    if(window.BCPay) BCPay.shop();
+  }
+  function shipInfo(total){
+    var P = window.PAIEMENT || {}, f = typeof P.fraisEnvoi === "number" ? P.fraisEnvoi : null;
+    if(document.getElementById("cRec").value === "retrait") return {known:true, amt:0, txt:"retrait, offert"};
+    if(f === null) return {known:false, amt:0, txt:"calculé avec vous"};
+    if(typeof P.livraisonOfferteDes === "number" && total >= P.livraisonOfferteDes) return {known:true, amt:0, txt:"offert"};
+    return {known:true, amt:f, txt:eur(f)};
+  }
+  function curProd(){
+    var L = (window.PRODUITS || []).filter(function(p){ return p.disponible; }), sel = document.getElementById("prod");
+    return L.filter(function(p){ return p.id === sel.value; })[0] || L[0] || {nom:"Le café de la Maison", poids:"250 g", prix:PRICE};
   }
   ["mode","rhythm","engage"].forEach(function(id){ document.getElementById(id).addEventListener("change", render); });
   function say(msg){ var s = document.getElementById("status"); s.textContent = msg; }
@@ -935,6 +1048,7 @@
 
 </script>
 
+<script src="assets/catalogue.js"></script>
 <script>
 /* Raccourcis : bouton « abonnement », barre mobile de commande */
 (function(){
