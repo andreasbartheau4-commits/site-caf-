@@ -203,6 +203,47 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 
 /* ============ modèles d'emails ============ */
 const TEMPLATES = {
+  commande_confirmation: { nom: 'Commande site — confirmation', subject: 'Votre commande {numero} est confirmée – {entreprise}', body:
+`Bonjour {client_contact},
+
+Merci pour votre commande, elle est bien disponible !
+
+Récapitulatif (réf. {numero}) :
+{lignes}
+
+Montant du café : {montant_ttc}
+Frais d'envoi : {frais_envoi}
+
+{infos_paiement}
+
+Dès réception de votre règlement, votre café est torréfié, mis en sachet et expédié sous quelques jours. Je vous préviens par email au moment de l'envoi.
+
+Belle journée,
+{signature}` },
+  commande_expediee: { nom: 'Commande site — expédition', subject: 'Votre café est en route – commande {numero}', body:
+`Bonjour {client_contact},
+
+Bonne nouvelle : votre commande {numero} vient de partir.
+
+{lignes}
+
+{suivi}
+
+Pour profiter pleinement de ses arômes, gardez le sachet bien fermé, à l'abri de la lumière et de la chaleur.
+
+Merci pour votre confiance et bonne dégustation !
+{signature}` },
+  demande_pro_reponse: { nom: 'Demande pro — réponse', subject: 'Votre demande – {entreprise}', body:
+`Bonjour {client_contact},
+
+Merci pour votre message et pour l'intérêt que vous portez à {entreprise} ({articles}).
+
+Je vous propose d'échanger rapidement pour mieux connaître vos besoins : volumes, machine, rythme de livraison. Voici mes disponibilités : [à compléter].
+
+Vous trouverez nos conditions professionnelles en pièce jointe.
+
+Au plaisir d'échanger avec vous,
+{signature}` },
   devis_envoi: { nom: 'Devis — envoi', subject: 'Votre devis {numero} – {entreprise}', body:
 `Bonjour {client_contact},
 
@@ -349,7 +390,7 @@ Au plaisir d'échanger avec vous très prochainement.
 Bien cordialement,
 {signature}` },
 };
-const PLACEHOLDERS = ['client', 'client_contact', 'numero', 'date', 'echeance', 'validite', 'montant_ht', 'montant_ttc', 'reste', 'montant_paye', 'jours_retard', 'derniere_relance', 'lignes', 'produits', 'infos_paiement', 'entreprise', 'signature', 'signature_courte', 'adresse_complete', 'taux_penalites'];
+const PLACEHOLDERS = ['client', 'client_contact', 'numero', 'date', 'echeance', 'validite', 'montant_ht', 'montant_ttc', 'reste', 'montant_paye', 'jours_retard', 'derniere_relance', 'lignes', 'produits', 'infos_paiement', 'entreprise', 'signature', 'signature_courte', 'adresse_complete', 'taux_penalites', 'articles', 'frais_envoi', 'suivi'];
 
 /* ============ état ============ */
 const KEY = 'maison-bartheau-gestion-v1';
@@ -362,7 +403,7 @@ const DEFAULT_SETTINGS = {
   relanceDevisJours: 7, relance1: 3, relance2: 15, relance3: 30, merciAuto: true,
   tauxPenalites: "trois fois le taux d'intérêt légal", mentions: '', signature: '', envoi: 'gmail', theme: 'auto', templates: {}
 };
-function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {} }; }
+function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {}, commandes: [], commandesIgnorees: [] }; }
 let state = migrate(load());
 /* mises à jour des réglages enregistrés : adresse pro de l'entreprise */
 function migrate(st) { const s = st.settings; if (!s.email || s.email === 'andreasbartheau@gmail.com') s.email = 'maisonbartheau.cafe@gmail.com'; if (!s.gmailCompte) s.gmailCompte = s.email; return st; }
@@ -374,7 +415,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catc
 
 /* ============ synchronisation compte (version en ligne) ============ */
 const isArt = () => !!(window.claude && typeof window.claude.use === 'function');
-const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations'];
+const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations', 'commandes', 'commandesIgnorees'];
 const CHUNK = 180000;
 const SYNC = {
   col: null, last: {}, timer: null, busy: false, again: false, status: 'local',
@@ -637,7 +678,7 @@ function confirmBox(msg, ok, label = 'Confirmer') {
 
 /* ============ navigation ============ */
 const ROUTES = [
-  ['aujourdhui', "Aujourd'hui"], ['tableau', 'Tableau de bord'], ['devis', 'Devis'], ['factures', 'Factures'], ['stock', 'Stock'], ['achats', 'Achats'],
+  ['aujourdhui', "Aujourd'hui"], ['commandes', 'Commandes site'], ['tableau', 'Tableau de bord'], ['devis', 'Devis'], ['factures', 'Factures'], ['stock', 'Stock'], ['achats', 'Achats'],
   ['frais', 'Frais'], ['poche', 'Ce qui me reste'], ['tva', 'TVA'], ['urssaf', 'URSSAF'], ['clients', 'Clients'], ['signature', 'Signature'], ['reglages', 'Réglages']
 ];
 const route = () => { const h = location.hash.slice(1); return ROUTES.some(r => r[0] === h) ? h : 'aujourdhui'; };
@@ -649,7 +690,8 @@ function render() {
   applyTheme();
   const r = route(); const n = tasks().length; const late = state.factures.filter(f => fStatus(f) === 'retard').length;
   $('#nav').innerHTML = ROUTES.map(([k, l]) => {
-    const pill = k === 'aujourdhui' && n ? `<span class="pill">${n}</span>` : k === 'factures' && late ? `<span class="pill">${late}</span>` : k === 'stock' && lowStock().length ? `<span class="pill">${lowStock().length}</span>` : '';
+    const nc = state.commandes.filter(o => o.statut === 'nouvelle').length;
+    const pill = k === 'aujourdhui' && n ? `<span class="pill">${n}</span>` : k === 'commandes' && nc ? `<span class="pill">${nc}</span>` : k === 'factures' && late ? `<span class="pill">${late}</span>` : k === 'stock' && lowStock().length ? `<span class="pill">${lowStock().length}</span>` : '';
     return `<a href="#${k}" class="${k === r ? 'on' : ''}">${l}${pill}</a>`;
   }).join('');
   const on = $('#nav a.on'); on && on.scrollIntoView({ block: 'nearest', inline: 'center' });
@@ -695,6 +737,10 @@ function tasks() {
       if (daysBetween(last, t) >= s.relanceDevisJours && (d.relances || []).length < 2) out.push({ p: 1, kind: 'warn', title: `Relancer le devis ${d.numero} — ${nm}`, sub: `Sans réponse depuis ${daysBetween(last, t)} j · expire le ${fdate(d.expire)}`, act: 'relancerDevis', id: d.id, btn: 'Relancer' });
     }
     if (st === 'accepte') out.push({ p: 2, kind: 'ok', title: `Facturer le devis accepté ${d.numero} — ${nm}`, sub: eur(totals(d).ttc), act: 'convertir', id: d.id, btn: 'Créer la facture' });
+  }
+  for (const o of state.commandes) {
+    if (o.statut === 'nouvelle') out.push({ p: 0, kind: 'bad', title: `${isDemande(o) ? 'Nouvelle demande' : 'Nouvelle commande'} du site — ${o.client.etab || o.client.nom || o.client.email || 'client'}`, sub: `${orderLabel(o)}${o.total ? ' · ' + eur(o.total) : ''} · reçue le ${fdate(o.recu)}`, act: isDemande(o) ? 'repondreDemande' : 'confirmerCommande', id: o.id, btn: isDemande(o) ? 'Répondre' : 'Confirmer' });
+    if (o.statut === 'confirmee' && !isDemande(o)) out.push({ p: 1, kind: 'warn', title: `À préparer et expédier — ${o.client.etab || o.client.nom || 'client'}`, sub: `${orderLabel(o)} · confirmée le ${fdate(o.confirmeLe || o.recu)}`, act: 'expedierCommande', id: o.id, btn: 'Expédiée' });
   }
   const low = lowStock();
   const byF = {}; low.forEach(p => { const k = p.fournisseur || 'Fournisseur non renseigné'; (byF[k] = byF[k] || []).push(p); });
@@ -1316,6 +1362,160 @@ ACT.sigCopy = id => copyRich(sigHtml(id), (id === 'mini' ? [S().proprio, S().tel
   toast('Signature sélectionnée : fais Ctrl+C (⌘+C sur Mac)'); });
 ACT.sigLogo = () => { const bin = atob(SIG_LOGO.split(',')[1]); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); download('maison-bartheau-logo.png', new Blob([u], { type: 'image/png' }), 'image/png'); };
 
+/* ----- commandes du site (lues dans Gmail) ----- */
+const getC = id => state.commandes.find(o => o.id === id);
+const C_TYPE = { particulier: ['Particulier', 'b-info'], abonnement: ['Abonnement', 'b-ok'], pro: ['Pro', 'b-warn'], degustation: ['Dégustation', 'b-mut'], acces: ['Accès pro', 'b-mut'] };
+const C_STAT = { nouvelle: ['Nouvelle', 'b-bad'], confirmee: ['À préparer', 'b-warn'], expediee: ['Expédiée', 'b-ok'], traitee: ['Traitée', 'b-ok'], annulee: ['Annulée', 'b-mut'] };
+const isDemande = o => o.type === 'degustation' || o.type === 'acces';
+function orderLabel(o) {
+  if (o.type === 'degustation') return 'Demande de dégustation';
+  if (o.type === 'acces') return "Demande d'accès pro";
+  const q = num(o.quantite || 0); const f = o.moulu ? 'moulu' : 'grains';
+  return o.unite === 'kg' ? `${q} kg · ${f}` : `${q} sachet${o.quantite > 1 ? 's' : ''} 250 g · ${f}`;
+}
+function parseOrder(text, subject = '') {
+  const T = String(text || '').replace(/\r/g, ''); const head = subject + '\n' + T.slice(0, 400);
+  const type = /COMMANDE PROFESSIONNELLE MAISON BARTHEAU/i.test(T) ? 'pro' : /ABONNEMENT MAISON BARTHEAU/i.test(T) ? 'abonnement' : /COMMANDE MAISON BARTHEAU/i.test(T) ? 'particulier'
+    : /dégustation/i.test(head) ? 'degustation' : /(accès|accéder).{0,40}professionnel|tarifs professionnels/i.test(head) ? 'acces' : '';
+  if (!type) return null;
+  const line = k => { const m = T.match(new RegExp('^[ \\t]*-?[ \\t]*' + k + '[ \\t]*:[ \\t]*(.+)$', 'mi')); return m ? m[1].trim() : ''; };
+  const contact = line('Contact').split(/\s*·\s*/).filter(Boolean);
+  const email = contact.find(x => /@/.test(x)) || (T.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [''])[0];
+  const tel = contact.find(x => !/@/.test(x) && (x.replace(/\D/g, '').length >= 9)) || line('Téléphone') || line('Tél');
+  const contactNom = contact.find(x => !/@/.test(x) && x.replace(/\D/g, '').length < 6) || '';
+  const etab = line('Établissement').replace(/\s*\([^)]*\)\s*$/, '');
+  const prep = ((T.split(/À PRÉPARER[^\n]*\n/i)[1] || '').split(/\n[ \t]*\n/)[0] || '').trim();
+  let quantite = 0, unite = 'sachet';
+  if (type === 'pro') { unite = 'kg'; quantite = parseFloat(((prep.match(/([\d.,]+)\s*kg/i) || [])[1] || '0').replace(',', '.')) || 0; }
+  else quantite = parseInt((prep.match(/(\d+)\s*[×x]\s*sachet/i) || [])[1]) || 0;
+  const tm = T.match(/TOTAL\s*:\s*([\d\s  .]*\d,\d{2})\s*€\s*(TTC|HT)?/i);
+  const total = tm ? parseFloat(tm[1].replace(/[\s  .]/g, '').replace(',', '.')) : 0;
+  const d = T.match(/Date\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return {
+    id: uid(), ref: (T.match(/réf\.\s*([A-Z0-9-]{4,})/i) || [])[1] || '', type, date: d ? `${d[3]}-${pad(d[2])}-${pad(d[1])}` : today(), recu: today(),
+    client: { nom: line('Nom') || contactNom || etab, etab, email, tel, adresse: line('Adresse'), reception: /retrait/i.test(line('Réception')) ? 'retrait' : 'livraison' },
+    quantite, unite, moulu: /\bmoulu/i.test(prep), details: prep || T.split(/\n[ \t]*\n/).slice(1, 3).join('\n').trim().slice(0, 500), total, ttc: !(tm && /HT/i.test(tm[2] || '')),
+    rythme: line('Rythme'), engagement: line('Engagement'), fidelite: /FIDÉLITÉ/i.test(T), statut: 'nouvelle', raw: T.slice(0, 5000), sujet: subject, source: 'manuel'
+  };
+}
+function orderVars(o) {
+  const livr = o.client.reception !== 'retrait';
+  return { ...baseVars(), client: o.client.etab || o.client.nom, client_contact: o.client.nom || o.client.etab || 'Madame, Monsieur', numero: o.ref || '', articles: orderLabel(o),
+    lignes: o.details, montant_ttc: eur(o.total) + (o.ttc ? ' TTC' : ' HT'), frais_envoi: livr ? '[à compléter]' : 'aucun, retrait en main propre',
+    suivi: livr ? 'Numéro de suivi : [à compléter]' : 'Elle vous attend : convenons ensemble du moment de la remise en main propre.' };
+}
+const GM = { st: 'init', err: '', last: 0, busy: false };
+const GM_QUERY = '("COMMANDE MAISON BARTHEAU" OR "COMMANDE PROFESSIONNELLE MAISON BARTHEAU" OR "ABONNEMENT MAISON BARTHEAU" OR subject:"Demande de dégustation" OR subject:"Demande d\'accès professionnel") newer_than:1y';
+async function gmailSync(manual) {
+  if (GM.busy) return; if (!isArt()) { GM.st = 'local'; if (manual) toast('Disponible dans la version en ligne de l\'app'); render(); return; }
+  const mcp = await claude.use('mcp').catch(() => null);
+  if (!mcp) { GM.st = 'indispo'; render(); return; }
+  GM.busy = true; GM.st = 'sync'; if (route() === 'commandes') render();
+  try {
+    const r = await mcp.callTool('Gmail', 'search_threads', { query: GM_QUERY, pageSize: 50, view: 'THREAD_VIEW_MINIMAL' });
+    const threads = ((r && r.payload) || {}).threads || []; let added = 0;
+    for (const t of threads) {
+      if (state.commandes.some(o => o.threadId === t.id) || (state.commandesIgnorees || []).includes(t.id)) continue;
+      const g = await mcp.callTool('Gmail', 'get_thread', { threadId: t.id, messageFormat: 'PLAIN_TEXT' });
+      const p = (g && g.payload) || {}; const m = (p.messages || [])[0]; if (!m) continue;
+      const o = parseOrder(m.plaintextBody || m.snippet || '', m.subject || ''); if (!o) continue;
+      if (o.ref && state.commandes.some(x => x.ref === o.ref)) continue;
+      o.threadId = t.id; o.viewUrl = p.viewUrl || m.viewUrl || ''; o.source = 'gmail';
+      if (m.date) { const dt = new Date(m.date); if (!isNaN(dt)) o.recu = isoOf(dt); }
+      if (!o.client.email && m.sender) o.client.email = String(m.sender).replace(/^.*<|>.*$/g, '');
+      state.commandes.unshift(o); added++;
+    }
+    GM.st = 'ok'; GM.last = Date.now(); GM.err = '';
+    if (added) { save(); toast(`${added} nouvelle${added > 1 ? 's' : ''} commande${added > 1 ? 's' : ''} du site ✔`); } else if (manual) toast('Aucune nouvelle commande');
+  } catch (e) { GM.st = 'err'; GM.err = (e && e.code) || 'upstream_error'; if (manual) toast('Lecture de Gmail impossible'); }
+  GM.busy = false; render();
+}
+async function initGmail() {
+  if (!isArt()) { if (!initGmail.tried) { initGmail.tried = true; setTimeout(initGmail, 900); return; } GM.st = 'local'; render(); return; }
+  const perms = await claude.use('permissions').catch(() => null);
+  const mcp = await claude.use('mcp').catch(() => null);
+  if (!mcp) { GM.st = 'indispo'; if (route() === 'commandes') render(); return; }
+  const s = perms ? await perms.state('mcp:Gmail').catch(() => 'prompt') : 'prompt';
+  if (s === 'granted') { gmailSync(false); setInterval(() => { if (document.visibilityState === 'visible') gmailSync(false); }, 10 * 60 * 1000); }
+  else { GM.st = s === 'denied' ? 'refuse' : 'arelier'; if (route() === 'commandes') render(); }
+}
+function gmailBanner() {
+  const acct = esc(S().gmailCompte || 'maisonbartheau.cafe@gmail.com');
+  const btn = GM.busy ? '<button class="btn sm" disabled>Lecture…</button>' : `<button class="btn sm pri" data-act="gmailSync">${GM.st === 'arelier' ? 'Relier Gmail' : 'Actualiser'}</button>`;
+  const msg = {
+    init: 'Connexion à Gmail…', sync: 'Lecture des emails de commande…',
+    ok: `✓ Gmail relié. Vérifié à ${new Date(GM.last).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}, puis toutes les 10 minutes tant que l'app est ouverte.`,
+    arelier: 'Relie ta boîte Gmail une fois : les commandes du site arriveront ici toutes seules.',
+    refuse: "L'accès à Gmail a été refusé pour cette page. Tu peux le rétablir dans le menu Autorisations de la page.",
+    indispo: "Gmail n'est pas relié à cette version de l'app. Colle le texte d'un email de commande avec le bouton ci-dessus.",
+    local: "Dans ce fichier, Gmail n'est pas disponible : ouvre la version en ligne, ou colle le texte d'un email de commande.",
+    err: { server_not_connected: 'Gmail n\'est pas connecté à ton compte Claude : ajoute-le dans claude.ai → Paramètres → Connecteurs.', needs_reauth: 'La connexion Gmail a expiré : reconnecte Gmail dans claude.ai → Paramètres → Connecteurs.', not_in_manifest: "L'accès à Gmail n'est pas autorisé pour cette page.", approval_required: "Gmail attend ton accord : clique « Actualiser » et autorise l'accès." }[GM.err] || 'Gmail ne répond pas pour le moment. Réessaie dans un instant.'
+  }[GM.st] || '';
+  return `<div class="note ${GM.st === 'err' || GM.st === 'refuse' ? 'warn' : ''}" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px"><span style="flex:1;min-width:220px">${msg}<br><span class="small muted">Les commandes arrivent sur ${acct}. La boîte Gmail reliée à Claude doit être celle-ci, ou recevoir ses emails par transfert.</span></span>${['indispo', 'local', 'refuse'].includes(GM.st) ? '' : btn}</div>`;
+}
+VIEW.commandes = () => {
+  const all = state.commandes.slice().sort((a, b) => (b.recu || '').localeCompare(a.recu || ''));
+  const f = ui.cFilter || 'atraiter';
+  const list = all.filter(o => f === 'tous' ? true : f === 'atraiter' ? ['nouvelle', 'confirmee'].includes(o.statut) : f === 'faites' ? ['expediee', 'traitee'].includes(o.statut) : o.statut === f);
+  const nouv = all.filter(o => o.statut === 'nouvelle').length;
+  const aPrep = all.filter(o => o.statut === 'confirmee' && !isDemande(o));
+  const sach = aPrep.filter(o => o.unite !== 'kg'), kg = aPrep.filter(o => o.unite === 'kg');
+  const m0 = ymd(new Date().getFullYear(), new Date().getMonth(), 1);
+  const mois = all.filter(o => !isDemande(o) && ['confirmee', 'expediee'].includes(o.statut) && (o.recu || '') >= m0);
+  const tabs = [['atraiter', 'À traiter'], ['nouvelle', 'Nouvelles'], ['faites', 'Expédiées'], ['tous', 'Toutes']];
+  return `<div class="head"><div><h1>Commandes du site</h1><p>${nouv ? `${nouv} nouvelle${nouv > 1 ? 's' : ''} à confirmer` : 'Aucune nouvelle commande'}</p></div><div class="row"><button class="btn" data-act="collerCommande">Coller un email</button><button class="btn pri" data-act="gmailSync" ${GM.busy ? 'disabled' : ''}>Actualiser</button></div></div>
+  ${gmailBanner()}
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card kpi"><div class="l">À confirmer</div><div class="v" style="color:${nouv ? 'var(--bad)' : 'inherit'}">${nouv}</div><div class="s">nouvelles commandes et demandes</div></div>
+    <div class="card kpi"><div class="l">À préparer</div><div class="v">${sach.reduce((a, o) => a + (+o.quantite || 0), 0)} sachet${sach.reduce((a, o) => a + (+o.quantite || 0), 0) > 1 ? 's' : ''}</div><div class="s">${sach.filter(o => o.moulu).reduce((a, o) => a + (+o.quantite || 0), 0)} moulu(s)${kg.length ? ` · ${num(kg.reduce((a, o) => a + (+o.quantite || 0), 0))} kg pros` : ''}</div></div>
+    <div class="card kpi"><div class="l">Commandes du mois</div><div class="v">${eur(mois.reduce((a, o) => a + (+o.total || 0), 0))}</div><div class="s">${mois.length} confirmée${mois.length > 1 ? 's' : ''} ou expédiée${mois.length > 1 ? 's' : ''}</div></div>
+  </div>
+  <div class="card"><div class="sec-title"><div class="tabs">${tabs.map(([k, l]) => `<button class="${f === k ? 'on' : ''}" data-act="cFilter" data-id="${k}">${l}</button>`).join('')}</div></div>
+  ${list.length ? `<div class="tbl-wrap"><table><thead><tr><th>Reçue</th><th>Client</th><th>Commande</th><th class="n">Total</th><th>Statut</th><th></th></tr></thead><tbody>
+  ${list.map(o => `<tr><td>${fdate(o.recu)}<div class="small muted">${esc(o.ref || '')}</div></td><td><b>${esc(o.client.etab || o.client.nom || o.client.email || 'Client')}</b><div class="small muted">${esc(o.client.etab && o.client.nom ? o.client.nom : (o.client.reception === 'retrait' ? 'retrait en main propre' : (o.client.adresse || '').split(',').slice(-1)[0] || ''))}</div></td>
+   <td>${badge(C_TYPE[o.type] || ['?', 'b-mut'])} ${esc(orderLabel(o))}${o.rythme ? `<div class="small muted">${esc(o.rythme)}${o.engagement ? ' · ' + esc(o.engagement) : ''}</div>` : ''}${o.fidelite ? '<div class="small muted">sachet fidélité utilisé</div>' : ''}</td>
+   <td class="n">${o.total ? eur(o.total) + `<div class="small muted">${o.ttc ? 'TTC' : 'HT'}</div>` : '—'}</td><td>${badge(C_STAT[o.statut] || C_STAT.nouvelle)}</td>
+   <td class="act">${o.statut === 'nouvelle' ? (isDemande(o) ? `<button class="btn sm pri" data-act="repondreDemande" data-id="${o.id}">Répondre</button>` : `<button class="btn sm pri" data-act="confirmerCommande" data-id="${o.id}">Confirmer</button>`) : ''}${o.statut === 'confirmee' ? `<button class="btn sm pri" data-act="expedierCommande" data-id="${o.id}">Expédiée</button>` : ''} <button class="btn sm ghost" data-act="voirCommande" data-id="${o.id}">Voir</button></td></tr>`).join('')}
+  </tbody></table></div>` : emptyBox(all.length ? 'Rien ici' : 'Aucune commande pour le moment', all.length ? 'Change de filtre pour voir les autres commandes.' : 'Les commandes passées sur ton site apparaîtront ici dès qu\'elles arrivent dans ta boîte mail.')}</div>`;
+};
+ACT.cFilter = id => { ui.cFilter = id; render(); };
+ACT.gmailSync = () => gmailSync(true);
+ACT.collerCommande = () => openModal({ title: 'Ajouter une commande depuis un email', body: `<p class="muted" style="margin-top:0">Copie tout le texte de l'email de commande (ou de demande pro) et colle-le ici.</p><div class="fg"><div class="field full"><label for="pcSub">Objet de l'email (facultatif)</label><input id="pcSub"></div><div class="field full"><label for="pcTxt">Texte de l'email</label><textarea id="pcTxt" rows="12" placeholder="COMMANDE MAISON BARTHEAU CAFÉ, réf. BC-…"></textarea></div></div>`,
+  foot: `<button class="btn" data-close2>Annuler</button><button class="btn pri" data-ok>Ajouter</button>`,
+  mount(b) { $('[data-close2]', b).onclick = closeModal; $('[data-ok]', b).onclick = () => { const o = parseOrder($('#pcTxt', b).value, $('#pcSub', b).value); if (!o) return toast("Ce texte ne ressemble pas à une commande du site");
+    if (o.ref && state.commandes.some(x => x.ref === o.ref)) return toast('Cette commande est déjà dans la liste'); state.commandes.unshift(o); save(); closeModal(); location.hash = '#commandes'; render(); toast('Commande ajoutée ✔'); }; } });
+ACT.voirCommande = id => { const o = getC(id); const c = o.client;
+  menuDetail(o, `<div class="row" style="margin-bottom:12px">${badge(C_TYPE[o.type] || ['?', 'b-mut'])}${badge(C_STAT[o.statut] || C_STAT.nouvelle)}<span class="small muted">reçue le ${fdate(o.recu)}${o.ref ? ' · réf. ' + esc(o.ref) : ''}</span></div>
+    <div class="grid g2" style="gap:12px"><div><h3 style="margin-bottom:6px">Client</h3><div>${[c.etab, c.nom].filter(Boolean).map(esc).join('<br>')}</div><div class="small">${[c.email, c.tel].filter(Boolean).map(esc).join(' · ')}</div><div class="small muted">${c.reception === 'retrait' ? 'Retrait en main propre' : esc(c.adresse || 'Adresse non précisée')}</div></div>
+    <div><h3 style="margin-bottom:6px">Commande</h3><div style="white-space:pre-wrap" class="small">${esc(o.details)}</div>${o.total ? `<div style="margin-top:6px"><b>${eur(o.total)} ${o.ttc ? 'TTC' : 'HT'}</b></div>` : ''}</div></div>
+    <details style="margin-top:14px"><summary class="small muted" style="cursor:pointer">Email d'origine</summary><pre style="white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:var(--surface-2);padding:10px;border-radius:8px;max-height:260px;overflow:auto">${esc(o.raw)}</pre></details>`); };
+function menuDetail(o, body) {
+  const acts = [];
+  if (o.statut === 'nouvelle') acts.push(isDemande(o) ? ['Répondre', 'repondreDemande', 'pri'] : ['Confirmer au client', 'confirmerCommande', 'pri']);
+  if (o.statut === 'confirmee') acts.push(['Marquer expédiée', 'expedierCommande', 'pri']);
+  if (!isDemande(o) && !o.factureId && o.statut !== 'annulee') acts.push(['Créer la facture', 'facturerCommande', '']);
+  if (o.factureId && getF(o.factureId)) acts.push(['Voir la facture', 'voirFactureCommande', '']);
+  if (isDemande(o) && o.statut === 'nouvelle') acts.push(['Marquer traitée', 'traiterCommande', '']);
+  if (!['annulee', 'expediee', 'traitee'].includes(o.statut)) acts.push(['Annuler', 'annulerCommande', 'danger']);
+  acts.push(['Supprimer', 'supprimerCommande', 'danger']);
+  openModal({ title: esc(isDemande(o) ? orderLabel(o) : 'Commande ' + (o.ref || '')), wide: true, body,
+    foot: `${o.viewUrl ? `<a class="btn" href="${esc(o.viewUrl)}" target="_blank" rel="noopener" style="margin-right:auto">Ouvrir dans Gmail</a>` : ''}${acts.map(([l, a, c]) => `<button class="btn ${c}" data-x="${a}">${l}</button>`).join('')}`,
+    mount(b) { $$('[data-x]', b).forEach(x => x.onclick = () => { closeModal(); ACT[x.dataset.x](o.id); }); } });
+}
+ACT.confirmerCommande = id => { const o = getC(id); compose({ type: 'commande_confirmation', to: o.client.email, vars: orderVars(o), ref: o.ref, onSent: () => { o.statut = 'confirmee'; o.confirmeLe = today(); } }); };
+ACT.expedierCommande = id => { const o = getC(id); compose({ type: 'commande_expediee', to: o.client.email, vars: orderVars(o), ref: o.ref, onSent: () => { o.statut = 'expediee'; o.expedieLe = today(); } }); };
+ACT.repondreDemande = id => { const o = getC(id); compose({ type: 'demande_pro_reponse', to: o.client.email, vars: orderVars(o), ref: orderLabel(o), onSent: () => { o.statut = 'traitee'; } }); };
+ACT.traiterCommande = id => { getC(id).statut = 'traitee'; save(); render(); };
+ACT.annulerCommande = id => confirmBox('Annuler cette commande ?', () => { getC(id).statut = 'annulee'; save(); render(); }, 'Annuler la commande');
+ACT.supprimerCommande = id => confirmBox('Supprimer cette commande de la liste ? Elle ne sera pas réimportée depuis Gmail.', () => { const o = getC(id); o.statut = 'annulee'; o.masquee = true; state.commandes = state.commandes.filter(x => x.id !== id); (state.commandesIgnorees = state.commandesIgnorees || []).push(o.threadId || o.ref); save(); render(); }, 'Supprimer');
+ACT.voirFactureCommande = id => { location.hash = '#factures'; setTimeout(() => editDoc('facture', getC(id).factureId), 50); };
+ACT.facturerCommande = id => { const o = getC(id); const ci = o.client;
+  let c = state.clients.find(x => ci.email && x.email && x.email.toLowerCase() === ci.email.toLowerCase());
+  if (!c) { c = { id: uid(), nom: o.type === 'pro' ? (ci.etab || ci.nom) : (ci.nom || ci.email || 'Client du site'), type: o.type === 'pro' ? 'pro' : 'particulier', contact: o.type === 'pro' ? ci.nom : '', email: ci.email, tel: ci.tel, adresse: (ci.adresse || '').replace(/,\s*/g, '\n'), siret: '', notes: 'Client venu du site', cree: today() }; state.clients.push(c); }
+  const f = newDoc('facture', c.id); const q = +o.quantite || 1; const unit = o.total ? o.total / q : 0;
+  f.lignes = [{ desc: o.unite === 'kg' ? `Café Maison Bartheau ${o.moulu ? 'moulu' : 'en grains'} (au kilo)` : `Café Maison Bartheau, sachet 250 g ${o.moulu ? 'moulu' : 'en grains'}`, type: 'vente', qte: q, pu: r2(f.assujetti && o.ttc ? unit / 1.055 : unit), tva: 5.5 }];
+  f.notes = `Commande du site, réf. ${o.ref}.`; state.factures.push(f); o.factureId = f.id; save(); location.hash = '#factures'; setTimeout(() => editDoc('facture', f.id), 50); };
+
 /* ----- clients ----- */
 VIEW.clients = () => {
   const q = ui.q.toLowerCase();
@@ -1482,6 +1682,14 @@ ACT.demo = () => {
       state.frais.push({ id: uid(), date: ymd(y, m, 15), categorie: 'Assurance', desc: 'Assurance RC pro', ttc: 32, tva: 0, justif: true });
       if (m % 2 === 0) state.frais.push({ id: uid(), date: ymd(y, m, 22), categorie: 'Marketing & pub', desc: 'Publicité réseaux sociaux', ttc: 60, tva: 10, justif: m !== mo });
     }
+    const OT = (abo, ref, d, q, moulu, nom, mail, tel, adr, tot) => `${abo ? 'ABONNEMENT' : 'COMMANDE'} MAISON BARTHEAU CAFÉ, réf. ${ref}\nType : particulier${abo ? ' (abonnement)' : ''}\nDate : ${fdate(d)}\n\nÀ PRÉPARER${abo ? ' (à chaque livraison)' : ''}\n1. ${q} × sachet 250 g, ${moulu ? 'MOULU\n   Mouture : moyenne (filtre)\n   Machine : cafetière filtre' : 'GRAINS'}${abo ? '\n\nABONNEMENT\nRythme : tous les mois\nEngagement : 6 mois (6 livraisons)\nRemise : 10 %' : ''}\n\nTOTAL : ${tot} TTC\n(envoi à confirmer)\n\nCLIENT (invité)\nNom : ${nom}\nContact : ${mail} · ${tel}\nRéception : livraison\nAdresse : ${adr}\n\nMerci de confirmer la disponibilité, les frais d'envoi et le mode de paiement.`;
+    const addO = (txt, subj, recu, statut) => { const o = parseOrder(txt, subj); o.recu = recu; o.statut = statut; o.source = 'exemple'; if (statut !== 'nouvelle') o.confirmeLe = recu; state.commandes.push(o); };
+    addO(OT(false, 'BC-' + D(0).slice(8, 10) + D(0).slice(5, 7) + '-K7QM', D(0), 2, false, 'Julie Martin', 'julie.martin@exemple.fr', '06 12 00 00 01', '14 rue Crébillon, 44000 Nantes', '24,00 €'), 'Commande', D(0), 'nouvelle');
+    addO(OT(true, 'BC-' + D(-1).slice(8, 10) + D(-1).slice(5, 7) + '-R2TX', D(-1), 3, true, 'Thomas Bernard', 'thomas.bernard@exemple.fr', '06 12 00 00 02', '3 place du Ralliement, 49100 Angers', '32,40 €'), 'Abonnement', D(-1), 'nouvelle');
+    addO(`COMMANDE PROFESSIONNELLE MAISON BARTHEAU CAFÉ, réf. PRO-${D(-2).slice(8, 10)}${D(-2).slice(5, 7)}-H4WN\nDate : ${fdate(D(-2))}\n\nÀ PRÉPARER\n5 kg de café en grains\nRythme : toutes les 2 semaines\nLivraison souhaitée : mardi matin\n\nPrix : 26,00 € HT le kilo, livraison locale incluse\nTOTAL : 130,00 € HT par livraison\nPaiement à 30 jours sur facture\n\nCLIENT\nÉtablissement : Café des Arts\nContact : Marc Leroy · 06 12 00 00 03 · marc@cafedesarts-exemple.fr\nAdresse : 8 rue de la Paix, 72000 Le Mans\n\nMerci de confirmer la disponibilité et la date de livraison.`, 'Commande pro', D(-2), 'nouvelle');
+    addO(OT(false, 'BC-' + D(-3).slice(8, 10) + D(-3).slice(5, 7) + '-P9DA', D(-3), 4, false, 'Lucas Petit', 'lucas.petit@exemple.fr', '06 12 00 00 04', '22 avenue Foch, 85000 La Roche-sur-Yon', '48,00 €'), 'Commande', D(-3), 'confirmee');
+    addO(OT(false, 'BC-' + D(-9).slice(8, 10) + D(-9).slice(5, 7) + '-V3LC', D(-9), 2, true, 'Emma Roux', 'emma.roux@exemple.fr', '06 12 00 00 05', '5 rue Nationale, 37000 Tours', '24,00 €'), 'Commande', D(-9), 'expediee');
+    addO(`Bonjour,\n\nJe souhaite une dégustation offerte chez moi.\n\nÉtablissement : Boulangerie Le Fournil\nContact : Claire Moreau · 06 12 00 00 06 · contact@lefournil-exemple.fr\nAdresse : 2 rue du Port, 44600 Saint-Nazaire\nMachine : Expresso à levier\n\nMerci de me proposer un créneau.`, 'Demande de dégustation · Boulangerie Le Fournil', D(-1), 'nouvelle');
     save(); location.hash = '#aujourdhui'; render(); toast('Données d\'exemple chargées');
   };
   (state.factures.length || state.clients.length) ? confirmBox('Remplacer tes données actuelles par des données d\'exemple ? (tes réglages d\'entreprise sont conservés)', go, 'Charger') : go();
@@ -1489,6 +1697,7 @@ ACT.demo = () => {
 
 render();
 initSync();
+initGmail();
 </script>
 </body>
 </html>
