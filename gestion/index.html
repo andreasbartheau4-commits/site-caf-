@@ -354,7 +354,7 @@ const PLACEHOLDERS = ['client', 'client_contact', 'numero', 'date', 'echeance', 
 /* ============ état ============ */
 const KEY = 'maison-bartheau-gestion-v1';
 const DEFAULT_SETTINGS = {
-  nom: 'Maison Bartheau', proprio: 'Andréas Bartheau', fonction: 'Fondateur', ligneBas: 'Cafés de spécialité · Pays de la Loire', instagram: '', sigGmail: false, sigStyle: 'full', activiteDesc: '', adresse: '', cp: '', ville: '', siret: '', tvaIntra: '', email: 'andreasbartheau@gmail.com', tel: '', site: '', iban: '', bic: '',
+  nom: 'Maison Bartheau', proprio: 'Andréas Bartheau', fonction: 'Fondateur', ligneBas: 'Cafés de spécialité · Pays de la Loire', instagram: '', sigGmail: false, sigStyle: 'full', activiteDesc: '', adresse: '', cp: '', ville: '', siret: '', tvaIntra: '', email: 'maisonbartheau.cafe@gmail.com', gmailCompte: 'maisonbartheau.cafe@gmail.com', tel: '', site: '', iban: '', bic: '',
   regimeTva: 'franchise', tvaPeriode: 'mensuel', urssafPeriode: 'trimestriel',
   tauxVente: 12.3, tauxService: 21.2, vl: false, tauxVlVente: 1, tauxVlService: 1.7, tauxIR: 0, abattVente: 71, abattService: 50, objectifMois: 0,
   plafondVente: 188700, plafondService: 77700, seuilTvaVente: 85000, seuilTvaService: 37500,
@@ -363,7 +363,9 @@ const DEFAULT_SETTINGS = {
   tauxPenalites: "trois fois le taux d'intérêt légal", mentions: '', signature: '', envoi: 'gmail', theme: 'auto', templates: {}
 };
 function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {} }; }
-let state = load();
+let state = migrate(load());
+/* mises à jour des réglages enregistrés : adresse pro de l'entreprise */
+function migrate(st) { const s = st.settings; if (!s.email || s.email === 'andreasbartheau@gmail.com') s.email = 'maisonbartheau.cafe@gmail.com'; if (!s.gmailCompte) s.gmailCompte = s.email; return st; }
 function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); const b = blank(); return { ...b, ...s, settings: { ...DEFAULT_SETTINGS, ...(s.settings || {}) } }; } } catch (e) { }
   return blank();
@@ -417,7 +419,7 @@ async function initSync() {
     let changed = false;
     for (const [k, j] of Object.entries(remote)) {
       if (j === SYNC.last[k]) continue;
-      try { const v = JSON.parse(j); state[k] = k === 'settings' ? { ...DEFAULT_SETTINGS, ...v } : v; SYNC.last[k] = j; SYNC.lastN[k] = ns[k]; changed = true; } catch (e) { }
+      try { const v = JSON.parse(j); state[k] = k === 'settings' ? { ...DEFAULT_SETTINGS, ...v } : v; if (k === 'settings') { const before = JSON.stringify(state.settings); migrate(state); if (JSON.stringify(state.settings) !== before) setTimeout(() => SYNC.schedule(), 0); } SYNC.last[k] = j; SYNC.lastN[k] = ns[k]; changed = true; } catch (e) { }
     }
     SYNC.set('synchronisé');
     if (changed) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } render(); }
@@ -510,6 +512,7 @@ function signature() {
   const s = S(); if (s.sigGmail) return ''; if (s.signature.trim()) return s.signature;
   return [s.proprio, [s.fonction, s.nom].filter(Boolean).join(' · '), s.tel, s.email, [s.site, s.instagram && instaHandle(s.instagram)].filter(Boolean).join(' · ')].filter(Boolean).join('\n');
 }
+const gmailBase = () => { const a = (S().gmailCompte || '').trim(); return /^[^\s@/?#]+@[^\s@/?#]+$/.test(a) ? `https://mail.google.com/mail/u/${a}/` : 'https://mail.google.com/mail/'; };
 function signatureCourte() { const s = S(); if (s.sigGmail) return ''; return [s.proprio || s.nom, s.tel, s.email].filter(Boolean).join('\n'); }
 
 /* ============ signature email avec logo ============ */
@@ -583,18 +586,19 @@ function compose({ type, types, to, vars, ref, onSent }) {
     body: `
       ${types.length > 1 ? `<div class="field" style="margin-bottom:12px"><label>Modèle</label><select id="mTpl">${types.map(x => `<option value="${x}" ${x === cur ? 'selected' : ''}>${esc(tpl(x).nom)}</option>`).join('')}</select></div>` : ''}
       <div class="fg">
+        ${S().gmailCompte ? `<div class="field full small muted" style="margin-bottom:-4px">De : <b style="color:var(--ink)">${esc(S().gmailCompte)}</b> (compte Gmail de l'entreprise)</div>` : ''}
         <div class="field full"><label>À</label><input id="mTo" type="email" value="${esc(to || '')}" placeholder="adresse@client.fr"></div>
         <div class="field full"><label>Objet</label><input id="mSub" value="${esc(m.subject)}"></div>
         <div class="field full"><label>Message</label><textarea id="mBody" rows="16">${esc(m.body)}</textarea></div>
       </div>
       <p class="small muted" style="margin:10px 0 0">${S().sigGmail ? '✉️ Ta signature avec logo est ajoutée par Gmail. ' : '✉️ « Copier » copie le message avec ta signature et ton logo, prêt à coller. '}💡 Pour joindre le devis ou la facture : bouton « PDF » sur le document, puis glisse le fichier dans ton email.</p>`,
-    foot: `<button class="btn" data-x="copy">Copier</button><button class="btn" data-x="mark">Marquer comme envoyé</button><a class="btn" data-x="mailto" href="#">Ma messagerie</a><a class="btn pri" data-x="gmail" href="#" target="_blank" rel="noopener">Envoyer avec Gmail</a>`,
+    foot: `<button class="btn" data-x="copy">Copier</button><button class="btn" data-x="mark">Marquer comme envoyé</button><a class="btn" data-x="mailto" href="#">Ma messagerie</a><a class="btn pri" data-x="gmail" href="#" target="_blank" rel="noopener" title="Depuis ${esc(S().gmailCompte || 'ton compte Gmail')}">Envoyer avec Gmail</a>`,
     mount(box) {
       const sel = $('#mTpl', box);
       if (sel) sel.onchange = () => { cur = sel.value; const n = build(); $('#mSub', box).value = n.subject; $('#mBody', box).value = n.body; };
       const val = () => ({ to: $('#mTo', box).value.trim(), su: $('#mSub', box).value, bo: $('#mBody', box).value });
       const links = () => { const { to, su, bo } = val();
-        $('[data-x=gmail]', box).href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(su)}&body=${encodeURIComponent(bo)}`;
+        $('[data-x=gmail]', box).href = `${gmailBase()}?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(su)}&body=${encodeURIComponent(bo)}`;
         $('[data-x=mailto]', box).href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(su)}&body=${encodeURIComponent(bo)}`; };
       box.addEventListener('input', links); box.addEventListener('change', links); links();
       const done = how => {
@@ -1366,7 +1370,7 @@ VIEW.reglages = () => {
   <div class="grid" id="settingsForm">
   <div class="card"><h2>Entreprise</h2><div class="fg">
     ${f('nom', 'Nom commercial')}${f('proprio', 'Ton nom (signature)')}${f('activiteDesc', 'Activité (sous le nom)', 'text')}${f('siret', 'SIRET')}
-    ${f('adresse', 'Adresse', 'text', 'full')}${f('cp', 'Code postal')}${f('ville', 'Ville')}${f('email', 'Email', 'email')}${f('tel', 'Téléphone')}${f('site', 'Site web')}
+    ${f('adresse', 'Adresse', 'text', 'full')}${f('cp', 'Code postal')}${f('ville', 'Ville')}${f('email', 'Email (affiché sur tes documents)', 'email')}${f('gmailCompte', 'Compte Gmail pour envoyer', 'email')}${f('tel', 'Téléphone')}${f('site', 'Site web')}
     ${f('iban', 'IBAN')}${f('bic', 'BIC')}${f('tvaIntra', 'N° TVA intracom. (si assujetti)')}
   </div></div>
   <div class="card"><h2>Facturation</h2><div class="fg">
