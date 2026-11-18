@@ -14,8 +14,11 @@
      description ... texte de présentation (fiche détaillée)
      origine, torrefaction, notes (liste), intensite (1 à 5) : facultatifs,
                      n'apparaissent que s'ils sont remplis
-     prix .......... prix TTC du sachet, en euros (chiffre, ex. 12 ou 13.5)
+     prix .......... prix TTC du sachet, en euros (chiffre, ex. 11.90)
      poids ......... ex. "250 g"
+     formats ....... les formules proposées pour ce café. « sachets » = combien de
+                     sachets de 250 g sont retirés du stock à chaque vente.
+                     Le stock (page gestion.html) se compte toujours en sachets.
      disponible .... true = commandable ; false = affiché « Bientôt disponible »
      badge ......... petite étiquette facultative, ex. "Nouveau", "Édition limitée"
 
@@ -33,8 +36,13 @@ var PRODUITS = [
     torrefaction: "",
     notes: [],
     intensite: 0,
-    prix: 12,
+    prix: 11.90,
     poids: "250 g",
+    formats: [
+      { id: "sachet", nom: "Le sachet · 250 g",   sachets: 1, prix: 11.90 },
+      { id: "duo",    nom: "Le duo · 2 × 250 g",  sachets: 2, prix: 22 },
+      { id: "kilo",   nom: "Le kilo · 4 × 250 g", sachets: 4, prix: 39 }
+    ],
     disponible: true,
     badge: "La signature"
   },
@@ -48,8 +56,13 @@ var PRODUITS = [
     torrefaction: "",
     notes: [],
     intensite: 0,
-    prix: 12,
+    prix: 11.90,
     poids: "250 g",
+    formats: [
+      { id: "sachet", nom: "Le sachet · 250 g",   sachets: 1, prix: 11.90 },
+      { id: "duo",    nom: "Le duo · 2 × 250 g",  sachets: 2, prix: 22 },
+      { id: "kilo",   nom: "Le kilo · 4 × 250 g", sachets: 4, prix: 39 }
+    ],
     disponible: false,
     badge: ""
   },
@@ -63,8 +76,13 @@ var PRODUITS = [
     torrefaction: "",
     notes: [],
     intensite: 0,
-    prix: 12,
+    prix: 11.90,
     poids: "250 g",
+    formats: [
+      { id: "sachet", nom: "Le sachet · 250 g",   sachets: 1, prix: 11.90 },
+      { id: "duo",    nom: "Le duo · 2 × 250 g",  sachets: 2, prix: 22 },
+      { id: "kilo",   nom: "Le kilo · 4 × 250 g", sachets: 4, prix: 39 }
+    ],
     disponible: false,
     badge: ""
   }

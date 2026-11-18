@@ -9,7 +9,9 @@
   function grams(p){ var m = String(p.poids || "250 g").match(/([\d.,]+)\s*(k?g)/i); if(!m) return 250; var v = parseFloat(m[1].replace(",", ".")); return /kg/i.test(m[2]) ? v * 1000 : v; }
   function left(p){ return window.BCShop ? BCShop.stockOf(p.id) : Infinity; }
   function buyable(p){ return p.disponible && left(p) > 0; }
-  function perKilo(p){ return eurS(Math.round(p.prix / grams(p) * 1000 * 100) / 100); }
+  function offs(p){ return window.BCOffres ? BCOffres(p) : [{id:"sachet", nom:"Le sachet", sachets:1, prix:p.prix}]; }
+  function fromPrice(p){ return offs(p).reduce(function(m, o){ return Math.min(m, o.prix); }, Infinity); }
+  function perKilo(p){ var best = offs(p).reduce(function(m, o){ return Math.min(m, o.prix / (o.sachets * grams(p))); }, Infinity); return eurS(Math.round(best * 1000 * 100) / 100); }
 
   /* ---------- Visuel : photo, ou vignette au monogramme en attendant ---------- */
   function visual(p, big){
@@ -44,7 +46,9 @@
     var d = p.description || (p.disponible ? "" : "Un nouveau café se prépare à la Maison. Laissez-nous votre e-mail pour être prévenu de sa sortie.");
     if(d) b.appendChild(el("p", "pdesc", d));
     var f = el("div", "pfoot");
-    var pr = el("span", "pprice"); pr.appendChild(el("b", null, eurS(p.prix))); pr.appendChild(document.createTextNode(" · " + (p.poids || "250 g")));
+    var pr = el("span", "pprice"); pr.appendChild(el("b", null, eurS(fromPrice(p)))); pr.appendChild(document.createTextNode(" · " + (p.poids || "250 g")));
+    var more = offs(p).filter(function(o){ return o.sachets > 1; });
+    if(more.length && p.disponible) b.insertBefore(el("p", "pmore", more.map(function(o){ return o.nom.replace(/^(Le|La) /, "").replace(/ · .*$/, "").replace(/^./, function(c){ return c.toUpperCase(); }) + " " + eurS(o.prix); }).join(" · ") + (window.LIVRAISON && typeof LIVRAISON.offerteDes === "number" ? " · livraison offerte dès " + eurS(LIVRAISON.offerteDes) : "")), null);
     f.appendChild(pr);
     var acts = el("span", "pacts");
     var more = el("button", "btn small", "Découvrir"); more.type = "button"; more.addEventListener("click", function(){ openDlg(p); });
@@ -83,7 +87,7 @@
     $("dName").textContent = p.nom;
     $("dDesc").textContent = p.description || (p.disponible ? "" : "Ce café arrive bientôt. Sa fiche complète sera publiée à sa sortie.");
     var dl = $("dSpecs"); dl.textContent = "";
-    [["Origine", p.origine], ["Torréfaction", p.torrefaction], ["Format", (p.poids || "250 g") + ", en grains ou moulu"], ["Prix au kilo", perKilo(p)]].forEach(function(r){
+    [["Origine", p.origine], ["Torréfaction", p.torrefaction], ["Mouture", "En grains ou moulu pour votre machine"]].concat(offs(p).map(function(o){ return [o.nom.replace(/^Le |^La /, "").replace(/ · .*$/, "").replace(/^./, function(c){ return c.toUpperCase(); }), (o.sachets > 1 ? o.sachets + " × " + (p.poids || "250 g") + " · " : (p.poids || "250 g") + " · ") + eurS(o.prix)]; })).concat([["Prix au kilo", "dès " + perKilo(p)]]).forEach(function(r){
       if(!r[1]) return; dl.appendChild(el("dt", null, r[0])); dl.appendChild(el("dd", null, r[1]));
     });
     if(p.intensite > 0){
@@ -94,7 +98,7 @@
     }
     var n = $("dNotes"); n.textContent = "";
     (p.notes || []).filter(Boolean).forEach(function(t){ n.appendChild(el("span", null, t)); });
-    $("dPrice").textContent = eurS(p.prix);
+    $("dPrice").textContent = (offs(p).length > 1 ? "dès " : "") + eurS(fromPrice(p));
     var c = $("dCta"); c.textContent = ""; c.appendChild(orderBtn(p, false));
     if(dlg.showModal){ dlg.showModal(); } else dlg.setAttribute("open", "");
     document.body.classList.add("dlgopen");

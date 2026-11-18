@@ -52,6 +52,13 @@ export function json(body, status = 200, headers = {}) {
 
 export const cents = (euros) => Math.round(Number(euros) * 100);
 
+// Formats d'un café (même règle que window.BCOffres dans assets/site.js).
+export function offresDe(p) {
+  let L = Array.isArray(p.formats) ? p.formats.filter((o) => o && o.id && typeof o.prix === "number" && o.prix > 0) : [];
+  if (!L.length) L = [{ id: "sachet", nom: "Le sachet · " + (p.poids || "250 g"), sachets: 1, prix: p.prix }];
+  return L.map((o) => ({ id: String(o.id), nom: o.nom || String(o.id), sachets: Math.max(1, Math.floor(Number(o.sachets) || 1)), prix: o.prix }));
+}
+
 export function discountFor(months) {
   return months >= 12 ? 15 : months >= 6 ? 10 : months >= 3 ? 5 : 0;
 }

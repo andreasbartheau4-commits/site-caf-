@@ -1,5 +1,13 @@
 /* Maison Bartheau Café · comportements communes à toutes les pages
    (thème clair/sombre mémorisé, menu mobile, coordonnées, retour en haut). */
+/* Formats d'un café (sachet, duo, kilo…), voir assets/produits.js */
+window.BCOffres = function(p){
+  if(!p) return [];
+  var L = Array.isArray(p.formats) ? p.formats.filter(function(o){ return o && o.id && typeof o.prix === "number" && o.prix > 0; }) : [];
+  if(!L.length) L = [{id:"sachet", nom:"Le sachet · " + (p.poids || "250 g"), sachets:1, prix:p.prix}];
+  return L.map(function(o){ return {id:String(o.id), nom:o.nom || o.id, sachets:Math.max(1, Math.floor(Number(o.sachets) || 1)), prix:o.prix}; });
+};
+window.BCOffre = function(p, id){ var L = window.BCOffres(p); return L.filter(function(o){ return o.id === id; })[0] || L[0]; };
 (function(){
   var root = document.documentElement;
   var $ = function(i){ return document.getElementById(i); };

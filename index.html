@@ -27,7 +27,7 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
  {"@type":"Store","name":"Maison Bartheau Café","description":"Torréfaction artisanale, café de famille en petits lots.","image":"assets/img/og-image.jpg","logo":"logo.jpg","email":"maisonbartheau.cafe@gmail.com","address":{"@type":"PostalAddress","addressRegion":"Pays de la Loire","addressCountry":"FR"},"areaServed":"FR","priceRange":"€"},
- {"@type":"Product","name":"Le café de la Maison · sachet 250 g","brand":{"@type":"Brand","name":"Maison Bartheau Café"},"image":"logo.jpg","description":"Café torréfié artisanalement en petits lots numérotés, en grains ou moulu selon votre machine.","offers":{"@type":"Offer","price":"12.00","priceCurrency":"EUR","availability":"https://schema.org/InStock"}},
+ {"@type":"Product","name":"Le café de la Maison · sachet 250 g","brand":{"@type":"Brand","name":"Maison Bartheau Café"},"image":"logo.jpg","description":"Café torréfié artisanalement en petits lots numérotés, en grains ou moulu selon votre machine.","offers":{"@type":"AggregateOffer","lowPrice":"11.90","highPrice":"39.00","offerCount":"3","priceCurrency":"EUR","availability":"https://schema.org/InStock"}},
  {"@type":"FAQPage","mainEntity":[
   {"@type":"Question","name":"Comment conserver le café ?","acceptedAnswer":{"@type":"Answer","text":"Gardez le sachet bien fermé, à l'abri de la lumière, de l'air et de l'humidité. Une fois ouvert, buvez-le dans les quatre semaines."}},
   {"@type":"Question","name":"Quelle mouture choisir ?","acceptedAnswer":{"@type":"Answer","text":"Choisissez « Moulu », puis indiquez la marque et le modèle de votre machine : nous moulons le café au bon format. Avec un broyeur intégré, prenez des grains."}},
@@ -73,14 +73,14 @@
           <a class="btn" href="#offres">Découvrir l'abonnement</a>
         </div>
         <div class="hero-meta">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Livré partout en France</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Livraison offerte dès 35 €</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Paiement sécurisé</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/></svg>Rétractation 14 jours</span>
         </div>
       </div>
       <div class="stage">
         <div class="label"><img src="logo.jpg" alt="Étiquette Maison Bartheau Café, torréfaction artisanale" width="640" height="530" fetchpriority="high"></div>
-        <div class="seal" aria-label="12 euros le sachet de 250 grammes"><span><b>12 €</b><small>le sachet<br>250 g</small></span></div>
+        <div class="seal" aria-label="11,90 euros le sachet de 250 grammes"><span><b>11,90 €</b><small>le sachet<br>250 g</small></span></div>
       </div>
     </div>
   </section>
@@ -167,8 +167,8 @@
         <div class="ocard">
           <span class="k">Particuliers</span>
           <h3>Le sachet</h3>
-          <div class="pp">12 €<small>250 g · 48 € le kilo</small></div>
-          <ul><li>En grains ou moulu pour votre machine</li><li>Livraison partout en France</li><li>Fidélité : 1 sachet offert tous les 10</li></ul>
+          <div class="pp">11,90 €<small>le sachet de 250 g</small></div>
+          <ul><li><b>Duo 2 × 250 g : 22 €</b> · <b>le kilo : 39 €</b></li><li>En grains ou moulu pour votre machine</li><li>Livraison offerte dès 35 € d'achat</li><li>Fidélité : 1 sachet offert tous les 10</li></ul>
           <a class="btn solid" href="#boutique">Commander <span class="arr" aria-hidden="true">→</span></a>
         </div>
         <div class="ocard feat">
@@ -248,13 +248,14 @@
       <div class="shop">
         <div class="card" id="composer">
           <div class="prodhead"><img id="pImg" src="logo.jpg" alt="" width="96" height="96"><div><h3 id="pName">Le café de la Maison</h3><p class="note" id="pSub" style="margin-top:4px">Recette de famille · torréfaction artisanale</p></div></div>
-          <div class="price" id="pPrice">12 €<small>le sachet de 250 g · 48 € le kilo</small></div>
+          <div class="price" id="pPrice">11,90 €<small>le sachet de 250 g</small></div>
           <p class="stockline" id="pStock" hidden></p>
           <div class="field" id="prodField" hidden><label for="prod">Café</label><select id="prod"></select></div>
-          <div class="field"><label for="fmt">Format</label><select id="fmt"><option value="grains">Grains</option><option value="moulu">Moulu pour ma machine</option></select></div>
+          <fieldset class="field offres" id="offresBox"><legend class="lbl">Format</legend><div class="offgrid" id="offGrid"></div></fieldset>
+          <div class="field"><label for="fmt">Grains ou moulu</label><select id="fmt"><option value="grains">Grains</option><option value="moulu">Moulu pour ma machine</option></select></div>
           <div id="finderS" hidden></div>
           <div class="field">
-            <span class="lbl" id="qLbl">Nombre de sachets</span>
+            <span class="lbl" id="qLbl">Quantité</span>
             <div class="qty" aria-labelledby="qLbl">
               <button type="button" id="minus" aria-label="Retirer un sachet">–</button>
               <output id="qtyOut" aria-live="polite">1</output>
@@ -293,6 +294,7 @@
               <dt id="discLbl" hidden>Remise abonnement</dt><dd id="discAmt" hidden></dd>
               <dt>Envoi</dt><dd id="shipAmt">—</dd>
             </dl>
+            <p class="freeship" id="freeShip" hidden></p>
             <dl class="total"><dt id="totLbl">Total TTC</dt><dd id="total">0,00 €</dd></dl>
             <div class="gift" id="gift" hidden><span class="gl" id="engLbl"></span><b id="engAmt"></b></div>
             <p class="fidnote" id="fidNote" hidden></p>
@@ -541,7 +543,7 @@
   </div>
 </dialog>
 
-<div class="mbar" id="mbar" aria-hidden="true"><span id="mbarTxt"><b>12 €</b>le sachet de 250 g</span><a class="btn" id="mbarBtn" href="#boutique" tabindex="-1">Commander</a></div>
+<div class="mbar" id="mbar" aria-hidden="true"><span id="mbarTxt"><b>11,90 €</b>le sachet de 250 g</span><a class="btn" id="mbarBtn" href="#boutique" tabindex="-1">Commander</a></div>
 <button class="iconbtn" id="toTop" type="button" aria-label="Revenir en haut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 
 <script src="assets/config.js"></script>
@@ -880,7 +882,7 @@
   var bar = $("mbar"), txt = $("mbarTxt"), btn = $("mbarBtn");
   function upd(){
     var p = document.body.getAttribute("data-current") || "accueil", y = window.scrollY || 0, show = false;
-    if(p === "accueil"){ show = y > 520; txt.innerHTML = "<b>12 €</b>le sachet de 250 g"; btn.textContent = "Commander"; btn.setAttribute("href", "#boutique"); }
+    if(p === "accueil"){ show = y > 520; txt.innerHTML = "<b>11,90 €</b>le sachet · livraison offerte dès 35 €"; btn.textContent = "Commander"; btn.setAttribute("href", "#boutique"); }
     else if(p === "boutique"){
       var s = $("slip"), r = s.getBoundingClientRect();
       show = r.top > window.innerHeight * .6 && !$("cartBody").hidden;

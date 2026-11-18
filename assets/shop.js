@@ -20,7 +20,9 @@
   function avail(){ return LIST.filter(function(p){ return p.disponible; }); }
   function live(){ return !!(API && API.ok && API.paiement); }
   function stockOf(id){ return live() ? Math.max(0, Number(API.stock[id]) || 0) : Infinity; }
-  function inCart(id){ return cart.filter(function(l){ return l.id === id; }).reduce(function(s, l){ return s + l.qty; }, 0); }
+  function offOf(l){ return BCOffre(byId[l.id], l.offre); }
+  function units(l){ return l.qty * offOf(l).sachets; }
+  function inCart(id){ return cart.filter(function(l){ return l.id === id; }).reduce(function(s, l){ return s + units(l); }, 0); }
   function ship(){ var L = live() ? API.livraison : (window.LIVRAISON || {}); return { frais: typeof L.frais === "number" ? L.frais : (typeof L.fraisEnvoi === "number" ? L.fraisEnvoi : null), offerteDes: typeof L.offerteDes === "number" ? L.offerteDes : null, retrait: L.retrait !== false }; }
 
   /* ---------- Panier (gardé sur l'appareil) ---------- */
@@ -31,10 +33,32 @@
   var sel = $("prod"), fmt = $("fmt");
   var finder = typeof makeFinder === "function" ? makeFinder($("finderS"), "fs", function(){}) : null;
   function cur(){ return byId[sel.value] || avail()[0]; }
+  var offId = "sachet";
+  function curOff(){ return BCOffre(cur(), offId); }
+  function drawOffres(){
+    var p = cur(), g = $("offGrid"); g.textContent = "";
+    var L = BCOffres(p), base = L.filter(function(o){ return o.sachets === 1; })[0];
+    if(!L.some(function(o){ return o.id === offId; })) offId = L[0].id;
+    $("offresBox").hidden = L.length < 2;
+    var left = stockOf(p.id) - inCart(p.id);
+    L.forEach(function(o){
+      var b = el("button", "offbtn" + (o.id === offId ? " on" : "")); b.type = "button";
+      b.setAttribute("aria-pressed", o.id === offId ? "true" : "false");
+      b.disabled = left < o.sachets && left !== Infinity;
+      b.appendChild(el("b", null, o.nom.replace(/^(Le|La) /, "").replace(/^./, function(c){ return c.toUpperCase(); })));
+      b.appendChild(el("span", "offp", eurS(o.prix)));
+      if(base && o.sachets > 1){
+        var save = Math.round((base.prix * o.sachets - o.prix) * 100) / 100;
+        if(save > 0) b.appendChild(el("span", "offsave", "−" + eurS(save)));
+      }
+      b.addEventListener("click", function(){ offId = o.id; qty = 1; drawComposer(); });
+      g.appendChild(b);
+    });
+  }
   function fillProducts(){
     var keep = sel.value; sel.textContent = "";
     avail().forEach(function(p){
-      var s = stockOf(p.id), o = el("option", null, p.nom + " · " + eurS(p.prix) + (s <= 0 ? " (épuisé)" : ""));
+      var s = stockOf(p.id), o = el("option", null, p.nom + " · dès " + eurS(BCOffres(p).reduce(function(m, x){ return Math.min(m, x.prix); }, Infinity)) + (s <= 0 ? " (épuisé)" : ""));
       o.value = p.id; o.disabled = s <= 0; sel.appendChild(o);
     });
     if(keep && byId[keep]) sel.value = keep;
@@ -43,27 +67,30 @@
   }
   function drawComposer(){
     var p = cur(); if(!p){ $("addBtn").disabled = true; return; }
+    var o = curOff();
     window.PRICE = p.prix;
     $("pName").textContent = p.nom;
     $("pSub").textContent = p.accroche || "Torréfaction artisanale";
     $("pImg").src = p.image || "logo.jpg";
-    var pp = $("pPrice"); pp.textContent = eurS(p.prix);
-    pp.appendChild(el("small", null, "le sachet de " + (p.poids || "250 g") + " · " + eurS(Math.round(p.prix / grams(p) * 1000 * 100) / 100) + " le kilo"));
+    var pp = $("pPrice"); pp.textContent = eurS(o.prix);
+    var per = Math.round(o.prix / o.sachets * 100) / 100;
+    pp.appendChild(el("small", null, o.sachets > 1 ? o.sachets + " sachets de " + (p.poids || "250 g") + ", soit " + eurS(per) + " le sachet" : "le sachet de " + (p.poids || "250 g")));
+    drawOffres();
     var left = stockOf(p.id) - inCart(p.id), sl = $("pStock");
     if(live()){
       sl.hidden = false;
       sl.className = "stockline " + (left <= 0 ? "out" : left <= 5 ? "low" : "ok");
-      sl.textContent = stockOf(p.id) <= 0 ? "Rupture de stock · revient bientôt" : left <= 0 ? "Tout le stock disponible est déjà dans votre panier" : left <= 5 ? "Plus que " + left + " en stock" : "En stock · expédié rapidement";
+      sl.textContent = stockOf(p.id) <= 0 ? "Rupture de stock · revient bientôt" : left <= 0 ? "Tout le stock disponible est déjà dans votre panier" : left <= 5 ? "Plus que " + left + (left > 1 ? " sachets" : " sachet") + " en stock" : "En stock · expédié rapidement";
     } else sl.hidden = true;
-    var max = Math.max(1, Math.min(30, left === Infinity ? 30 : left));
+    var max = Math.max(1, Math.min(30, left === Infinity ? 30 : Math.floor(left / o.sachets)));
     if(qty > max) qty = max;
     $("qtyOut").textContent = qty;
-    $("addBtn").disabled = left <= 0;
+    $("addBtn").disabled = left < o.sachets;
     $("finderS").hidden = fmt.value !== "moulu";
   }
   sel.addEventListener("change", function(){ qty = 1; drawComposer(); $("addStatus").textContent = ""; });
   fmt.addEventListener("change", drawComposer);
-  $("plus").addEventListener("click", function(){ var p = cur(), left = stockOf(p.id) - inCart(p.id); if(qty < Math.min(30, left)){ qty++; drawComposer(); } });
+  $("plus").addEventListener("click", function(){ var p = cur(), left = stockOf(p.id) - inCart(p.id); if(qty < 30 && (qty + 1) * curOff().sachets <= left){ qty++; drawComposer(); } });
   $("minus").addEventListener("click", function(){ if(qty > 1){ qty--; drawComposer(); } });
 
   function grindInfo(){
@@ -77,11 +104,11 @@
   $("addBtn").addEventListener("click", function(){
     var p = cur(), st = $("addStatus"), g = grindInfo();
     if(!g.ok){ st.className = "status err"; st.textContent = g.msg; return; }
-    var left = stockOf(p.id) - inCart(p.id);
-    if(left < qty){ st.className = "status err"; st.textContent = left > 0 ? "Il ne reste que " + left + " sachet" + (left > 1 ? "s" : "") + " disponible" + (left > 1 ? "s" : "") + "." : "Ce café est épuisé pour le moment."; return; }
-    var same = cart.filter(function(l){ return l.id === p.id && l.format === g.format && l.mouture === g.mouture && l.machine === g.machine; })[0];
+    var left = stockOf(p.id) - inCart(p.id), o = curOff();
+    if(left < qty * o.sachets){ st.className = "status err"; st.textContent = left > 0 ? "Il ne reste que " + left + " sachet" + (left > 1 ? "s" : "") + " disponible" + (left > 1 ? "s" : "") + "." : "Ce café est épuisé pour le moment."; return; }
+    var same = cart.filter(function(l){ return l.id === p.id && offOf(l).id === o.id && l.format === g.format && l.mouture === g.mouture && l.machine === g.machine; })[0];
     if(same) same.qty = Math.min(30, same.qty + qty);
-    else cart.push({id:p.id, qty:qty, format:g.format, mouture:g.mouture, machine:g.machine});
+    else cart.push({id:p.id, offre:o.id, qty:qty, format:g.format, mouture:g.mouture, machine:g.machine});
     saveCart();
     st.className = "status"; st.textContent = (g.note ? g.note + " " : "") + "Ajouté au panier ✓";
     qty = 1; drawComposer(); drawCart();
@@ -96,13 +123,14 @@
   }
   function totals(){
     var A = aboState(), sub = 0, goods = 0, n = 0;
-    cart.forEach(function(l){ var p = byId[l.id]; sub += p.prix * l.qty; goods += Math.round(p.prix * (1 - A.disc / 100) * 100) / 100 * l.qty; n += l.qty; });
+    cart.forEach(function(l){ var o = offOf(l); sub += o.prix * l.qty; goods += Math.round(o.prix * (1 - A.disc / 100) * 100) / 100 * l.qty; n += units(l); });
     var S = ship(), retrait = $("cRec").value === "retrait", shipAmt = 0, shipTxt, shipKnown = true;
     if(retrait){ shipTxt = "offert (retrait)"; }
     else if(S.frais === null){ shipKnown = false; shipTxt = "à confirmer"; }
     else if(S.offerteDes !== null && goods >= S.offerteDes){ shipTxt = "offert"; }
     else { shipAmt = S.frais; shipTxt = eur(S.frais); }
-    return {A:A, sub:sub, goods:goods, off:sub - goods, ship:shipAmt, shipTxt:shipTxt, shipKnown:shipKnown, total:goods + shipAmt, n:n, retrait:retrait};
+    var toFree = (!retrait && S.offerteDes !== null && S.frais !== null && goods < S.offerteDes) ? Math.round((S.offerteDes - goods) * 100) / 100 : 0;
+    return {A:A, sub:sub, goods:goods, off:sub - goods, ship:shipAmt, shipTxt:shipTxt, shipKnown:shipKnown, total:goods + shipAmt, n:n, retrait:retrait, toFree:toFree, freeAt:S.offerteDes};
   }
   function lineDetail(l){
     if(l.format === "moulu") return "Moulu" + (l.mouture ? " · " + l.mouture : "") + (l.machine ? " · " + l.machine : "");
@@ -115,18 +143,18 @@
     $("cartEmpty").hidden = cart.length > 0; $("cartBody").hidden = cart.length === 0;
     $("cartCount").textContent = T.n ? T.n + (T.n > 1 ? " sachets" : " sachet") : "";
     cart.forEach(function(l, i){
-      var p = byId[l.id], li = el("li", "cline");
+      var p = byId[l.id], o = offOf(l), li = el("li", "cline");
       var im = el("img"); im.src = p.image || "logo.jpg"; im.alt = ""; im.width = 56; im.height = 56; li.appendChild(im);
-      var mid = el("div", "cmid"); mid.appendChild(el("b", null, p.nom)); mid.appendChild(el("span", null, lineDetail(l)));
+      var mid = el("div", "cmid"); mid.appendChild(el("b", null, p.nom)); mid.appendChild(el("span", null, o.nom + " · " + lineDetail(l)));
       var q = el("div", "qty mini");
       var bm = el("button", null, "–"); bm.type = "button"; bm.setAttribute("aria-label", "Retirer un sachet de " + p.nom);
-      var o = el("output", null, String(l.qty));
+      var qo = el("output", null, String(l.qty));
       var bp = el("button", null, "+"); bp.type = "button"; bp.setAttribute("aria-label", "Ajouter un sachet de " + p.nom);
       bm.addEventListener("click", function(){ if(l.qty > 1){ l.qty--; } else { cart.splice(i, 1); } saveCart(); drawComposer(); drawCart(); });
-      bp.addEventListener("click", function(){ if(l.qty < 30 && inCart(l.id) < stockOf(l.id)){ l.qty++; saveCart(); drawComposer(); drawCart(); } else { $("status").className = "status err"; $("status").textContent = "Stock maximum atteint pour " + p.nom + "."; } });
-      q.appendChild(bm); q.appendChild(o); q.appendChild(bp); mid.appendChild(q);
+      bp.addEventListener("click", function(){ if(l.qty < 30 && inCart(l.id) + o.sachets <= stockOf(l.id)){ l.qty++; saveCart(); drawComposer(); drawCart(); } else { $("status").className = "status err"; $("status").textContent = "Stock maximum atteint pour " + p.nom + "."; } });
+      q.appendChild(bm); q.appendChild(qo); q.appendChild(bp); mid.appendChild(q);
       li.appendChild(mid);
-      var right = el("div", "cright"); right.appendChild(el("b", null, eur(p.prix * l.qty)));
+      var right = el("div", "cright"); right.appendChild(el("b", null, eur(o.prix * l.qty)));
       var rm = el("button", "toggle", "Retirer"); rm.type = "button"; rm.addEventListener("click", function(){ cart.splice(i, 1); saveCart(); drawComposer(); drawCart(); });
       right.appendChild(rm); li.appendChild(right);
       list.appendChild(li);
@@ -140,6 +168,10 @@
     $("discLbl").textContent = "Remise abonnement −" + A.disc + " %";
     $("discAmt").textContent = "−" + eur(T.off);
     $("shipAmt").textContent = T.shipTxt;
+    var fs = $("freeShip");
+    if(T.toFree > 0){ fs.hidden = false; fs.className = "freeship"; fs.innerHTML = ""; fs.appendChild(document.createTextNode("Plus que ")); fs.appendChild(el("b", null, eur(T.toFree))); fs.appendChild(document.createTextNode(" pour la livraison offerte")); var bar = el("i"); bar.style.setProperty("--p", Math.min(100, Math.round(T.goods / T.freeAt * 100)) + "%"); fs.appendChild(bar); }
+    else if(!T.retrait && T.freeAt !== null && T.shipKnown && T.ship === 0){ fs.hidden = false; fs.className = "freeship ok"; fs.textContent = "Livraison offerte ✓"; }
+    else fs.hidden = true;
     $("totLbl").textContent = (A.abo ? (A.per === 2 ? "Par livraison" : "Par mois") : "Total") + (T.shipKnown ? "" : " hors envoi");
     $("total").textContent = eur(T.total);
     $("gift").hidden = !(A.abo && A.months && A.disc);
@@ -173,7 +205,7 @@
   /* ---------- Commande par e-mail (si le paiement en ligne n'est pas actif) ---------- */
   var REF = (function(){ var d = new Date(), z = function(x){ return (x < 10 ? "0" : "") + x; }, a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = ""; for(var i = 0; i < 4; i++) r += a.charAt(Math.floor(Math.random() * a.length)); return "BC-" + z(d.getDate()) + z(d.getMonth() + 1) + "-" + r; })();
   function buildFallback(T){
-    var A = T.A, lines = cart.map(function(l, i){ var p = byId[l.id]; return (i + 1) + ". " + l.qty + " × " + p.nom + " (" + (p.poids || "250 g") + "), " + lineDetail(l); });
+    var A = T.A, lines = cart.map(function(l, i){ var p = byId[l.id]; var o = offOf(l); return (i + 1) + ". " + l.qty + " × " + p.nom + " · " + o.nom + " (" + eur(o.prix) + "), " + lineDetail(l); });
     var txt = (A.abo ? "ABONNEMENT" : "COMMANDE") + " MAISON BARTHEAU CAFÉ, réf. " + REF + "\nDate : " + new Date().toLocaleDateString("fr-FR") + "\n\nÀ PRÉPARER" + (A.abo ? " (à chaque livraison)" : "") + "\n" + lines.join("\n") +
       (A.abo ? "\n\nABONNEMENT\nRythme : " + (A.per === 2 ? "toutes les 2 semaines" : "tous les mois") + "\nEngagement : " + (A.months ? A.months + " mois" : "sans") + "\nRemise : " + A.disc + " %" : "") +
       "\n\nTOTAL : " + eur(T.total) + " TTC" + (T.shipKnown ? " (envoi : " + T.shipTxt + ")" : " + envoi à confirmer") + "\nRéception : " + (T.retrait ? "retrait en main propre (à convenir)" : "livraison") +
@@ -195,7 +227,7 @@
     b.disabled = true; b.classList.add("loading"); $("payLbl").textContent = "Ouverture du paiement sécurisé…";
     st.className = "status"; st.textContent = "";
     fetch("/api/checkout", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({
-      items: cart.map(function(l){ return {id:l.id, qty:l.qty, format:l.format, mouture:l.mouture, machine:l.machine}; }),
+      items: cart.map(function(l){ return {id:l.id, offre:offOf(l).id, qty:l.qty, format:l.format, mouture:l.mouture, machine:l.machine}; }),
       mode: A.abo ? "abo" : "unique", rythme: A.per, engagement: A.months,
       reception: T.retrait ? "retrait" : "livraison",
       email: acc && acc.mail ? acc.mail : ""
@@ -236,7 +268,7 @@
   function loadStock(){
     return fetch("/api/stock", {cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){ API = j; }).catch(function(){ API = null; }).then(function(){
       // retire du panier ce qui n'est plus en stock
-      if(live()) cart.forEach(function(l){ var left = stockOf(l.id) - cart.filter(function(x){ return x !== l && x.id === l.id; }).reduce(function(s, x){ return s + x.qty; }, 0); if(l.qty > left) l.qty = Math.max(0, left); });
+      if(live()) cart.forEach(function(l){ var left = stockOf(l.id) - cart.filter(function(x){ return x !== l && x.id === l.id; }).reduce(function(s, x){ return s + units(x); }, 0), per = offOf(l).sachets; if(l.qty * per > left) l.qty = Math.max(0, Math.floor(left / per)); });
       cart = cart.filter(function(l){ return l.qty > 0; }); saveCart();
       fillProducts(); drawComposer(); drawCart();
       stockCbs.forEach(function(cb){ try{ cb(); }catch(e){} });
@@ -251,7 +283,7 @@
   });
 
   window.BCShop = {
-    pick: function(id){ if(byId[id]){ sel.value = id; qty = 1; drawComposer(); } },
+    pick: function(id, off){ if(byId[id]){ sel.value = id; if(off) offId = off; qty = 1; drawComposer(); } },
     stockOf: stockOf, live: live,
     onStock: function(cb){ stockCbs.push(cb); }
   };

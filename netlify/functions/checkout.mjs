@@ -1,6 +1,6 @@
 // POST /api/checkout : vérifie le panier, réserve le stock et ouvre le paiement Stripe.
 // Les prix sont TOUJOURS recalculés ici à partir de assets/produits.js : le navigateur ne fixe aucun prix.
-import { json, loadSite, stripe, store, cents, discountFor, updateStock, sumByProduct, releaseReservation, originOf } from "./lib/shared.mjs";
+import { json, loadSite, stripe, store, cents, discountFor, updateStock, sumByProduct, offresDe, originOf } from "./lib/shared.mjs";
 
 const clip = (v, n) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,12 +30,14 @@ export default async (req) => {
     const qty = Math.floor(Number(it && it.qty));
     if (!p || !p.disponible) return json({ error: "Un café de votre panier n'est plus disponible." }, 400);
     if (!(qty >= 1 && qty <= 30)) return json({ error: "Quantité invalide." }, 400);
-    if (typeof p.prix !== "number" || !(p.prix > 0)) return json({ error: "Prix non configuré pour " + p.nom }, 500);
+    const offres = offresDe(p);
+    const o = offres.find((x) => x.id === String(it.offre || "")) || offres[0];
+    if (!o || typeof o.prix !== "number" || !(o.prix > 0)) return json({ error: "Prix non configuré pour " + p.nom }, 500);
     const moulu = it.format === "moulu";
-    items.push({ p, qty, moulu, mouture: moulu ? clip(it.mouture, 80) : "", machine: moulu ? clip(it.machine, 100) : "" });
+    items.push({ p, o, qty, moulu, mouture: moulu ? clip(it.mouture, 80) : "", machine: moulu ? clip(it.machine, 100) : "" });
   }
   if (!items.length) return json({ error: "Votre panier est vide." }, 400);
-  const need = sumByProduct(items.map((i) => ({ id: i.p.id, qty: i.qty })));
+  const need = sumByProduct(items.map((i) => ({ id: i.p.id, qty: i.qty * i.o.sachets }))); // en sachets
   if (Object.values(need).reduce((a, b) => a + b, 0) > 60) return json({ error: "Pour plus de 60 sachets, contactez-nous directement." }, 400);
 
   // ---- Formule ----
@@ -48,7 +50,7 @@ export default async (req) => {
   const retrait = body.reception === "retrait";
   if (retrait && livraison.retrait === false) return json({ error: "Le retrait n'est pas proposé." }, 400);
   let shipCents = 0;
-  const goods = items.reduce((s, i) => s + cents(i.p.prix * (1 - disc / 100)) * i.qty, 0);
+  const goods = items.reduce((s, i) => s + cents(i.o.prix * (1 - disc / 100)) * i.qty, 0);
   if (!retrait) {
     if (typeof livraison.fraisEnvoi !== "number") return json({ error: "La livraison n'est pas encore configurée. Choisissez le retrait ou contactez-nous." }, 503);
     const free = typeof livraison.offerteDes === "number" && goods >= cents(livraison.offerteDes);
@@ -78,20 +80,20 @@ export default async (req) => {
   const origin = originOf(req);
   const reference = ref();
   const recurring = abo ? (rythme === 2 ? { interval: "week", interval_count: 2 } : { interval: "month", interval_count: 1 }) : undefined;
-  const detail = items.map((i) => `${i.qty} x ${i.p.nom} (${i.moulu ? "moulu" + (i.mouture ? " " + i.mouture : "") + (i.machine ? ", " + i.machine : "") : "grains"})`).join(" | ").slice(0, 490);
+  const detail = items.map((i) => `${i.qty} x ${i.p.nom} ${i.o.nom} (${i.moulu ? "moulu" + (i.mouture ? " " + i.mouture : "") + (i.machine ? ", " + i.machine : "") : "grains"})`).join(" | ").slice(0, 490);
   const line_items = items.map((i) => {
     const img = i.p.image && /^https:/.test(origin) ? [origin + "/" + String(i.p.image).replace(/^\/+/, "")] : undefined;
     return {
       quantity: i.qty,
       price_data: {
         currency: "eur",
-        unit_amount: cents(i.p.prix * (1 - disc / 100)),
+        unit_amount: cents(i.o.prix * (1 - disc / 100)),
         ...(recurring ? { recurring } : {}),
         product_data: {
-          name: `${i.p.nom} · ${i.p.poids || "250 g"}`,
+          name: `${i.p.nom} · ${i.o.nom}`,
           description: i.moulu ? `Moulu${i.mouture ? " : " + i.mouture : ""}${i.machine ? " · machine " + i.machine : ""}` : "En grains",
           ...(img ? { images: img } : {}),
-          metadata: { produit: i.p.id },
+          metadata: { produit: i.p.id, format: i.o.id, sachets: String(i.o.sachets) },
         },
       },
     };

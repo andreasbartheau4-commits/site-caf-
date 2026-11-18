@@ -33,7 +33,7 @@
     '<button class="iconbtn" type="button" id="mcClose" aria-label="Fermer le panier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
     '<div class="mc-body"><ul class="cart" id="mcList"></ul>' +
     '<div class="mc-empty" id="mcEmpty"><span class="mc-bag">' + BAG + '</span><p>Votre panier est vide.</p><a class="btn solid" href="' + (onIndex ? "#produits" : "index.html#produits") + '" data-mc-close>Découvrir nos cafés</a></div></div>' +
-    '<div class="mc-foot" id="mcFoot"><dl><dt>Sous-total</dt><dd id="mcSub"></dd></dl>' +
+    '<div class="mc-foot" id="mcFoot"><p class="freeship" id="mcFree" hidden></p><dl><dt>Sous-total</dt><dd id="mcSub"></dd></dl>' +
     '<p class="note">Livraison, remise abonnement et code promo à l\'étape suivante.</p>' +
     '<a class="btn solid" id="mcGo" href="' + (onIndex ? "#boutique" : "index.html#boutique") + '">Voir mon panier et payer <span class="arr" aria-hidden="true">→</span></a>' +
     '<button class="btn" type="button" data-mc-close>Continuer mes achats</button>' +
@@ -82,27 +82,33 @@
     var cart = read(), list = $("mcList"), n = 0, sub = 0;
     list.textContent = "";
     cart.forEach(function(l, i){
-      var p = byId[l.id]; n += l.qty; sub += p.prix * l.qty;
+      var p = byId[l.id], of = BCOffre(p, l.offre); n += l.qty * of.sachets; sub += of.prix * l.qty;
       var li = el("li", "cline");
       var im = el("img"); im.src = p.image || "logo.jpg"; im.alt = ""; im.width = 56; im.height = 56; li.appendChild(im);
-      var mid = el("div", "cmid"); mid.appendChild(el("b", null, p.nom)); mid.appendChild(el("span", null, detail(l)));
+      var mid = el("div", "cmid"); mid.appendChild(el("b", null, p.nom)); mid.appendChild(el("span", null, of.nom + " · " + detail(l)));
       var q = el("div", "qty mini");
       var bm = el("button", null, "–"); bm.type = "button"; bm.setAttribute("aria-label", "Retirer un sachet de " + p.nom);
       var o = el("output", null, String(l.qty));
       var bp = el("button", null, "+"); bp.type = "button"; bp.setAttribute("aria-label", "Ajouter un sachet de " + p.nom);
       bm.addEventListener("click", function(){ var c = read(); if(c[i].qty > 1) c[i].qty--; else c.splice(i, 1); write(c); });
       bp.addEventListener("click", function(){
-        var c = read(), same = c.filter(function(x){ return x.id === l.id; }).reduce(function(s, x){ return s + x.qty; }, 0);
-        if(c[i].qty < 30 && same < stockOf(l.id)){ c[i].qty++; write(c); } else { bp.disabled = true; bp.title = "Stock maximum atteint"; }
+        var c = read(), same = c.filter(function(x){ return x.id === l.id; }).reduce(function(s, x){ return s + x.qty * BCOffre(byId[x.id], x.offre).sachets; }, 0);
+        if(c[i].qty < 30 && same + of.sachets <= stockOf(l.id)){ c[i].qty++; write(c); } else { bp.disabled = true; bp.title = "Stock maximum atteint"; }
       });
       q.appendChild(bm); q.appendChild(o); q.appendChild(bp); mid.appendChild(q); li.appendChild(mid);
-      var right = el("div", "cright"); right.appendChild(el("b", null, eur(p.prix * l.qty)));
+      var right = el("div", "cright"); right.appendChild(el("b", null, eur(of.prix * l.qty)));
       var rm = el("button", "toggle", "Retirer"); rm.type = "button"; rm.addEventListener("click", function(){ var c = read(); c.splice(i, 1); write(c); });
       right.appendChild(rm); li.appendChild(right); list.appendChild(li);
     });
     $("mcEmpty").hidden = cart.length > 0; $("mcFoot").hidden = cart.length === 0; list.hidden = cart.length === 0;
     $("mcCount").textContent = n ? n + (n > 1 ? " sachets" : " sachet") : "";
     $("mcSub").textContent = eur(sub);
+    var L = window.LIVRAISON || {}, fr = $("mcFree");
+    if(typeof L.offerteDes === "number" && typeof L.fraisEnvoi === "number"){
+      fr.hidden = false; fr.textContent = "";
+      if(sub >= L.offerteDes){ fr.className = "freeship ok"; fr.textContent = "Livraison offerte ✓"; }
+      else { fr.className = "freeship"; fr.appendChild(document.createTextNode("Plus que ")); fr.appendChild(el("b", null, eur(L.offerteDes - sub))); fr.appendChild(document.createTextNode(" pour la livraison offerte")); var bar = el("i"); bar.style.setProperty("--p", Math.round(sub / L.offerteDes * 100) + "%"); fr.appendChild(bar); }
+    } else fr.hidden = true;
     var b = $("cartBadge"); b.hidden = n === 0; b.textContent = n > 99 ? "99+" : String(n);
     btn.setAttribute("aria-label", n ? "Mon panier : " + n + (n > 1 ? " sachets" : " sachet") + ", " + eur(sub) : "Mon panier (vide)");
     if(lastN !== null && n > lastN){ btn.classList.remove("bump"); void btn.offsetWidth; btn.classList.add("bump"); }

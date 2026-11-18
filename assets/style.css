@@ -558,3 +558,26 @@ body.dlgopen{overflow:hidden}
 .mc-foot .btn{width:100%}
 body.mcopen{overflow:hidden}
 @media (max-width:520px){.tools .cartbtn{width:40px;height:40px}}
+
+/* ---------- Formats (sachet, duo, kilo) et livraison offerte ---------- */
+.offres{border:0;margin:0;padding:0;min-width:0}
+.offres legend{padding:0;margin-bottom:7px}
+.offgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.offbtn{position:relative;display:grid;gap:3px;justify-items:start;text-align:left;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:14px;padding:12px 12px 11px;cursor:pointer;min-width:0;transition:border-color .2s,box-shadow .2s,background .2s}
+.offbtn b{font-size:.86rem;font-weight:600;line-height:1.25}
+.offbtn .offp{font-family:var(--serif);font-size:1.45rem;font-weight:600;line-height:1;font-variant-numeric:lining-nums}
+.offbtn .offsave{position:absolute;top:-9px;right:8px;font-size:.66rem;font-weight:700;background:#3f7d4a;color:#fff;padding:3px 7px;border-radius:999px}
+.offbtn:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+.offbtn.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.offbtn:disabled{opacity:.4;cursor:not-allowed}
+@media (max-width:420px){.offgrid{grid-template-columns:1fr}.offbtn{grid-template-columns:minmax(0,1fr) auto;align-items:center}.offbtn .offsave{position:static;grid-column:1/-1;justify-self:start}}
+.freeship{margin:0;font-size:.88rem;display:grid;gap:7px;color:var(--ink)}
+.freeship b{color:var(--accent)}
+.freeship i{display:block;height:6px;border-radius:999px;background:var(--line);position:relative;overflow:hidden}
+.freeship i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p,0%);background:var(--accent);border-radius:inherit;transition:width .4s ease}
+.freeship.ok{color:#3f7d4a;font-weight:600}
+:root[data-theme="dark"] .freeship.ok{color:#8fcf98}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .freeship.ok{color:#8fcf98}}
+.pbody{grid-template-rows:none}
+.pbody .pfoot{margin-top:auto}
+.pmore{margin:2px 0 0;font-size:.8rem;color:var(--accent);font-weight:600}

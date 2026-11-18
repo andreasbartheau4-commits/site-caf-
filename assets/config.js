@@ -16,7 +16,7 @@ var INFO = {
 };
 
 /* Prix de secours du sachet (le vrai prix de chaque café se règle dans assets/produits.js). */
-var PRICE = 12;
+var PRICE = 11.90;
 
 /* =====================================================================
    LIVRAISON (utilisé par le site ET par le paiement en ligne)
@@ -29,7 +29,7 @@ var LIVRAISON = {
   fraisEnvoi: null,
 
   /* Livraison offerte à partir de ce montant d'achat (ex. 45), ou null */
-  offerteDes: null,
+  offerteDes: 35,
 
   /* true = le client peut choisir « Retrait en main propre » (sans frais) */
   retrait: true

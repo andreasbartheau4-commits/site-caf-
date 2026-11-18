@@ -40,8 +40,13 @@ NOS CAFÉS (ajouter photos et descriptions)
 - Photos : déposez-les dans assets/img/produits/ puis écrivez leur chemin dans « image ».
 - Mettez disponible: true pour qu'un café puisse être commandé ; false l'affiche « Bientôt disponible ».
 - Les champs origine, torréfaction, notes, intensité n'apparaissent que si vous les remplissez.
-- Le prix de chaque café se règle dans son bloc (prix: 12). Le « 12 € » de la page d'accueil
-  (pastille et formule « Le sachet ») est écrit dans index.html : modifiez-le aussi si besoin.
+- TARIFS ACTUELS : sachet 250 g 11,90 € · duo 2 × 250 g 22 € · kilo (4 × 250 g) 39 €.
+  Livraison offerte dès 35 € (assets/config.js, LIVRAISON.offerteDes).
+- Pour changer un tarif : dans assets/produits.js, ligne « formats » du café (prix: ...).
+  Le site ET le paiement Stripe suivent automatiquement.
+- Le stock se compte toujours en sachets de 250 g : un duo vendu retire 2 sachets, un kilo 4.
+- Les mentions « 11,90 € » de la page d'accueil (pastille, formule « Le sachet », barre mobile)
+  sont écrites dans index.html : pensez à les modifier aussi si vous changez le prix.
 
 BOUTIQUE EN LIGNE : PAIEMENT DIRECT ET STOCK (à activer une seule fois, ~30 minutes)
 Le client remplit son panier, paie par carte bancaire (CB, Visa, Mastercard), Apple Pay
