@@ -8,9 +8,9 @@
 <meta name="robots" content="index,follow">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="assets/style.css">
 <script>try{var t=localStorage.getItem("bc-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}document.documentElement.classList.add("js")</script>
 </head>
@@ -124,7 +124,9 @@
 
 <button class="iconbtn" id="toTop" type="button" aria-label="Revenir en haut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <script src="assets/config.js"></script>
+<script src="assets/produits.js"></script>
 <script src="assets/site.js"></script>
+<script src="assets/minicart.js"></script>
 <script>(function(){var b=document.querySelector(".barwrap");window.addEventListener("scroll",function(){b.classList.toggle("scrolled",(window.scrollY||0)>8)},{passive:true})})();</script>
 </body>
 </html>

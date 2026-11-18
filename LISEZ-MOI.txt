@@ -13,6 +13,8 @@ CE QUE CONTIENT LE DOSSIER
 - netlify.toml, package.json ... réglages d'hébergement Netlify (ne pas modifier)
 - assets/style.css ...... le design (couleurs en haut du fichier : --accent, --bg)
 - assets/site.js ........ menu mobile, thème clair/sombre, coordonnées
+- assets/minicart.js .... le petit panier de la barre du haut (ne pas modifier)
+- assets/fonts/ ......... les polices, hébergées sur le site (aucun lien avec Google)
 - assets/img/ ........... icônes, logo détouré, image de partage réseaux sociaux
 - logo.jpg .............. le logo
 - robots.txt, sitemap.xml, site.webmanifest, .htaccess ... fichiers techniques (référencement, hébergement)
@@ -100,3 +102,13 @@ AU QUOTIDIEN
 À NE PAS MODIFIER À LA MAIN
 - Le tarif professionnel et les codes d'accès sont chiffrés ("var VAULT" dans index.html et pro.html).
   Pour les changer, il faut les régénérer.
+
+COOKIES ET BANDEAU « ACCEPTER / REFUSER »
+- Le site n'en a pas besoin aujourd'hui : il ne dépose aucun cookie publicitaire,
+  aucune mesure d'audience, aucun traceur, et ne contacte aucun service tiers
+  (même les polices sont hébergées sur le site). Ce qu'il garde dans le navigateur
+  (panier, compte, thème) est strictement nécessaire : la CNIL l'exempte de consentement.
+- Le paiement se fait sur la page de Stripe : ses éventuels cookies sont gérés par Stripe.
+- SI VOUS AJOUTEZ un jour Google Analytics, un pixel Facebook/Meta, Hotjar, une vidéo
+  YouTube intégrée, un widget Instagram... un bandeau de consentement devient OBLIGATOIRE
+  avant de les activer. Demandez-le : il faut l'installer en même temps que l'outil.

@@ -244,6 +244,11 @@
   }
   document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") loadStock(); });
   window.addEventListener("bc-account", drawCart);
+  // le mini-panier de la barre du haut a modifié le panier
+  window.addEventListener("bc-cart-ext", function(){
+    cart = lsGet(CART_KEY, []).filter(function(l){ return l && byId[l.id] && byId[l.id].disponible && l.qty > 0; });
+    drawComposer(); drawCart();
+  });
 
   window.BCShop = {
     pick: function(id){ if(byId[id]){ sel.value = id; qty = 1; drawComposer(); } },

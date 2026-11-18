@@ -8,9 +8,9 @@
 <meta name="robots" content="index,follow">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="preload" href="assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="assets/style.css">
 <script>try{var t=localStorage.getItem("bc-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}document.documentElement.classList.add("js")</script>
 </head>
@@ -46,8 +46,8 @@
 
       <h2>Ce qui reste sur votre appareil</h2>
       <div class="box">
-        <p>Votre compte client, votre carte de fidélité, votre machine et votre choix de thème sont enregistrés <b>uniquement dans votre navigateur</b> (stockage local). Ils ne sont pas transmis à la Maison et vous pouvez les effacer à tout moment depuis « Mon compte », ou en vidant les données du site dans votre navigateur.</p>
-        <p style="margin:0">Le site n'utilise ni cookie publicitaire, ni mesure d'audience, ni traceur tiers. Aucun bandeau de consentement n'est donc nécessaire.</p>
+        <p>Votre panier, votre compte client, votre carte de fidélité, votre machine et votre choix de thème sont enregistrés <b>uniquement dans votre navigateur</b> (stockage local). Ils ne sont pas transmis à la Maison et vous pouvez les effacer à tout moment depuis « Mon compte », ou en vidant les données du site dans votre navigateur.</p>
+        <p style="margin:0">Ces informations sont strictement nécessaires au service que vous demandez (garder votre panier, vos préférences). Le site n'utilise ni cookie publicitaire, ni mesure d'audience, ni traceur tiers : conformément aux recommandations de la CNIL, aucun bandeau de consentement n'est donc nécessaire. Si nous ajoutions un jour un outil de mesure ou de publicité, nous vous demanderions votre accord avant de l'activer.</p>
       </div>
 
       <h2>Ce que vous nous envoyez</h2>
@@ -61,7 +61,7 @@
 
       <h2>Services tiers</h2>
       <p>Paiement : vous saisissez vos données bancaires directement chez notre prestataire Stripe (y compris via Apple Pay ou Google Pay), qui les traite selon sa propre politique de confidentialité et les normes de sécurité bancaire (PCI DSS). Nous recevons seulement la confirmation du paiement, le montant, vos coordonnées de livraison et le détail de la commande.</p>
-      <p>Les polices de caractères sont chargées depuis Google Fonts, ce qui transmet votre adresse IP à Google lors de l'affichage. Les envois de demandes passent par votre propre messagerie.</p>
+      <p>Les polices de caractères sont hébergées sur notre propre site : aucune donnée n'est transmise à Google ni à un autre service lors de votre visite. Le site est hébergé par Netlify, qui traite les adresses IP des visiteurs pour faire fonctionner et sécuriser le site.</p>
 
       <h2>Vos droits</h2>
       <p>Vous pouvez demander l'accès, la rectification, l'effacement, la limitation ou la portabilité de vos données, et vous opposer à leur traitement, en écrivant à <span class="fill" data-k="email"></span>. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (<a href="https://www.cnil.fr" rel="noopener">cnil.fr</a>).</p>
@@ -113,7 +113,9 @@
 
 <button class="iconbtn" id="toTop" type="button" aria-label="Revenir en haut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <script src="assets/config.js"></script>
+<script src="assets/produits.js"></script>
 <script src="assets/site.js"></script>
+<script src="assets/minicart.js"></script>
 <script>(function(){var b=document.querySelector(".barwrap");window.addEventListener("scroll",function(){b.classList.toggle("scrolled",(window.scrollY||0)>8)},{passive:true})})();</script>
 </body>
 </html>
