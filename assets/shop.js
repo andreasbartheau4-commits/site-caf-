@@ -206,7 +206,11 @@
   ["mode", "engage", "rhythm", "cRec"].forEach(function(id){ $(id).addEventListener("change", drawCart); });
 
   /* ---------- Commande par e-mail (si le paiement en ligne n'est pas actif) ---------- */
-  var REF = (function(){ var d = new Date(), z = function(x){ return (x < 10 ? "0" : "") + x; }, a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = ""; for(var i = 0; i < 4; i++) r += a.charAt(Math.floor(Math.random() * a.length)); return "BC-" + z(d.getDate()) + z(d.getMonth() + 1) + "-" + r; })();
+  function newRef(){ var d = new Date(), z = function(x){ return (x < 10 ? "0" : "") + x; }, a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = ""; for(var i = 0; i < 4; i++) r += a.charAt(Math.floor(Math.random() * a.length)); return "BC-" + z(d.getDate()) + z(d.getMonth() + 1) + "-" + r; }
+  var REF = newRef();
+  /* Nouvelle référence après chaque envoi : deux commandes à la suite n'ont jamais la même
+     (sinon Gmail les range dans la même conversation). */
+  $("mailBtn").addEventListener("click", function(){ setTimeout(function(){ REF = newRef(); drawCart(); }, 1500); });
   function buildFallback(T){
     var A = T.A, lines = cart.map(function(l, i){ var p = byId[l.id]; var o = offOf(l); return (i + 1) + ". " + l.qty + " × " + p.nom + " · " + o.nom + " (" + eur(o.prix) + "), " + lineDetail(l); });
     var txt = (A.abo ? "ABONNEMENT" : "COMMANDE") + " MAISON BARTHEAU CAFÉ, réf. " + REF + "\nDate : " + new Date().toLocaleDateString("fr-FR") + "\nType : particulier" + (A.abo ? " (abonnement)" : "") + "\nStatut : à confirmer (paiement après confirmation)\n\nÀ PRÉPARER" + (A.abo ? " (à chaque livraison)" : "") + "\n" + T.n + " × sachet 250 g au total, " + (cart.some(function(l){ return l.format === "moulu"; }) ? (cart.some(function(l){ return l.format !== "moulu"; }) ? "GRAINS ET MOULU" : "MOULU") : "GRAINS") + "\n" + lines.join("\n") +
