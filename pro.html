@@ -101,7 +101,7 @@
       <div><b>Un seul prix</b><span id="sPrix">Au kilo, HT</span></div>
       <div><b id="sMin">Dès 3 kg</b><span>Par livraison</span></div>
       <div><b>Livraison locale</b><span>Incluse dans le prix</span></div>
-      <div><b>Paiement à 30 jours</b><span>Facture à chaque livraison</span></div>
+      <div><b>Paiement à 30 jours</b><span>Virement ou carte · pas de chèque</span></div>
     </div>
   </section>
 
@@ -221,7 +221,7 @@
       <div class="faq">
         <details><summary>Quel est le prix, et que comprend-il ?</summary><p id="fPrix">Un tarif unique au kilo, hors taxes, livraison locale incluse.</p></details>
         <details><summary>Quelle commande minimum ?</summary><p id="fMin">Une commande minimum par livraison.</p></details>
-        <details><summary>Comment se passe le paiement ?</summary><p>Vous payez à 30 jours, sur facture. Une facture est émise à chaque livraison.</p></details>
+        <details><summary>Comment se passe le paiement ?</summary><p>Une facture est émise à chaque livraison, payable à 30 jours par virement bancaire ou carte bancaire. Nous n'acceptons pas les chèques. Voir l'article 13 de nos <a href="cgv.html">conditions de vente</a>.</p></details>
         <details><summary>Comment fonctionne une livraison régulière ?</summary><p>Vous choisissez le rythme (chaque semaine, toutes les 2 semaines ou chaque mois) et la quantité. Vous pouvez modifier ou arrêter avant la livraison suivante, en nous prévenant.</p></details>
         <details><summary>Le café est-il adapté à ma machine ?</summary><p>Oui. En grains, vous gardez votre moulin. En moulu, nous réglons la mouture selon votre machine : indiquez la marque et le modèle dans la commande.</p></details>
         <details><summary>Comment suivre la fraîcheur ?</summary><p>Le café est préparé en petits lots numérotés et datés. Le numéro de lot et la date figurent sur chaque sac.</p></details>
@@ -377,7 +377,7 @@
     var txt = "COMMANDE PROFESSIONNELLE MAISON BARTHEAU CAFÉ, réf. " + ref + "\nDate : " + today() +
       "\n\nÀ PRÉPARER\n" + qty + " kg de café " + fmtText().toLowerCase() + mouture +
       "\nRythme : " + rhyTxt() + "\nLivraison souhaitée : " + ($("when").value.trim() || "à convenir") +
-      "\n\nPrix : " + eur(D.prix) + " HT le kilo, livraison locale incluse\nTOTAL : " + eur(tot) + " HT" + (r ? " par livraison" : "") + "\nPaiement à 30 jours sur facture" +
+      "\n\nPrix : " + eur(D.prix) + " HT le kilo, livraison locale incluse\nTOTAL : " + eur(tot) + " HT" + (r ? " par livraison" : "") + "\nPaiement à 30 jours sur facture, par virement ou carte bancaire (chèques non acceptés)" +
       "\n\nCLIENT\nÉtablissement : " + (C.etab || "à compléter") + "\nContact : " + [C.nom, C.tel, C.mail].filter(Boolean).join(" · ") +
       "\nAdresse : " + ([C.adr, (C.cp + " " + C.ville).trim()].filter(Boolean).join(", ") || "à compléter") + (C.rem ? "\nPrécisions : " + C.rem : "") +
       "\n\nMerci de confirmer la disponibilité et la date de livraison.";
