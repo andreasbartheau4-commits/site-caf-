@@ -2,7 +2,7 @@ RELIER VOTRE NOM DE DOMAINE IONOS AU SITE (hébergé sur Netlify)
 ====================================================================
 
 Dans ce fichier :
-  VOTRE-DOMAINE.fr      = le nom de domaine acheté chez IONOS (ex. maisonbartheau.fr)
+  maisonbartheau.com      = le nom de domaine acheté chez IONOS (ex. maisonbartheau.fr)
   VOTRE-SITE.netlify.app = l'adresse que Netlify a donnée à votre site
                            (visible en haut de la page du site dans Netlify)
 
@@ -12,9 +12,9 @@ Dans ce fichier :
 ÉTAPE 1 · NETLIFY : annoncer le domaine
 --------------------------------------------------------------------
 1. app.netlify.com > votre site > « Domain management » > « Add a domain ».
-2. Tapez  www.VOTRE-DOMAINE.fr  puis validez.
-   Netlify propose aussi d'ajouter VOTRE-DOMAINE.fr (sans www) : acceptez.
-3. Choisissez « www.VOTRE-DOMAINE.fr » comme domaine principal (« Primary domain »).
+2. Tapez  www.maisonbartheau.com  puis validez.
+   Netlify propose aussi d'ajouter maisonbartheau.com (sans www) : acceptez.
+3. Choisissez « www.maisonbartheau.com » comme domaine principal (« Primary domain »).
    Le domaine sans www redirigera automatiquement vers celui avec www.
 4. Netlify affiche « Pending DNS verification » avec les valeurs exactes à recopier.
    Si elles diffèrent de celles ci-dessous, ce sont CELLES DE NETLIFY qui comptent.
@@ -31,7 +31,7 @@ Chemin : ionos.fr > Menu > « Domaines & SSL » > cliquez sur votre domaine > on
   │ CNAME   │ www            │ VOTRE-SITE.netlify.app       │ 1 heure│
   └─────────┴────────────────┴──────────────────────────────┴────────┘
 
-  - « @ » veut dire « le domaine lui-même » (VOTRE-DOMAINE.fr sans www).
+  - « @ » veut dire « le domaine lui-même » (maisonbartheau.com sans www).
   - Pour le CNAME, écrivez seulement « www » dans le nom d'hôte, IONOS ajoute
     le reste tout seul.
 
@@ -47,7 +47,7 @@ AVANT d'ajouter ces lignes, dans le même onglet DNS d'IONOS :
 
 NE TOUCHEZ PAS :
   ✓ aux enregistrements MX, TXT (SPF, « v=spf1 »), DKIM, « autodiscover » :
-    ils font marcher votre adresse e-mail IONOS (contact@VOTRE-DOMAINE.fr).
+    ils font marcher votre adresse e-mail IONOS (contact@maisonbartheau.com).
     Les supprimer couperait vos e-mails.
 
 
@@ -59,18 +59,18 @@ NE TOUCHEZ PAS :
   puis « HTTPS » s'active tout seul (certificat gratuit Let's Encrypt).
   Si ce n'est pas le cas après 24 h : bouton « Verify DNS configuration »,
   puis « Provision certificate ».
-- Test : ouvrez https://www.VOTRE-DOMAINE.fr et https://VOTRE-DOMAINE.fr :
+- Test : ouvrez https://www.maisonbartheau.com et https://maisonbartheau.com :
   les deux doivent afficher le site avec un cadenas.
 
 
 ÉTAPE 4 · APRÈS LE BRANCHEMENT
 --------------------------------------------------------------------
 1. Stripe > Développeurs > Webhooks : mettez l'adresse
-   https://www.VOTRE-DOMAINE.fr/api/stripe-webhook
+   https://www.maisonbartheau.com/api/stripe-webhook
    (à la place de celle en .netlify.app), et vérifiez que le secret whsec_
    dans Netlify est bien celui de cette destination.
 2. Dites à Claude votre nom de domaine : il le mettra dans robots.txt,
    sitemap.xml et l'image de partage sur les réseaux sociaux.
 3. Facultatif : Google Search Console (search.google.com/search-console)
-   > ajouter le domaine > envoyer https://www.VOTRE-DOMAINE.fr/sitemap.xml
+   > ajouter le domaine > envoyer https://www.maisonbartheau.com/sitemap.xml
    pour être trouvé plus vite sur Google.

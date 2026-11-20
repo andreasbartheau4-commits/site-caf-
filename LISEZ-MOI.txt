@@ -27,7 +27,7 @@ AVANT LA MISE EN LIGNE (obligatoire en France)
    hébergeur, médiateur de la consommation (et Instagram si vous en avez un).
    Tant qu'un champ est vide, le site affiche « à compléter ».
 2. Faites relire cgv.html par un professionnel si possible (modèle sérieux, mais générique).
-3. Quand vous avez votre nom de domaine : remplacez VOTRE-DOMAINE.fr dans robots.txt
+3. Quand vous avez votre nom de domaine : remplacez maisonbartheau.com dans robots.txt
    et sitemap.xml.
 
 METTRE EN LIGNE

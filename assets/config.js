@@ -4,14 +4,14 @@
    Tant qu'un champ est vide (""), le site affiche « à compléter ».
    ===================================================================== */
 var INFO = {
-  nom:           "",                               /* Prénom NOM de l'entrepreneur */
-  siret:         "",                               /* 14 chiffres */
-  adresse:       "Pays de la Loire",               /* Adresse postale complète (mentions légales) */
+  nom:           "Andreas Bartheau",                               /* Prénom NOM de l'entrepreneur */
+  siret:         "133 098 566 00010",                               /* 14 chiffres */
+  adresse:       "11 la Guilbaudière, 44650 Legé",               /* Adresse postale complète (mentions légales) */
   email:         "maisonbartheau.cafe@gmail.com",      /* Contact affiché sur le site */
   emailCommande: "maisonbartheau.cafe@gmail.com",      /* Où arrivent les commandes */
   tel:           "",                               /* Ex. 06 12 34 56 78 */
   instagram:     "",                               /* Ex. https://instagram.com/maisonbartheau */
-  hebergeur:     "",                               /* Nom, adresse et téléphone de l'hébergeur */
+  hebergeur:     "Netlify, Inc., 101 2nd Street, Suite 575, San Francisco, CA 94105, États-Unis (www.netlify.com)",                               /* Nom, adresse et téléphone de l'hébergeur */
   mediateur:     ""                                /* Nom et site du médiateur de la consommation */
 };
 
