@@ -58,16 +58,19 @@ d'hébergement web (l'entrée de gamme suffit).
      Événements : checkout.session.completed, checkout.session.async_payment_succeeded,
                   invoice.paid, customer.subscription.deleted
    Copiez le « Secret de signature » (whsec_...).
-6. E-MAIL D'ENVOI : créez chez IONOS une boîte du domaine, par exemple
-   commandes@maisonbartheau.com (Menu > E-mail). Les mails de la boutique partent
-   de cette adresse : sans elle, ils risquent d'arriver dans les spams.
+6. E-MAILS : vous recevez tout sur maisonbartheau.cafe@gmail.com (commandes,
+   renouvellements, fins d'abonnement, réponses des clients).
+   Pour que les e-mails automatiques ne tombent pas en spam, ils partent d'une
+   adresse technique du domaine : boutique@maisonbartheau.com.
+   Chez IONOS : Menu > E-mail > « Redirection » : boutique@maisonbartheau.com
+   vers maisonbartheau.cafe@gmail.com. Rien d'autre à consulter.
 7. Dans le Webspace Explorer, dossier api/ : copiez config.exemple.php sous le nom
    config.php, puis remplissez dans config.php :
      'secret_key'     => la clé secrète Stripe (sk_test_... pour essayer d'abord)
      'webhook_secret' => le secret whsec_... de l'étape 5
      'portal_url'     => le lien du portail client de l'étape 4
-     'mail_from'      => commandes@maisonbartheau.com (étape 6)
-     'mail_admin'     => l'adresse qui reçoit les commandes (vide = celle du site)
+     'mail_from'      => boutique@maisonbartheau.com (déjà rempli, étape 6)
+     'mail_admin'     => maisonbartheau.cafe@gmail.com (déjà rempli)
 8. Frais d'envoi : ils sont déjà remplis dans assets/config.js (« grille »),
    aux tarifs publics 2026. Ajustez-les après avoir pesé vos vrais colis.
 

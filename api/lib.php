@@ -110,7 +110,7 @@ function bc_mail(string $to, string $subject, string $text, string $replyTo = ''
   if (!filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
   $info = bc_site()['info'];
   $from = trim((string)(bc_conf()['mail_from'] ?? ''));
-  if (!filter_var($from, FILTER_VALIDATE_EMAIL)) $from = 'boutique@' . preg_replace('~^www\.~', '', preg_replace('~[^A-Za-z0-9.-]~', '', $_SERVER['HTTP_HOST'] ?? 'maisonbartheau.com'));
+  if (!filter_var($from, FILTER_VALIDATE_EMAIL) || preg_match('~@(gmail|googlemail|hotmail|outlook|yahoo)\.~i', $from)) $from = 'boutique@maisonbartheau.com'; // jamais une adresse Gmail en expéditeur
   $headers = [
     'From: ' . mb_encode_mimeheader('Maison Bartheau Café', 'UTF-8', 'Q') . ' <' . $from . '>',
     'Reply-To: ' . (filter_var($replyTo, FILTER_VALIDATE_EMAIL) ? $replyTo : ($info['email'] ?? $from)),

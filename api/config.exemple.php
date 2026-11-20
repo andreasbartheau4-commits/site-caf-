@@ -16,10 +16,14 @@ return [
   // Stripe > Paramètres > Billing > Portail client > « Lien de connexion » (https://billing.stripe.com/p/login/...)
   'portal_url' => '',
 
-  // Adresse qui ENVOIE les e-mails de la boutique : de préférence une boîte de votre domaine
-  // créée chez IONOS (ex. commandes@maisonbartheau.com), sinon les mails risquent les spams.
-  'mail_from' => '',
+  // Adresse technique qui EXPÉDIE les e-mails automatiques de la boutique.
+  // Elle doit être de votre domaine (Gmail refuse les mails envoyés « en son nom »
+  // depuis un autre serveur). Les clients ne la voient presque pas : toutes leurs
+  // RÉPONSES arrivent sur maisonbartheau.cafe@gmail.com.
+  // Chez IONOS : Menu > E-mail > créez une « redirection » boutique@maisonbartheau.com
+  // vers maisonbartheau.cafe@gmail.com (aucune boîte à consulter en plus).
+  'mail_from' => 'boutique@maisonbartheau.com',
 
-  // Adresse qui REÇOIT les commandes (vide = l'e-mail de commande de assets/config.js)
-  'mail_admin' => '',
+  // Adresse qui REÇOIT les commandes, renouvellements et fins d'abonnement
+  'mail_admin' => 'maisonbartheau.cafe@gmail.com',
 ];
