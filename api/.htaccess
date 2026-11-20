@@ -1,0 +1,5 @@
+# Dossier du paiement : seul checkout.php est accessible depuis le navigateur.
+Options -Indexes
+<FilesMatch "^(cle-stripe|lib)\.php$">
+  Require all denied
+</FilesMatch>

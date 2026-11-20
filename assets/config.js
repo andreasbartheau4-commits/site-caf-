@@ -4,14 +4,15 @@
    Tant qu'un champ est vide (""), le site affiche « à compléter ».
    ===================================================================== */
 var INFO = {
-  nom:           "Andreas Bartheau",                               /* Prénom NOM de l'entrepreneur */
+  nom:           "Andréas Bartheau",                               /* Prénom NOM de l'entrepreneur */
   siret:         "133 098 566 00010",                               /* 14 chiffres */
+  rcs:           "RCS Nantes 133 098 566",          /* Numéro d'immatriculation (extrait Kbis) */
   adresse:       "11 la Guilbaudière, 44650 Legé",               /* Adresse postale complète (mentions légales) */
   email:         "maisonbartheau.cafe@gmail.com",      /* Contact affiché sur le site */
   emailCommande: "maisonbartheau.cafe@gmail.com",      /* Où arrivent les commandes */
   tel:           "",                               /* Ex. 06 12 34 56 78 */
   instagram:     "",                               /* Ex. https://instagram.com/maisonbartheau */
-  hebergeur:     "Netlify, Inc., 101 2nd Street, Suite 575, San Francisco, CA 94105, États-Unis (www.netlify.com)",                               /* Nom, adresse et téléphone de l'hébergeur */
+  hebergeur:     "IONOS SARL, 7 place de la Gare, 57200 Sarreguemines, France · 09 70 80 89 11",                               /* Nom, adresse et téléphone de l'hébergeur */
   mediateur:     ""                                /* Nom et site du médiateur de la consommation */
 };
 
@@ -21,7 +22,7 @@ var PRICE = 11.90;
 /* =====================================================================
    LIVRAISON (utilisé par le site ET par le paiement en ligne)
    Le paiement par carte, Apple Pay et Google Pay passe par Stripe :
-   voir LISEZ-MOI.txt pour l'activer. Aucune clé secrète ne va dans ce fichier.
+   la clé secrète va dans api/cle-stripe.php (voir LISEZ-MOI.txt), jamais ici.
    ===================================================================== */
 var LIVRAISON = {
   /* Frais d'envoi d'un colis en France, en euros TTC, ex. 6.90.

@@ -1,13 +1,26 @@
-# Réglages pour les hébergeurs Apache (OVH, o2switch, Hostinger, IONOS...). Ignoré ailleurs.
+# Maison Bartheau Café · réglages pour l'hébergement IONOS (Apache).
 ErrorDocument 404 /404.html
 DirectoryIndex index.html
 AddDefaultCharset UTF-8
 AddType application/manifest+json .webmanifest
+AddType font/woff2 .woff2
+Options -Indexes
 
-# Forcer le HTTPS (décommentez une fois le certificat SSL actif)
-# RewriteEngine On
-# RewriteCond %{HTTPS} off
-# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # 1. Toujours en HTTPS (cadenas). Le certificat SSL est fourni gratuitement par IONOS.
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  # 2. Toujours avec « www » : maisonbartheau.com → www.maisonbartheau.com
+  RewriteCond %{HTTP_HOST} ^maisonbartheau\.com$ [NC]
+  RewriteRule ^ https://www.maisonbartheau.com%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Fichiers de travail : jamais visibles en ligne
+<FilesMatch "^(LISEZ-MOI\.txt|MISE-EN-LIGNE-IONOS\.txt|\.git.*)$">
+  Require all denied
+</FilesMatch>
 
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml application/manifest+json
@@ -17,12 +30,14 @@ AddType application/manifest+json .webmanifest
   ExpiresActive On
   ExpiresByType image/jpeg "access plus 1 month"
   ExpiresByType image/png "access plus 1 month"
-  ExpiresByType text/css "access plus 1 week"
-  ExpiresByType application/javascript "access plus 1 week"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/css "access plus 1 day"
+  ExpiresByType application/javascript "access plus 1 day"
   ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
 <IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000"
   Header set X-Content-Type-Options "nosniff"
   Header set Referrer-Policy "strict-origin-when-cross-origin"
   Header set X-Frame-Options "SAMEORIGIN"

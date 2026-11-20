@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /pro.html
-Disallow: /gestion.html
 
 Sitemap: https://www.maisonbartheau.com/sitemap.xml

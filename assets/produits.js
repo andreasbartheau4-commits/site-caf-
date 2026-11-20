@@ -16,10 +16,10 @@
                      n'apparaissent que s'ils sont remplis
      prix .......... prix TTC du sachet, en euros (chiffre, ex. 11.90)
      poids ......... ex. "250 g"
-     formats ....... les formules proposées pour ce café. « sachets » = combien de
-                     sachets de 250 g sont retirés du stock à chaque vente.
-                     Le stock (page gestion.html) se compte toujours en sachets.
+     formats ....... les formules proposées pour ce café (sachet, duo, kilo) :
+                     nom affiché, nombre de sachets de 250 g, prix TTC.
      disponible .... true = commandable ; false = affiché « Bientôt disponible »
+                     (mettez false quand un café est épuisé)
      badge ......... petite étiquette facultative, ex. "Nouveau", "Édition limitée"
 
    Pour supprimer un produit : effacez tout son bloc, de { jusqu'à },
@@ -30,7 +30,7 @@ var PRODUITS = [
     id: "maison",
     nom: "Le café de la Maison",
     accroche: "La recette de famille",
-    description: "L'assemblage qui a donné son nom à la Maison. Une recette transmise, que nous gardons telle qu'elle est, torréfiée artisanalement en petits lots numérotés. En grains, ou moulu pour votre machine.",
+    description: "L'assemblage qui a donné son nom à la Maison. Une recette transmise, que nous gardons telle qu'elle est, torréfiée en petits lots numérotés par un artisan torréfacteur. En grains, ou moulu pour votre machine.",
     image: "",
     origine: "",
     torrefaction: "",

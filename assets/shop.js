@@ -1,5 +1,5 @@
-/* Maison Bartheau Café · panier, stock en direct et paiement Stripe.
-   Le prix payé est toujours recalculé par le serveur (netlify/functions/checkout.mjs).
+/* Maison Bartheau Café · panier et paiement Stripe (hébergement IONOS).
+   Le prix payé est toujours recalculé par le serveur (api/checkout.php).
    Si le paiement en ligne n'est pas encore activé, le panier se transforme en
    commande à envoyer par e-mail, comme avant. */
 (function(){
@@ -19,7 +19,7 @@
   function grams(p){ var m = String(p.poids || "250 g").match(/([\d.,]+)\s*(k?g)/i); if(!m) return 250; var v = parseFloat(m[1].replace(",", ".")); return /kg/i.test(m[2]) ? v * 1000 : v; }
   function avail(){ return LIST.filter(function(p){ return p.disponible; }); }
   function live(){ return !!(API && API.ok && API.paiement); }
-  function stockOf(id){ return live() ? Math.max(0, Number(API.stock[id]) || 0) : Infinity; }
+  function stockOf(id){ return Infinity; } // pas de stock en ligne : la Maison gère son stock elle-même
   function offOf(l){ return BCOffre(byId[l.id], l.offre); }
   function units(l){ return l.qty * offOf(l).sachets; }
   function inCart(id){ return cart.filter(function(l){ return l.id === id; }).reduce(function(s, l){ return s + units(l); }, 0); }
@@ -77,7 +77,7 @@
     pp.appendChild(el("small", null, o.sachets > 1 ? o.sachets + " sachets de " + (p.poids || "250 g") + ", soit " + eurS(per) + " le sachet" : "le sachet de " + (p.poids || "250 g")));
     drawOffres();
     var left = stockOf(p.id) - inCart(p.id), sl = $("pStock");
-    if(live()){
+    if(false){
       sl.hidden = false;
       sl.className = "stockline " + (left <= 0 ? "out" : left <= 5 ? "low" : "ok");
       sl.textContent = stockOf(p.id) <= 0 ? "Rupture de stock · revient bientôt" : left <= 0 ? "Tout le stock disponible est déjà dans votre panier" : left <= 5 ? "Plus que " + left + (left > 1 ? " sachets" : " sachet") + " en stock" : "En stock · expédié rapidement";
@@ -226,7 +226,7 @@
     var acc = lsGet("bc-client", null);
     b.disabled = true; b.classList.add("loading"); $("payLbl").textContent = "Ouverture du paiement sécurisé…";
     st.className = "status"; st.textContent = "";
-    fetch("/api/checkout", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({
+    fetch("api/checkout.php", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({
       items: cart.map(function(l){ return {id:l.id, offre:offOf(l).id, qty:l.qty, format:l.format, mouture:l.mouture, machine:l.machine}; }),
       mode: A.abo ? "abo" : "unique", rythme: A.per, engagement: A.months,
       reception: T.retrait ? "retrait" : "livraison",
@@ -236,7 +236,6 @@
         lsSet(PEND_KEY, {id:res.j.id, ref:res.j.reference, n:T.n, abo:A.abo, at:Date.now()});
         location.href = res.j.url; return;
       }
-      if(res.status === 409 && res.j.stock && API) Object.keys(res.j.stock).forEach(function(id){ API.stock[id] = res.j.stock[id]; });
       throw new Error((res.j && res.j.error) || "Le paiement n'a pas pu être ouvert.");
     }).catch(function(e){
       st.className = "status err"; st.textContent = e.message && e.message !== "Failed to fetch" ? e.message : "Connexion impossible. Vérifiez votre réseau et réessayez.";
@@ -248,7 +247,6 @@
   function cleanUrl(){ try{ history.replaceState(null, "", location.pathname + location.hash); }catch(e){} }
   var q = new URLSearchParams(location.search);
   if(q.get("annule")){
-    fetch("/api/cancel", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({id:q.get("annule")})}).catch(function(){}).then(loadStock);
     try{ localStorage.removeItem(PEND_KEY); }catch(e){}
     $("status").className = "status"; $("status").textContent = "Paiement annulé : votre panier est toujours là.";
     cleanUrl();
@@ -264,17 +262,13 @@
     cleanUrl();
   }
 
-  /* ---------- Stock en direct ---------- */
+  /* ---------- Le paiement en ligne est-il actif ? (api/checkout.php) ---------- */
   function loadStock(){
-    return fetch("/api/stock", {cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){ API = j; }).catch(function(){ API = null; }).then(function(){
-      // retire du panier ce qui n'est plus en stock
-      if(live()) cart.forEach(function(l){ var left = stockOf(l.id) - cart.filter(function(x){ return x !== l && x.id === l.id; }).reduce(function(s, x){ return s + units(x); }, 0), per = offOf(l).sachets; if(l.qty * per > left) l.qty = Math.max(0, Math.floor(left / per)); });
-      cart = cart.filter(function(l){ return l.qty > 0; }); saveCart();
+    return fetch("api/checkout.php", {cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){ API = j && j.ok ? j : null; }).catch(function(){ API = null; }).then(function(){
       fillProducts(); drawComposer(); drawCart();
       stockCbs.forEach(function(cb){ try{ cb(); }catch(e){} });
     });
   }
-  document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "visible") loadStock(); });
   window.addEventListener("bc-account", drawCart);
   // le mini-panier de la barre du haut a modifié le panier
   window.addEventListener("bc-cart-ext", function(){

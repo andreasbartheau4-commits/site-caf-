@@ -1,7 +1,7 @@
 {
   "name": "Maison Bartheau Café",
   "short_name": "Bartheau",
-  "description": "Torréfaction artisanale en Pays de la Loire.",
+  "description": "Café de famille, torréfaction artisanale.",
   "lang": "fr",
   "start_url": "index.html",
   "display": "standalone",
