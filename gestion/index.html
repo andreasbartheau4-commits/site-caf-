@@ -412,7 +412,7 @@ const DEFAULT_SETTINGS = {
   relanceDevisJours: 7, relance1: 3, relance2: 15, relance3: 30, merciAuto: true,
   tauxPenalites: "trois fois le taux d'intérêt légal", mentions: 'RCS Nantes 133 098 566', signature: '', envoi: 'gmail', theme: 'auto', templates: {}
 };
-function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {}, commandes: [], commandesIgnorees: [], recus: [], mailsIgnores: [], mailsIgnoresDate: {} }; }
+function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {}, commandes: [], commandesIgnorees: [], recus: [], mailsIgnores: [], mailsIgnoresDate: {}, msgVus: [], threadN: {} }; }
 let state = migrate(load());
 /* mises à jour des réglages enregistrés : adresse pro de l'entreprise */
 function migrate(st) { const s = st.settings; if (!s.email || s.email === 'andreasbartheau@gmail.com') s.email = 'maisonbartheau.cafe@gmail.com'; if (!s.gmailCompte) s.gmailCompte = s.email;
@@ -427,7 +427,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catc
 
 /* ============ synchronisation compte (version en ligne) ============ */
 const isArt = () => !!(window.claude && typeof window.claude.use === 'function');
-const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations', 'commandes', 'commandesIgnorees', 'recus', 'mailsIgnores', 'mailsIgnoresDate'];
+const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations', 'commandes', 'commandesIgnorees', 'recus', 'mailsIgnores', 'mailsIgnoresDate', 'msgVus', 'threadN'];
 const CHUNK = 180000;
 const SYNC = {
   col: null, last: {}, timer: null, busy: false, again: false, status: 'local',
@@ -1394,18 +1394,18 @@ function orderLabel(o) {
 }
 function parseOrder(text, subject = '') {
   const T = String(text || '').replace(/\r/g, ''); const head = subject + '\n' + T.slice(0, 400);
-  const type = /ABONNEMENT TERMINÉ/i.test(T) ? 'fin' : /LIVRAISON D'ABONNEMENT À PRÉPARER/i.test(T) ? 'renouvellement' : /NOUVEL ABONNEMENT/i.test(T) ? 'abonnement'
+  const type = /ABONNEMENT TERMINÉ/i.test(T) ? 'fin' : /LIVRAISON D'ABONNEMENT À PRÉPARER|renouvellement d'abonnement/i.test(T) ? 'renouvellement' : /NOUVEL ABONNEMENT/i.test(T) ? 'abonnement'
     : /NOUVELLE COMMANDE PAYÉE/i.test(T) ? 'particulier' : /COMMANDE PROFESSIONNELLE MAISON BARTHEAU/i.test(T) ? 'pro' : /ABONNEMENT MAISON BARTHEAU/i.test(T) ? 'abonnement'
     : /COMMANDE MAISON BARTHEAU/i.test(T) ? 'particulier' : /dégustation/i.test(head) ? 'degustation' : /(accès|accéder).{0,40}professionnel|tarifs professionnels/i.test(head) ? 'acces' : '';
   if (!type) return null;
-  const paye = /NOUVELLE COMMANDE PAYÉE|NOUVEL ABONNEMENT|LIVRAISON D'ABONNEMENT À PRÉPARER/i.test(T);
+  const paye = /NOUVELLE COMMANDE PAYÉE|NOUVEL ABONNEMENT|LIVRAISON D'ABONNEMENT À PRÉPARER|^\s*Statut\s*:\s*PAYÉE/im.test(T);
   const line = k => { const m = T.match(new RegExp('^[ \\t]*-?[ \\t]*' + k + '[ \\t]*:[ \\t]*(.+)$', 'mi')); return m ? m[1].trim() : ''; };
   const block = re => { const m = T.split(re)[1]; return m ? m.replace(/^[^\n]*\n/, '').split(/\n[ \t]*\n/)[0] : ''; };
   const isTel = x => !/@/.test(x) && x.replace(/\D/g, '').length >= 9 && !/\d{5}\s+\S/.test(x);
   // client : bloc « CLIENT » des emails du paiement en ligne, sinon lignes « Nom / Contact »
   let nom = '', email = '', tel = '', adresse = '';
   const cb = (T.match(/^CLIENT[^\n]*\n([\s\S]*?)(?:\n[ \t]*\n|(?![\s\S]))/m) || [])[1] || '';
-  if (paye && cb) { const L = cb.split('\n').map(x => x.trim()).filter(Boolean); nom = L.shift() || ''; email = L.find(x => /@/.test(x)) || ''; tel = L.find(isTel) || ''; adresse = L.filter(x => x !== email && x !== tel).join(', '); }
+  if (paye && cb && !/^\s*Nom\s*:/m.test(cb)) { const L = cb.split('\n').map(x => x.trim()).filter(Boolean); nom = L.shift() || ''; email = L.find(x => /@/.test(x)) || ''; tel = L.find(isTel) || ''; adresse = L.filter(x => x !== email && x !== tel).join(', '); }
   else {
     const contact = line('Contact').split(/\s*·\s*/).filter(Boolean);
     email = contact.find(x => /@/.test(x)) || ''; tel = contact.find(isTel) || line('Téléphone') || line('Tél');
@@ -1415,16 +1415,18 @@ function parseOrder(text, subject = '') {
   if (!email) email = (T.match(/[\w.+-]+@[\w-]+\.[\w.-]+/) || [''])[0];
   const etab = line('Établissement').replace(/\s*\([^)]*\)\s*$/, '');
   if (!nom) nom = etab;
-  const prep = (type === 'renouvellement' ? block(/LIVRAISON D'ABONNEMENT[^\n]*/i) : block(/À PRÉPARER/i)).trim();
+  const prep = (/À PRÉPARER/i.test(T) ? block(/À PRÉPARER/i) : block(/LIVRAISON D'ABONNEMENT[^\n]*/i)).trim();
   let quantite = 0, unite = 'sachet';
   const sach = line('Sachets');
   if (type === 'pro') { unite = 'kg'; quantite = parseFloat(((prep.match(/([\d.,]+)\s*kg/i) || [])[1] || '0').replace(',', '.')) || 0; }
   else if (sach) quantite = parseInt(sach) || 0;
+  else if (/(\d+)\s*[×x]\s*sachets?\s*250\s*g\s*au total/i.test(prep)) quantite = parseInt(prep.match(/(\d+)\s*[×x]\s*sachets?\s*250\s*g\s*au total/i)[1]) || 0;
   else for (const m of prep.matchAll(/^\s*(?:\d+\.|•)?\s*(\d+)\s*[×x]\s*([^\n]*)/gmi)) quantite += (parseInt(m[1]) || 0) * (/kilo|1\s*kg/i.test(m[2]) ? 4 : /duo/i.test(m[2]) ? 2 : 1);
   const tm = T.match(/(?:TOTAL|PAYÉ)\s*:\s*([\d\s  .]*\d,\d{2})\s*€\s*(TTC|HT)?/i);
   const total = tm ? parseFloat(tm[1].replace(/[\s  .]/g, '').replace(',', '.')) : 0;
   const envoiTxt = line('ENVOI') || line('Réception');
-  const em = envoiTxt.match(/\(([\d\s.]*\d,\d{2})\s*€\)/); const envoi = em ? parseFloat(em[1].replace(/[\s.]/g, '').replace(',', '.')) : 0;
+  const fe = line("Frais d'envoi");
+  const em = (fe.match(/([\d\s.]*\d,\d{2})\s*€/) || envoiTxt.match(/\(([\d\s.]*\d,\d{2})\s*€\)/)); const envoi = em ? parseFloat(em[1].replace(/[\s.]/g, '').replace(',', '.')) : 0;
   const d = T.match(/Date\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   const ref = (T.match(/réf\.\s*([A-Z0-9-]{4,})/i) || T.match(/·\s*([A-Z]{2,4}-[A-Z0-9-]{4,})/) || subject.match(/([A-Z]{2,4}-\d{4}-[A-Z0-9]{3,})/) || [])[1] || '';
   return {
@@ -1452,20 +1454,33 @@ async function gmailSync(manual) {
   try {
     const r = await mcp.callTool('Gmail', 'search_threads', { query: GM_QUERY, pageSize: 50, view: 'THREAD_VIEW_MINIMAL' });
     const threads = ((r && r.payload) || {}).threads || []; let added = 0;
+    // suivi message par message : un même fil Gmail peut contenir plusieurs commandes (même référence, renvoi…)
+    const vus = new Set(state.msgVus || []); const tn = state.threadN = state.threadN || {}; const ign = state.commandesIgnorees || [];
     for (const t of threads) {
-      if (state.commandes.some(o => o.threadId === t.id) || (state.commandesIgnorees || []).includes(t.id)) continue;
+      const n = t.messageCount || (t.messages || []).length || 1;
+      if (tn[t.id] === n) continue;
       const g = await mcp.callTool('Gmail', 'get_thread', { threadId: t.id, messageFormat: 'PLAIN_TEXT' });
-      const p = (g && g.payload) || {}; const m = (p.messages || [])[0]; if (!m) continue;
-      const o = parseOrder(m.plaintextBody || m.snippet || '', m.subject || ''); if (!o) continue;
-      if (o.ref && o.type !== 'renouvellement' && o.type !== 'fin' && (state.commandes.some(x => x.ref === o.ref && x.type === o.type) || (state.commandesIgnorees || []).includes(o.ref))) continue;
-      o.threadId = t.id; o.viewUrl = p.viewUrl || m.viewUrl || ''; o.source = 'gmail';
-      if (m.date) { const dt = new Date(m.date); if (!isNaN(dt)) o.recu = isoOf(dt); }
-      if (!o.client.email && m.sender) o.client.email = String(m.sender).replace(/^.*<|>.*$/g, '');
-      state.commandes.unshift(o); added++;
+      const p = (g && g.payload) || {}; const msgs = p.messages || [];
+      const legacy = tn[t.id] === undefined; // fil déjà vu avec l'ancienne version (suivi par conversation)
+      msgs.forEach((m, i) => {
+        const mid = m.id || (t.id + ':' + i); if (vus.has(mid)) return; vus.add(mid);
+        if (ign.includes(mid)) return;
+        const o = parseOrder(m.plaintextBody || m.snippet || '', m.subject || ''); if (!o) return;
+        // ancienne version : le 1er message du fil était déjà importé (ou supprimé) sans identifiant de message
+        if (legacy && i === 0) { const ex = state.commandes.find(x => x.threadId === t.id && !x.msgId); if (ex) { ex.msgId = mid; return; } if (ign.includes(t.id)) return; }
+        if (state.commandes.some(x => x.msgId === mid)) return;
+        o.threadId = t.id; o.msgId = mid; o.viewUrl = m.viewUrl || p.viewUrl || ''; o.source = 'gmail';
+        if (m.date) { const dt = new Date(m.date); if (!isNaN(dt)) o.recu = isoOf(dt); }
+        if (!o.client.email && m.sender) o.client.email = String(m.sender).replace(/^.*<|>.*$/g, '');
+        if (o.ref && state.commandes.some(x => x.ref === o.ref && x.type === o.type && x.statut !== 'annulee')) o.doublon = true;
+        state.commandes.unshift(o); added++;
+      });
+      tn[t.id] = msgs.length || n;
     }
+    state.msgVus = [...vus].slice(-800);
     await syncRecus(mcp);
     GM.st = 'ok'; GM.last = Date.now(); GM.err = '';
-    if (added) { save(); toast(`${added} nouvelle${added > 1 ? 's' : ''} commande${added > 1 ? 's' : ''} du site ✔`); } else if (manual) toast('Aucune nouvelle commande');
+    save(); if (added) toast(`${added} nouvelle${added > 1 ? 's' : ''} commande${added > 1 ? 's' : ''} du site ✔`); else if (manual) toast('Aucune nouvelle commande');
   } catch (e) { GM.st = 'err'; GM.err = (e && e.code) || 'upstream_error'; if (manual) toast('Lecture de Gmail impossible'); }
   GM.busy = false; render();
 }
@@ -1516,7 +1531,7 @@ VIEW.commandes = () => {
     <div class="row">${all.some(o => o.statut === 'nouvelle') ? `<button class="btn sm" data-act="supprNonConfirmees">Supprimer les non confirmées</button>` : ''}<button class="btn sm danger" id="delSelC" data-act="supprSelC" disabled>Supprimer la sélection</button></div></div>
   ${list.length ? `<div class="tbl-wrap"><table><thead><tr><th style="width:28px"><input type="checkbox" id="selAllC" aria-label="Tout sélectionner"></th><th>Reçue</th><th>Client</th><th>Commande</th><th class="n">Total</th><th>Statut</th><th></th></tr></thead><tbody>
   ${list.map(o => `<tr><td><input type="checkbox" class="selC" data-id="${o.id}" aria-label="Sélectionner"></td><td>${fdate(o.recu)}<div class="small muted">${esc(o.ref || '')}</div></td><td><b>${esc(o.client.etab || o.client.nom || o.client.email || 'Client')}</b><div class="small muted">${esc(o.client.etab && o.client.nom ? o.client.nom : (o.client.reception === 'retrait' ? 'retrait en main propre' : (o.client.adresse || '').split(',').slice(-1)[0] || ''))}</div></td>
-   <td>${badge(C_TYPE[o.type] || ['?', 'b-mut'])} ${esc(orderLabel(o))}${o.rythme ? `<div class="small muted">${esc(o.rythme)}${o.engagement ? ' · ' + esc(o.engagement) : ''}</div>` : ''}${o.fidelite ? '<div class="small muted">sachet fidélité utilisé</div>' : ''}</td>
+   <td>${badge(C_TYPE[o.type] || ['?', 'b-mut'])} ${esc(orderLabel(o))}${o.rythme ? `<div class="small muted">${esc(o.rythme)}${o.engagement ? ' · ' + esc(o.engagement) : ''}</div>` : ''}${o.fidelite ? '<div class="small muted">sachet fidélité utilisé</div>' : ''}${o.doublon ? '<div class="small" style="color:var(--warn)">même référence qu\'une autre commande : renvoi ?</div>' : ''}</td>
    <td class="n">${o.total ? eur(o.total) + `<div class="small ${o.paye ? '' : 'muted'}" style="${o.paye ? 'color:var(--ok);font-weight:600' : ''}">${o.paye ? 'payée ✓' : o.ttc ? 'TTC' : 'HT'}</div>` : '—'}</td><td>${badge(C_STAT[o.statut] || C_STAT.nouvelle)}</td>
    <td class="act">${o.statut === 'nouvelle' ? (isDemande(o) ? `<button class="btn sm pri" data-act="repondreDemande" data-id="${o.id}">Répondre</button>` : `<button class="btn sm pri" data-act="confirmerCommande" data-id="${o.id}">Confirmer</button>`) : ''}${o.statut === 'confirmee' ? `<button class="btn sm pri" data-act="expedierCommande" data-id="${o.id}">Expédiée</button>` : ''} <button class="btn sm ghost" data-act="voirCommande" data-id="${o.id}">Voir</button><button class="btn sm ghost danger" data-act="supprimerCommande" data-id="${o.id}" title="Supprimer" aria-label="Supprimer">✕</button></td></tr>`).join('')}
   </tbody></table></div>` : emptyBox(all.length ? 'Rien ici' : 'Aucune commande pour le moment', all.length ? 'Change de filtre pour voir les autres commandes.' : 'Les commandes passées sur ton site apparaîtront ici dès qu\'elles arrivent dans ta boîte mail.')}</div>`;
@@ -1526,7 +1541,7 @@ ACT.gmailSync = () => gmailSync(true);
 ACT.collerCommande = () => openModal({ title: 'Ajouter une commande depuis un email', body: `<p class="muted" style="margin-top:0">Copie tout le texte de l'email de commande (ou de demande pro) et colle-le ici.</p><div class="fg"><div class="field full"><label for="pcSub">Objet de l'email (facultatif)</label><input id="pcSub"></div><div class="field full"><label for="pcTxt">Texte de l'email</label><textarea id="pcTxt" rows="12" placeholder="COMMANDE MAISON BARTHEAU CAFÉ, réf. BC-…"></textarea></div></div>`,
   foot: `<button class="btn" data-close2>Annuler</button><button class="btn pri" data-ok>Ajouter</button>`,
   mount(b) { $('[data-close2]', b).onclick = closeModal; $('[data-ok]', b).onclick = () => { const o = parseOrder($('#pcTxt', b).value, $('#pcSub', b).value); if (!o) return toast("Ce texte ne ressemble pas à une commande du site");
-    if (o.ref && state.commandes.some(x => x.ref === o.ref)) return toast('Cette commande est déjà dans la liste'); state.commandes.unshift(o); save(); closeModal(); location.hash = '#commandes'; render(); toast('Commande ajoutée ✔'); }; } });
+    if (o.ref && state.commandes.some(x => x.ref === o.ref && x.raw === o.raw)) return toast('Cette commande est déjà dans la liste'); state.commandes.unshift(o); save(); closeModal(); location.hash = '#commandes'; render(); toast('Commande ajoutée ✔'); }; } });
 ACT.voirCommande = id => { const o = getC(id); const c = o.client;
   menuDetail(o, `<div class="row" style="margin-bottom:12px">${badge(C_TYPE[o.type] || ['?', 'b-mut'])}${badge(C_STAT[o.statut] || C_STAT.nouvelle)}<span class="small muted">reçue le ${fdate(o.recu)}${o.ref ? ' · réf. ' + esc(o.ref) : ''}</span></div>
     <div class="grid g2" style="gap:12px"><div><h3 style="margin-bottom:6px">Client</h3><div>${[c.etab, c.nom].filter(Boolean).map(esc).join('<br>')}</div><div class="small">${[c.email, c.tel].filter(Boolean).map(esc).join(' · ')}</div><div class="small muted">${c.reception === 'retrait' ? 'Retrait en main propre' : esc(c.adresse || 'Adresse non précisée')}</div></div>
@@ -1552,7 +1567,7 @@ ACT.traiterCommande = id => { getC(id).statut = 'traitee'; save(); render(); };
 ACT.annulerCommande = id => confirmBox('Annuler cette commande ?', () => { getC(id).statut = 'annulee'; save(); render(); }, 'Annuler la commande');
 function delCommandes(ids) {
   const set = new Set(ids); const ign = state.commandesIgnorees = state.commandesIgnorees || [];
-  state.commandes.filter(o => set.has(o.id)).forEach(o => { if (o.threadId) ign.push(o.threadId); if (o.ref) ign.push(o.ref); });
+  state.commandes.filter(o => set.has(o.id)).forEach(o => { if (o.msgId) ign.push(o.msgId); else if (o.threadId) ign.push(o.threadId); });
   state.commandes = state.commandes.filter(o => !set.has(o.id)); save(); render(); toast(`${ids.length} commande${ids.length > 1 ? 's' : ''} supprimée${ids.length > 1 ? 's' : ''}`);
 }
 const selIds = cls => $$('.' + cls + ':checked').map(x => x.dataset.id);
