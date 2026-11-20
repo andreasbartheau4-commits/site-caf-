@@ -203,6 +203,15 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 
 /* ============ modèles d'emails ============ */
 const TEMPLATES = {
+  reponse_libre: { nom: 'Réponse libre', subject: 'Re: {objet}', body:
+`Bonjour {client_contact},
+
+Merci pour votre message.
+
+
+
+Bien cordialement,
+{signature}` },
   commande_confirmation: { nom: 'Commande site — confirmation', subject: 'Votre commande {numero} est confirmée – {entreprise}', body:
 `Bonjour {client_contact},
 
@@ -390,7 +399,7 @@ Au plaisir d'échanger avec vous très prochainement.
 Bien cordialement,
 {signature}` },
 };
-const PLACEHOLDERS = ['client', 'client_contact', 'numero', 'date', 'echeance', 'validite', 'montant_ht', 'montant_ttc', 'reste', 'montant_paye', 'jours_retard', 'derniere_relance', 'lignes', 'produits', 'infos_paiement', 'entreprise', 'signature', 'signature_courte', 'adresse_complete', 'taux_penalites', 'articles', 'frais_envoi', 'suivi'];
+const PLACEHOLDERS = ['client', 'client_contact', 'numero', 'date', 'echeance', 'validite', 'montant_ht', 'montant_ttc', 'reste', 'montant_paye', 'jours_retard', 'derniere_relance', 'lignes', 'produits', 'infos_paiement', 'entreprise', 'signature', 'signature_courte', 'adresse_complete', 'taux_penalites', 'articles', 'frais_envoi', 'suivi', 'objet'];
 
 /* ============ état ============ */
 const KEY = 'maison-bartheau-gestion-v1';
@@ -403,7 +412,7 @@ const DEFAULT_SETTINGS = {
   relanceDevisJours: 7, relance1: 3, relance2: 15, relance3: 30, merciAuto: true,
   tauxPenalites: "trois fois le taux d'intérêt légal", mentions: 'RCS Nantes 133 098 566', signature: '', envoi: 'gmail', theme: 'auto', templates: {}
 };
-function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {}, commandes: [], commandesIgnorees: [] }; }
+function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {}, commandes: [], commandesIgnorees: [], recus: [] }; }
 let state = migrate(load());
 /* mises à jour des réglages enregistrés : adresse pro de l'entreprise */
 function migrate(st) { const s = st.settings; if (!s.email || s.email === 'andreasbartheau@gmail.com') s.email = 'maisonbartheau.cafe@gmail.com'; if (!s.gmailCompte) s.gmailCompte = s.email;
@@ -418,7 +427,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catc
 
 /* ============ synchronisation compte (version en ligne) ============ */
 const isArt = () => !!(window.claude && typeof window.claude.use === 'function');
-const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations', 'commandes', 'commandesIgnorees'];
+const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations', 'commandes', 'commandesIgnorees', 'recus'];
 const CHUNK = 180000;
 const SYNC = {
   col: null, last: {}, timer: null, busy: false, again: false, status: 'local',
@@ -682,7 +691,7 @@ function confirmBox(msg, ok, label = 'Confirmer') {
 
 /* ============ navigation ============ */
 const ROUTES = [
-  ['aujourdhui', "Aujourd'hui"], ['commandes', 'Commandes site'], ['tableau', 'Tableau de bord'], ['devis', 'Devis'], ['factures', 'Factures'], ['stock', 'Stock'], ['achats', 'Achats'],
+  ['aujourdhui', "Aujourd'hui"], ['commandes', 'Commandes site'], ['mails', 'Emails'], ['tableau', 'Tableau de bord'], ['devis', 'Devis'], ['factures', 'Factures'], ['stock', 'Stock'], ['achats', 'Achats'],
   ['frais', 'Frais'], ['poche', 'Ce qui me reste'], ['tva', 'TVA'], ['urssaf', 'URSSAF'], ['clients', 'Clients'], ['signature', 'Signature'], ['reglages', 'Réglages']
 ];
 const route = () => { const h = location.hash.slice(1); return ROUTES.some(r => r[0] === h) ? h : 'aujourdhui'; };
@@ -695,7 +704,7 @@ function render() {
   const r = route(); const n = tasks().length; const late = state.factures.filter(f => fStatus(f) === 'retard').length;
   $('#nav').innerHTML = ROUTES.map(([k, l]) => {
     const nc = state.commandes.filter(o => o.statut === 'nouvelle').length;
-    const pill = k === 'aujourdhui' && n ? `<span class="pill">${n}</span>` : k === 'commandes' && nc ? `<span class="pill">${nc}</span>` : k === 'factures' && late ? `<span class="pill">${late}</span>` : k === 'stock' && lowStock().length ? `<span class="pill">${lowStock().length}</span>` : '';
+    const pill = k === 'aujourdhui' && n ? `<span class="pill">${n}</span>` : k === 'commandes' && nc ? `<span class="pill">${nc}</span>` : k === 'mails' && state.recus.filter(m => !m.lu).length ? `<span class="pill">${state.recus.filter(m => !m.lu).length}</span>` : k === 'factures' && late ? `<span class="pill">${late}</span>` : k === 'stock' && lowStock().length ? `<span class="pill">${lowStock().length}</span>` : '';
     return `<a href="#${k}" class="${k === r ? 'on' : ''}">${l}${pill}</a>`;
   }).join('');
   const on = $('#nav a.on'); on && on.scrollIntoView({ block: 'nearest', inline: 'center' });
@@ -786,9 +795,10 @@ VIEW.aujourdhui = () => {
       ${ts.length ? ts.map(x => `<div class="task"><span class="dot ${x.kind}"></span><div class="t"><b>${esc(x.title)}</b><div>${esc(x.sub)}</div></div>${x.href ? `<a class="btn sm" href="${x.href}">${x.btn}</a>` : `<button class="btn sm ${x.kind === 'bad' ? 'pri' : ''}" data-act="${x.act}" data-id="${esc(x.id)}">${x.btn}</button>`}</div>`).join('')
       : emptyBox('Rien d\'urgent 🎉', 'Les relances, devis à suivre, ruptures de stock et déclarations apparaîtront ici.')}
     </div>
-    <div class="card"><div class="sec-title"><h2>Derniers emails</h2><span class="small muted">${state.emails.length} au total</span></div>
-      ${state.emails.length ? `<div class="tbl-wrap"><table><tbody>${state.emails.slice(0, 8).map(m => `<tr><td class="small muted" style="white-space:nowrap">${fdate(m.date)}</td><td><div style="font-weight:500">${esc(m.subject)}</div><div class="small muted">${esc(m.to || 'sans destinataire')}</div></td></tr>`).join('')}</tbody></table></div>`
-      : emptyBox('Aucun email envoyé', 'Les emails envoyés depuis l\'app (devis, factures, relances, merci…) sont journalisés ici.')}
+    <div class="card"><div class="sec-title"><h2>Derniers emails</h2><a class="small" href="#mails">Tout voir →</a></div>
+      ${(() => { const L = [...state.recus.map(m => ({ k: m.envoye ? 'out' : 'in', t: m.date, d: m.date ? fdt(m.date) : '', s: m.subject, w: m.envoye ? m.to : (m.fromName || m.from), lu: m.lu || m.envoye })), ...state.emails.map(m => ({ k: 'out', t: m.ts ? new Date(m.ts).toISOString() : m.date, d: fdate(m.date), s: m.subject, w: m.to || 'sans destinataire', lu: true }))].sort((a, b) => (b.t || '').localeCompare(a.t || '')).slice(0, 8);
+        return L.length ? `<div class="tbl-wrap"><table><tbody>${L.map(m => `<tr><td style="width:22px;color:${m.k === 'in' ? 'var(--info)' : 'var(--muted)'}" title="${m.k === 'in' ? 'Reçu' : 'Envoyé'}">${m.k === 'in' ? '↓' : '↑'}</td><td class="small muted" style="white-space:nowrap">${esc(m.d)}</td><td><div style="font-weight:${m.lu ? 500 : 700}">${esc(m.s)}</div><div class="small muted">${m.k === 'in' ? 'de ' : 'à '}${esc(m.w)}</div></td></tr>`).join('')}</tbody></table></div>`
+        : emptyBox('Aucun email pour le moment', 'Les emails reçus sur ta boîte de l\'entreprise et ceux envoyés depuis l\'app apparaîtront ici.'); })()}
     </div>
   </div>`;
 };
@@ -1453,6 +1463,7 @@ async function gmailSync(manual) {
       if (!o.client.email && m.sender) o.client.email = String(m.sender).replace(/^.*<|>.*$/g, '');
       state.commandes.unshift(o); added++;
     }
+    await syncRecus(mcp);
     GM.st = 'ok'; GM.last = Date.now(); GM.err = '';
     if (added) { save(); toast(`${added} nouvelle${added > 1 ? 's' : ''} commande${added > 1 ? 's' : ''} du site ✔`); } else if (manual) toast('Aucune nouvelle commande');
   } catch (e) { GM.st = 'err'; GM.err = (e && e.code) || 'upstream_error'; if (manual) toast('Lecture de Gmail impossible'); }
@@ -1549,6 +1560,55 @@ ACT.facturerCommande = id => { const o = getC(id); const ci = o.client;
   if (o.envoiMontant) f.lignes.push({ desc: "Frais d'envoi", type: 'service', qte: 1, pu: r2(f.assujetti ? o.envoiMontant / 1.2 : o.envoiMontant), tva: 20 });
   if (o.paye) { f.paiements = [{ id: uid(), date: o.recu, montant: totals(f).ttc, mode: 'Carte bancaire (Stripe)' }]; f.notes = `Commande du site, réf. ${o.ref}. Payée en ligne le ${fdate(o.recu)}.`; }
   if (!o.paye) f.notes = `Commande du site, réf. ${o.ref}.`; state.factures.push(f); o.factureId = f.id; save(); location.hash = '#factures'; setTimeout(() => editDoc('facture', f.id), 50); };
+
+/* ----- emails reçus (boîte de l'entreprise) ----- */
+async function syncRecus(mcp) {
+  const acct = (S().gmailCompte || 'maisonbartheau.cafe@gmail.com').trim();
+  const clients = [...new Set(state.clients.map(c => (c.email || '').trim().toLowerCase()).filter(e => /@/.test(e) && e !== acct))].slice(0, 25);
+  const q = `(to:${acct} OR deliveredto:${acct} OR "MAISON BARTHEAU"${clients.length ? ' OR from:(' + clients.join(' OR ') + ')' : ''}) newer_than:90d -category:promotions -category:social`;
+  const r = await mcp.callTool('Gmail', 'search_threads', { query: q, pageSize: 50, view: 'THREAD_VIEW_MINIMAL' });
+  const threads = ((r && r.payload) || {}).threads || []; let nouveaux = 0;
+  for (const t of threads) {
+    const msgs = t.messages || []; const m = msgs[msgs.length - 1]; if (!m) continue;
+    const from = String(m.sender || '').replace(/^.*<|>.*$/g, '').trim();
+    const nm = ((m.addressDisplayNames || []).find(a => (a.emailAddress || '').toLowerCase() === from.toLowerCase()) || {}).displayName || '';
+    const envoye = (m.labelIds || []).includes('SENT') && !(m.labelIds || []).includes('INBOX');
+    const rec = { id: t.id, from, fromName: nm, to: (m.toRecipients || []).join(', '), subject: m.subject || '(sans objet)', snippet: String(m.snippet || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').slice(0, 240), date: m.date || '', viewUrl: t.viewUrl || m.viewUrl || '', n: t.messageCount || msgs.length, envoye };
+    const ex = state.recus.find(x => x.id === t.id);
+    if (!ex) { state.recus.unshift({ ...rec, lu: envoye }); nouveaux++; }
+    else if (ex.date !== rec.date) { Object.assign(ex, rec, { lu: envoye }); nouveaux++; }
+  }
+  state.recus.sort((a, b) => (b.date || '').localeCompare(a.date || '')); state.recus = state.recus.slice(0, 200);
+  if (nouveaux) save();
+  return nouveaux;
+}
+const mailClient = m => state.clients.find(c => c.email && c.email.toLowerCase() === (m.from || '').toLowerCase());
+const mailCmd = m => state.commandes.find(o => o.threadId === m.id);
+const fdt = iso => { const d = new Date(iso); return isNaN(d) ? '' : (isoOf(d) === today() ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })); };
+VIEW.mails = () => {
+  const tab = ui.mTab || 'recus'; const nl = state.recus.filter(m => !m.lu).length;
+  const recus = state.recus, envoyes = state.emails;
+  return `<div class="head"><div><h1>Emails</h1><p>${nl ? `${nl} non lu${nl > 1 ? 's' : ''}` : 'Tout est lu'} · boîte ${esc(S().gmailCompte || '')}</p></div><div class="row"><button class="btn" data-act="mailsLus">Tout marquer lu</button><button class="btn pri" data-act="gmailSync" ${GM.busy ? 'disabled' : ''}>Actualiser</button></div></div>
+  ${gmailBanner()}
+  <div class="card"><div class="sec-title"><div class="tabs"><button class="${tab === 'recus' ? 'on' : ''}" data-act="mTab" data-id="recus">Boîte de réception${nl ? ` (${nl})` : ''}</button><button class="${tab === 'envoyes' ? 'on' : ''}" data-act="mTab" data-id="envoyes">Envoyés depuis l'app</button></div></div>
+  ${tab === 'recus' ? (recus.length ? `<div style="display:grid">${recus.map(m => { const c = mailClient(m), o = mailCmd(m);
+    return `<div class="task" style="align-items:flex-start;${m.lu ? '' : 'background:var(--accent-soft);margin:0 -18px;padding:12px 18px'}"><span class="dot info" style="margin-top:7px;${m.lu ? 'background:var(--line)' : ''}"></span>
+      <div class="t"><div class="row" style="justify-content:space-between;gap:8px"><b style="${m.lu ? 'font-weight:500' : ''}">${esc(m.envoye ? 'À : ' + m.to : (m.fromName || m.from))}</b><span class="small muted">${fdt(m.date)}</span></div>
+      <div style="color:var(--ink);font-weight:${m.lu ? 400 : 600}">${esc(m.subject)}${m.n > 1 ? ` <span class="small muted">(${m.n})</span>` : ''}</div>
+      <div>${esc(m.snippet)}</div>
+      <div class="row" style="margin-top:6px">${o ? badge(['Commande ' + (o.ref || ''), 'b-warn']) : ''}${c ? badge(['Client : ' + c.nom, 'b-info']) : ''}${m.envoye ? badge(['Envoyé', 'b-mut']) : ''}</div></div>
+      <div class="row" style="flex-direction:column;align-items:stretch;gap:6px">${m.viewUrl ? `<a class="btn sm" href="${esc(m.viewUrl)}" target="_blank" rel="noopener" data-lu="${esc(m.id)}">Ouvrir</a>` : ''}${!m.envoye ? `<button class="btn sm" data-act="repondreMail" data-id="${esc(m.id)}">Répondre</button>` : ''}${o ? `<button class="btn sm ghost" data-act="voirCommande" data-id="${o.id}">Commande</button>` : ''}</div></div>`; }).join('')}</div>`
+    : emptyBox('Aucun email pour le moment', 'Les emails envoyés à ta boîte de l\'entreprise, ceux de tes clients et les commandes du site apparaîtront ici.'))
+  : (envoyes.length ? `<div class="tbl-wrap"><table><tbody>${envoyes.slice(0, 100).map(m => `<tr><td class="small muted" style="white-space:nowrap">${fdate(m.date)}</td><td><div style="font-weight:500">${esc(m.subject)}</div><div class="small muted">${esc(m.to || 'sans destinataire')}</div></td></tr>`).join('')}</tbody></table></div>`
+    : emptyBox('Aucun email envoyé', 'Les emails préparés depuis l\'app (devis, factures, relances, commandes…) sont notés ici.'))}
+  </div>`;
+};
+bindView.mails = () => { $$('[data-lu]').forEach(a => a.addEventListener('click', () => { const m = state.recus.find(x => x.id === a.dataset.lu); if (m && !m.lu) { m.lu = true; save(); setTimeout(render, 100); } })); };
+ACT.mTab = id => { ui.mTab = id; render(); };
+ACT.mailsLus = () => { state.recus.forEach(m => m.lu = true); save(); render(); };
+ACT.repondreMail = id => { const m = state.recus.find(x => x.id === id); m.lu = true; save(); const c = mailClient(m);
+  compose({ type: 'reponse_libre', types: ['reponse_libre', ...Object.keys(TEMPLATES).filter(k => /^commande_|demande_pro|bienvenue/.test(k))], to: m.from,
+    vars: { ...baseVars(), client: c ? c.nom : (m.fromName || m.from), client_contact: c ? (c.contact || c.nom) : (m.fromName || 'Madame, Monsieur'), objet: m.subject.replace(/^(re|tr|fwd?)\s*:\s*/i, ''), numero: '', lignes: '', articles: '', montant_ttc: '', frais_envoi: '[à compléter]', suivi: '' }, ref: m.subject }); };
 
 /* ----- clients ----- */
 VIEW.clients = () => {
