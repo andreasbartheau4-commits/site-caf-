@@ -412,7 +412,7 @@ const DEFAULT_SETTINGS = {
   relanceDevisJours: 7, relance1: 3, relance2: 15, relance3: 30, merciAuto: true,
   tauxPenalites: "trois fois le taux d'intérêt légal", mentions: 'RCS Nantes 133 098 566', signature: '', envoi: 'gmail', theme: 'auto', templates: {}
 };
-function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {}, commandes: [], commandesIgnorees: [], recus: [] }; }
+function blank() { return { settings: { ...DEFAULT_SETTINGS }, clients: [], devis: [], factures: [], produits: [], mouvements: [], achats: [], frais: [], emails: [], declarations: {}, commandes: [], commandesIgnorees: [], recus: [], mailsIgnores: [], mailsIgnoresDate: {} }; }
 let state = migrate(load());
 /* mises à jour des réglages enregistrés : adresse pro de l'entreprise */
 function migrate(st) { const s = st.settings; if (!s.email || s.email === 'andreasbartheau@gmail.com') s.email = 'maisonbartheau.cafe@gmail.com'; if (!s.gmailCompte) s.gmailCompte = s.email;
@@ -427,7 +427,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catc
 
 /* ============ synchronisation compte (version en ligne) ============ */
 const isArt = () => !!(window.claude && typeof window.claude.use === 'function');
-const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations', 'commandes', 'commandesIgnorees', 'recus'];
+const STATE_KEYS = ['settings', 'clients', 'devis', 'factures', 'produits', 'mouvements', 'achats', 'frais', 'emails', 'declarations', 'commandes', 'commandesIgnorees', 'recus', 'mailsIgnores', 'mailsIgnoresDate'];
 const CHUNK = 180000;
 const SYNC = {
   col: null, last: {}, timer: null, busy: false, again: false, status: 'local',
@@ -1457,7 +1457,7 @@ async function gmailSync(manual) {
       const g = await mcp.callTool('Gmail', 'get_thread', { threadId: t.id, messageFormat: 'PLAIN_TEXT' });
       const p = (g && g.payload) || {}; const m = (p.messages || [])[0]; if (!m) continue;
       const o = parseOrder(m.plaintextBody || m.snippet || '', m.subject || ''); if (!o) continue;
-      if (o.ref && o.type !== 'renouvellement' && o.type !== 'fin' && state.commandes.some(x => x.ref === o.ref && x.type === o.type)) continue;
+      if (o.ref && o.type !== 'renouvellement' && o.type !== 'fin' && (state.commandes.some(x => x.ref === o.ref && x.type === o.type) || (state.commandesIgnorees || []).includes(o.ref))) continue;
       o.threadId = t.id; o.viewUrl = p.viewUrl || m.viewUrl || ''; o.source = 'gmail';
       if (m.date) { const dt = new Date(m.date); if (!isNaN(dt)) o.recu = isoOf(dt); }
       if (!o.client.email && m.sender) o.client.email = String(m.sender).replace(/^.*<|>.*$/g, '');
@@ -1512,12 +1512,13 @@ VIEW.commandes = () => {
     <div class="card kpi"><div class="l">À préparer</div><div class="v">${sach.reduce((a, o) => a + (+o.quantite || 0), 0)} sachet${sach.reduce((a, o) => a + (+o.quantite || 0), 0) > 1 ? 's' : ''}</div><div class="s">${sach.filter(o => o.moulu).reduce((a, o) => a + (+o.quantite || 0), 0)} moulu(s)${kg.length ? ` · ${num(kg.reduce((a, o) => a + (+o.quantite || 0), 0))} kg pros` : ''}</div></div>
     <div class="card kpi"><div class="l">Commandes du mois</div><div class="v">${eur(mois.reduce((a, o) => a + (+o.total || 0), 0))}</div><div class="s">${mois.length} confirmée${mois.length > 1 ? 's' : ''} ou expédiée${mois.length > 1 ? 's' : ''}</div></div>
   </div>
-  <div class="card"><div class="sec-title"><div class="tabs">${tabs.map(([k, l]) => `<button class="${f === k ? 'on' : ''}" data-act="cFilter" data-id="${k}">${l}</button>`).join('')}</div></div>
-  ${list.length ? `<div class="tbl-wrap"><table><thead><tr><th>Reçue</th><th>Client</th><th>Commande</th><th class="n">Total</th><th>Statut</th><th></th></tr></thead><tbody>
-  ${list.map(o => `<tr><td>${fdate(o.recu)}<div class="small muted">${esc(o.ref || '')}</div></td><td><b>${esc(o.client.etab || o.client.nom || o.client.email || 'Client')}</b><div class="small muted">${esc(o.client.etab && o.client.nom ? o.client.nom : (o.client.reception === 'retrait' ? 'retrait en main propre' : (o.client.adresse || '').split(',').slice(-1)[0] || ''))}</div></td>
+  <div class="card"><div class="sec-title"><div class="tabs">${tabs.map(([k, l]) => `<button class="${f === k ? 'on' : ''}" data-act="cFilter" data-id="${k}">${l}</button>`).join('')}</div>
+    <div class="row">${all.some(o => o.statut === 'nouvelle') ? `<button class="btn sm" data-act="supprNonConfirmees">Supprimer les non confirmées</button>` : ''}<button class="btn sm danger" id="delSelC" data-act="supprSelC" disabled>Supprimer la sélection</button></div></div>
+  ${list.length ? `<div class="tbl-wrap"><table><thead><tr><th style="width:28px"><input type="checkbox" id="selAllC" aria-label="Tout sélectionner"></th><th>Reçue</th><th>Client</th><th>Commande</th><th class="n">Total</th><th>Statut</th><th></th></tr></thead><tbody>
+  ${list.map(o => `<tr><td><input type="checkbox" class="selC" data-id="${o.id}" aria-label="Sélectionner"></td><td>${fdate(o.recu)}<div class="small muted">${esc(o.ref || '')}</div></td><td><b>${esc(o.client.etab || o.client.nom || o.client.email || 'Client')}</b><div class="small muted">${esc(o.client.etab && o.client.nom ? o.client.nom : (o.client.reception === 'retrait' ? 'retrait en main propre' : (o.client.adresse || '').split(',').slice(-1)[0] || ''))}</div></td>
    <td>${badge(C_TYPE[o.type] || ['?', 'b-mut'])} ${esc(orderLabel(o))}${o.rythme ? `<div class="small muted">${esc(o.rythme)}${o.engagement ? ' · ' + esc(o.engagement) : ''}</div>` : ''}${o.fidelite ? '<div class="small muted">sachet fidélité utilisé</div>' : ''}</td>
    <td class="n">${o.total ? eur(o.total) + `<div class="small ${o.paye ? '' : 'muted'}" style="${o.paye ? 'color:var(--ok);font-weight:600' : ''}">${o.paye ? 'payée ✓' : o.ttc ? 'TTC' : 'HT'}</div>` : '—'}</td><td>${badge(C_STAT[o.statut] || C_STAT.nouvelle)}</td>
-   <td class="act">${o.statut === 'nouvelle' ? (isDemande(o) ? `<button class="btn sm pri" data-act="repondreDemande" data-id="${o.id}">Répondre</button>` : `<button class="btn sm pri" data-act="confirmerCommande" data-id="${o.id}">Confirmer</button>`) : ''}${o.statut === 'confirmee' ? `<button class="btn sm pri" data-act="expedierCommande" data-id="${o.id}">Expédiée</button>` : ''} <button class="btn sm ghost" data-act="voirCommande" data-id="${o.id}">Voir</button></td></tr>`).join('')}
+   <td class="act">${o.statut === 'nouvelle' ? (isDemande(o) ? `<button class="btn sm pri" data-act="repondreDemande" data-id="${o.id}">Répondre</button>` : `<button class="btn sm pri" data-act="confirmerCommande" data-id="${o.id}">Confirmer</button>`) : ''}${o.statut === 'confirmee' ? `<button class="btn sm pri" data-act="expedierCommande" data-id="${o.id}">Expédiée</button>` : ''} <button class="btn sm ghost" data-act="voirCommande" data-id="${o.id}">Voir</button><button class="btn sm ghost danger" data-act="supprimerCommande" data-id="${o.id}" title="Supprimer" aria-label="Supprimer">✕</button></td></tr>`).join('')}
   </tbody></table></div>` : emptyBox(all.length ? 'Rien ici' : 'Aucune commande pour le moment', all.length ? 'Change de filtre pour voir les autres commandes.' : 'Les commandes passées sur ton site apparaîtront ici dès qu\'elles arrivent dans ta boîte mail.')}</div>`;
 };
 ACT.cFilter = id => { ui.cFilter = id; render(); };
@@ -1549,7 +1550,21 @@ ACT.expedierCommande = id => { const o = getC(id); compose({ type: 'commande_exp
 ACT.repondreDemande = id => { const o = getC(id); compose({ type: 'demande_pro_reponse', to: o.client.email, vars: orderVars(o), ref: orderLabel(o), onSent: () => { o.statut = 'traitee'; } }); };
 ACT.traiterCommande = id => { getC(id).statut = 'traitee'; save(); render(); };
 ACT.annulerCommande = id => confirmBox('Annuler cette commande ?', () => { getC(id).statut = 'annulee'; save(); render(); }, 'Annuler la commande');
-ACT.supprimerCommande = id => confirmBox('Supprimer cette commande de la liste ? Elle ne sera pas réimportée depuis Gmail.', () => { const o = getC(id); o.statut = 'annulee'; o.masquee = true; state.commandes = state.commandes.filter(x => x.id !== id); (state.commandesIgnorees = state.commandesIgnorees || []).push(o.threadId || o.ref); save(); render(); }, 'Supprimer');
+function delCommandes(ids) {
+  const set = new Set(ids); const ign = state.commandesIgnorees = state.commandesIgnorees || [];
+  state.commandes.filter(o => set.has(o.id)).forEach(o => { if (o.threadId) ign.push(o.threadId); if (o.ref) ign.push(o.ref); });
+  state.commandes = state.commandes.filter(o => !set.has(o.id)); save(); render(); toast(`${ids.length} commande${ids.length > 1 ? 's' : ''} supprimée${ids.length > 1 ? 's' : ''}`);
+}
+const selIds = cls => $$('.' + cls + ':checked').map(x => x.dataset.id);
+ACT.supprimerCommande = id => { const o = getC(id); confirmBox(`Supprimer ${isDemande(o) ? 'cette demande' : 'la commande ' + esc(o.ref || '')} ? Elle disparaît de l'app et ne sera pas réimportée (l'email reste dans Gmail).`, () => delCommandes([id]), 'Supprimer'); };
+ACT.supprSelC = () => { const ids = selIds('selC'); if (!ids.length) return; confirmBox(`Supprimer ${ids.length} commande${ids.length > 1 ? 's' : ''} ? Elles ne seront pas réimportées (les emails restent dans Gmail).`, () => delCommandes(ids), 'Supprimer'); };
+ACT.supprNonConfirmees = () => { const ids = state.commandes.filter(o => o.statut === 'nouvelle').map(o => o.id); confirmBox(`Supprimer les ${ids.length} commande${ids.length > 1 ? 's' : ''} et demande${ids.length > 1 ? 's' : ''} pas encore confirmée${ids.length > 1 ? 's' : ''} ?`, () => delCommandes(ids), 'Tout supprimer'); };
+function bindSel(cls, allId, btnId, label) {
+  const upd = () => { const n = $$('.' + cls + ':checked').length; const b = $('#' + btnId); if (b) { b.disabled = !n; b.textContent = n ? `${label} (${n})` : label; } };
+  $$('.' + cls).forEach(c => c.addEventListener('change', upd));
+  const all = $('#' + allId); if (all) all.addEventListener('change', () => { $$('.' + cls).forEach(c => c.checked = all.checked); upd(); });
+}
+bindView.commandes = () => bindSel('selC', 'selAllC', 'delSelC', 'Supprimer la sélection');
 ACT.voirFactureCommande = id => { location.hash = '#factures'; setTimeout(() => editDoc('facture', getC(id).factureId), 50); };
 ACT.facturerCommande = id => { const o = getC(id); const ci = o.client;
   let c = state.clients.find(x => ci.email && x.email && x.email.toLowerCase() === ci.email.toLowerCase());
@@ -1574,6 +1589,7 @@ async function syncRecus(mcp) {
     const nm = ((m.addressDisplayNames || []).find(a => (a.emailAddress || '').toLowerCase() === from.toLowerCase()) || {}).displayName || '';
     const envoye = (m.labelIds || []).includes('SENT') && !(m.labelIds || []).includes('INBOX');
     const rec = { id: t.id, from, fromName: nm, to: (m.toRecipients || []).join(', '), subject: m.subject || '(sans objet)', snippet: String(m.snippet || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').slice(0, 240), date: m.date || '', viewUrl: t.viewUrl || m.viewUrl || '', n: t.messageCount || msgs.length, envoye };
+    if ((state.mailsIgnores || []).includes(t.id) && !(state.recus.find(x => x.id === t.id))) { const ign = state.mailsIgnoresDate || {}; if (!ign[t.id] || ign[t.id] >= (m.date || '')) continue; delete ign[t.id]; state.mailsIgnores = state.mailsIgnores.filter(x => x !== t.id); }
     const ex = state.recus.find(x => x.id === t.id);
     if (!ex) { state.recus.unshift({ ...rec, lu: envoye }); nouveaux++; }
     else if (ex.date !== rec.date) { Object.assign(ex, rec, { lu: envoye }); nouveaux++; }
@@ -1590,21 +1606,33 @@ VIEW.mails = () => {
   const recus = state.recus, envoyes = state.emails;
   return `<div class="head"><div><h1>Emails</h1><p>${nl ? `${nl} non lu${nl > 1 ? 's' : ''}` : 'Tout est lu'} · boîte ${esc(S().gmailCompte || '')}</p></div><div class="row"><button class="btn" data-act="mailsLus">Tout marquer lu</button><button class="btn pri" data-act="gmailSync" ${GM.busy ? 'disabled' : ''}>Actualiser</button></div></div>
   ${gmailBanner()}
-  <div class="card"><div class="sec-title"><div class="tabs"><button class="${tab === 'recus' ? 'on' : ''}" data-act="mTab" data-id="recus">Boîte de réception${nl ? ` (${nl})` : ''}</button><button class="${tab === 'envoyes' ? 'on' : ''}" data-act="mTab" data-id="envoyes">Envoyés depuis l'app</button></div></div>
+  <div class="card"><div class="sec-title"><div class="tabs"><button class="${tab === 'recus' ? 'on' : ''}" data-act="mTab" data-id="recus">Boîte de réception${nl ? ` (${nl})` : ''}</button><button class="${tab === 'envoyes' ? 'on' : ''}" data-act="mTab" data-id="envoyes">Envoyés depuis l'app</button></div>
+    ${tab === 'recus' ? (recus.length ? `<div class="row"><label class="check small" style="margin:0"><input type="checkbox" id="selAllM"> Tout</label>${recus.some(m => m.lu) ? '<button class="btn sm" data-act="supprLus">Supprimer les lus</button>' : ''}<button class="btn sm danger" id="delSelM" data-act="supprSelM" disabled>Supprimer la sélection</button></div>` : '')
+      : (envoyes.length ? '<button class="btn sm danger" data-act="viderEnvoyes">Vider la liste</button>' : '')}</div>
   ${tab === 'recus' ? (recus.length ? `<div style="display:grid">${recus.map(m => { const c = mailClient(m), o = mailCmd(m);
-    return `<div class="task" style="align-items:flex-start;${m.lu ? '' : 'background:var(--accent-soft);margin:0 -18px;padding:12px 18px'}"><span class="dot info" style="margin-top:7px;${m.lu ? 'background:var(--line)' : ''}"></span>
+    return `<div class="task" style="align-items:flex-start;${m.lu ? '' : 'background:var(--accent-soft);margin:0 -18px;padding:12px 18px'}"><input type="checkbox" class="selM" data-id="${esc(m.id)}" aria-label="Sélectionner" style="margin-top:4px"><span class="dot info" style="margin-top:7px;${m.lu ? 'background:var(--line)' : ''}"></span>
       <div class="t"><div class="row" style="justify-content:space-between;gap:8px"><b style="${m.lu ? 'font-weight:500' : ''}">${esc(m.envoye ? 'À : ' + m.to : (m.fromName || m.from))}</b><span class="small muted">${fdt(m.date)}</span></div>
       <div style="color:var(--ink);font-weight:${m.lu ? 400 : 600}">${esc(m.subject)}${m.n > 1 ? ` <span class="small muted">(${m.n})</span>` : ''}</div>
       <div>${esc(m.snippet)}</div>
       <div class="row" style="margin-top:6px">${o ? badge(['Commande ' + (o.ref || ''), 'b-warn']) : ''}${c ? badge(['Client : ' + c.nom, 'b-info']) : ''}${m.envoye ? badge(['Envoyé', 'b-mut']) : ''}</div></div>
-      <div class="row" style="flex-direction:column;align-items:stretch;gap:6px">${m.viewUrl ? `<a class="btn sm" href="${esc(m.viewUrl)}" target="_blank" rel="noopener" data-lu="${esc(m.id)}">Ouvrir</a>` : ''}${!m.envoye ? `<button class="btn sm" data-act="repondreMail" data-id="${esc(m.id)}">Répondre</button>` : ''}${o ? `<button class="btn sm ghost" data-act="voirCommande" data-id="${o.id}">Commande</button>` : ''}</div></div>`; }).join('')}</div>`
+      <div class="row" style="flex-direction:column;align-items:stretch;gap:6px">${m.viewUrl ? `<a class="btn sm" href="${esc(m.viewUrl)}" target="_blank" rel="noopener" data-lu="${esc(m.id)}">Ouvrir</a>` : ''}${!m.envoye ? `<button class="btn sm" data-act="repondreMail" data-id="${esc(m.id)}">Répondre</button>` : ''}${o ? `<button class="btn sm ghost" data-act="voirCommande" data-id="${o.id}">Commande</button>` : ''}<button class="btn sm ghost danger" data-act="supprimerMail" data-id="${esc(m.id)}">Supprimer</button></div></div>`; }).join('')}</div>`
     : emptyBox('Aucun email pour le moment', 'Les emails envoyés à ta boîte de l\'entreprise, ceux de tes clients et les commandes du site apparaîtront ici.'))
-  : (envoyes.length ? `<div class="tbl-wrap"><table><tbody>${envoyes.slice(0, 100).map(m => `<tr><td class="small muted" style="white-space:nowrap">${fdate(m.date)}</td><td><div style="font-weight:500">${esc(m.subject)}</div><div class="small muted">${esc(m.to || 'sans destinataire')}</div></td></tr>`).join('')}</tbody></table></div>`
+  : (envoyes.length ? `<div class="tbl-wrap"><table><tbody>${envoyes.slice(0, 100).map(m => `<tr><td class="small muted" style="white-space:nowrap">${fdate(m.date)}</td><td><div style="font-weight:500">${esc(m.subject)}</div><div class="small muted">${esc(m.to || 'sans destinataire')}</div></td><td class="act"><button class="btn sm ghost danger" data-act="supprimerEnvoye" data-id="${esc(m.id)}" title="Retirer de la liste" aria-label="Retirer de la liste">✕</button></td></tr>`).join('')}</tbody></table></div>`
     : emptyBox('Aucun email envoyé', 'Les emails préparés depuis l\'app (devis, factures, relances, commandes…) sont notés ici.'))}
   </div>`;
 };
-bindView.mails = () => { $$('[data-lu]').forEach(a => a.addEventListener('click', () => { const m = state.recus.find(x => x.id === a.dataset.lu); if (m && !m.lu) { m.lu = true; save(); setTimeout(render, 100); } })); };
+bindView.mails = () => { bindSel('selM', 'selAllM', 'delSelM', 'Supprimer la sélection'); $$('[data-lu]').forEach(a => a.addEventListener('click', () => { const m = state.recus.find(x => x.id === a.dataset.lu); if (m && !m.lu) { m.lu = true; save(); setTimeout(render, 100); } })); };
 ACT.mTab = id => { ui.mTab = id; render(); };
+function delMails(ids) {
+  const set = new Set(ids); state.mailsIgnores = state.mailsIgnores || []; state.mailsIgnoresDate = state.mailsIgnoresDate || {};
+  state.recus.filter(m => set.has(m.id)).forEach(m => { state.mailsIgnores.push(m.id); state.mailsIgnoresDate[m.id] = m.date || ''; });
+  state.recus = state.recus.filter(m => !set.has(m.id)); save(); render(); toast(`${ids.length} email${ids.length > 1 ? 's' : ''} retiré${ids.length > 1 ? 's' : ''} de l'app`);
+}
+ACT.supprimerMail = id => delMails([id]);
+ACT.supprSelM = () => { const ids = selIds('selM'); if (!ids.length) return; confirmBox(`Retirer ${ids.length} email${ids.length > 1 ? 's' : ''} de l'app ? Ils restent dans Gmail. Un email réapparaît seulement si quelqu'un y répond.`, () => delMails(ids), 'Supprimer'); };
+ACT.supprLus = () => { const ids = state.recus.filter(m => m.lu).map(m => m.id); confirmBox(`Retirer les ${ids.length} email${ids.length > 1 ? 's' : ''} déjà lu${ids.length > 1 ? 's' : ''} de l'app ? Ils restent dans Gmail.`, () => delMails(ids), 'Supprimer'); };
+ACT.supprimerEnvoye = id => { state.emails = state.emails.filter(m => m.id !== id); save(); render(); };
+ACT.viderEnvoyes = () => confirmBox("Vider la liste des emails envoyés depuis l'app ? (Les emails eux-mêmes ne sont pas touchés.)", () => { state.emails = []; save(); render(); }, 'Vider');
 ACT.mailsLus = () => { state.recus.forEach(m => m.lu = true); save(); render(); };
 ACT.repondreMail = id => { const m = state.recus.find(x => x.id === id); m.lu = true; save(); const c = mailClient(m);
   compose({ type: 'reponse_libre', types: ['reponse_libre', ...Object.keys(TEMPLATES).filter(k => /^commande_|demande_pro|bienvenue/.test(k))], to: m.from,
