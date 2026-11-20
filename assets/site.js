@@ -7,6 +7,26 @@ window.BCOffres = function(p){
   if(!L.length) L = [{id:"sachet", nom:"Le sachet · " + (p.poids || "250 g"), sachets:1, prix:p.prix}];
   return L.map(function(o){ return {id:String(o.id), nom:o.nom || o.id, sachets:Math.max(1, Math.floor(Number(o.sachets) || 1)), prix:o.prix}; });
 };
+/* Frais d'envoi selon la grille de assets/config.js (même règle que api/lib.php · bc_ship).
+   n = nombre de sachets de 250 g, mode = "relais" | "domicile" | "retrait". */
+window.BCShip = function(n, mode, L){
+  L = L || window.LIVRAISON || {};
+  var max = typeof L.maxSachets === "number" ? L.maxSachets : 7;
+  if(n > max) return {ok:false, trop:true, max:max};
+  if(mode === "retrait") return {ok:L.retrait !== false, prix:0, label:"Retrait en main propre"};
+  var g = (L.grille || []).slice().sort(function(a, b){ return a.jusqua - b.jusqua; });
+  for(var i = 0; i < g.length; i++){
+    if(n <= g[i].jusqua && typeof g[i][mode] === "number") return {ok:true, prix:g[i][mode], label: mode === "relais" ? "Point relais Mondial Relay" : "Colissimo à domicile"};
+  }
+  return {ok:false};
+};
+/* Nombre de sachets à partir duquel le point relais est offert (ou null) */
+window.BCRelaisOffert = function(L){
+  L = L || window.LIVRAISON || {};
+  var g = (L.grille || []).slice().sort(function(a, b){ return a.jusqua - b.jusqua; }), prev = 0;
+  for(var i = 0; i < g.length; i++){ if(g[i].relais === 0) return prev + 1; prev = g[i].jusqua; }
+  return null;
+};
 window.BCOffre = function(p, id){ var L = window.BCOffres(p); return L.filter(function(o){ return o.id === id; })[0] || L[0]; };
 (function(){
   var root = document.documentElement;

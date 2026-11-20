@@ -68,12 +68,91 @@ function bc_offres(array $p): array {
   return array_map(fn($o) => ['id' => (string)$o['id'], 'nom' => $o['nom'] ?? (string)$o['id'], 'sachets' => max(1, (int)($o['sachets'] ?? 1)), 'prix' => (float)$o['prix']], $L);
 }
 
+// Configuration secrète (api/config.php, jamais publié). Repli sur l'ancien cle-stripe.php.
+function bc_conf(): array {
+  static $c = null;
+  if ($c !== null) return $c;
+  $c = [];
+  foreach (['config.php', 'cle-stripe.php'] as $f) {
+    if (is_file(__DIR__ . '/' . $f)) { $x = include __DIR__ . '/' . $f; if (is_array($x)) { $c = $x; break; } }
+  }
+  return $c;
+}
 function bc_secret(): string {
-  $f = __DIR__ . '/cle-stripe.php';
-  if (!is_file($f)) return '';
-  $c = include $f;
-  $k = is_array($c) ? trim((string)($c['secret_key'] ?? '')) : '';
+  $k = trim((string)(bc_conf()['secret_key'] ?? ''));
   return preg_match('~^(sk|rk)_(test|live)_[A-Za-z0-9]+$~', $k) ? $k : '';
+}
+
+/* ---------- Livraison (grille de assets/config.js) ----------
+   Renvoie ['ok'=>bool, 'cents'=>int, 'label'=>string, 'erreur'=>string] */
+function bc_ship(int $sachets, string $mode, array $liv): array {
+  $max = (int)($liv['maxSachets'] ?? 7);
+  if ($sachets > $max) return ['ok' => false, 'erreur' => "Au-delà de $max sachets, commandez par e-mail : nous vous proposons le meilleur envoi."];
+  if ($mode === 'retrait') {
+    if (($liv['retrait'] ?? true) === false) return ['ok' => false, 'erreur' => "Le retrait n'est pas proposé."];
+    return ['ok' => true, 'cents' => 0, 'label' => 'Retrait en main propre'];
+  }
+  if ($mode !== 'relais' && $mode !== 'domicile') return ['ok' => false, 'erreur' => 'Mode de livraison inconnu.'];
+  $grille = is_array($liv['grille'] ?? null) ? $liv['grille'] : [];
+  usort($grille, fn($a, $b) => ($a['jusqua'] ?? 0) <=> ($b['jusqua'] ?? 0));
+  foreach ($grille as $t) {
+    if ($sachets <= (int)($t['jusqua'] ?? 0) && is_numeric($t[$mode] ?? null)) {
+      $c = bc_cents($t[$mode]);
+      $name = $mode === 'relais' ? 'Point relais Mondial Relay' : 'Colissimo à domicile';
+      return ['ok' => true, 'cents' => $c, 'label' => $c ? $name : $name . ' · offert'];
+    }
+  }
+  return ['ok' => false, 'erreur' => "La livraison n'est pas encore configurée pour ce colis. Commandez par e-mail."];
+}
+
+/* ---------- E-mails ---------- */
+function bc_mail(string $to, string $subject, string $text, string $replyTo = ''): bool {
+  if (!filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
+  $info = bc_site()['info'];
+  $from = trim((string)(bc_conf()['mail_from'] ?? ''));
+  if (!filter_var($from, FILTER_VALIDATE_EMAIL)) $from = 'boutique@' . preg_replace('~^www\.~', '', preg_replace('~[^A-Za-z0-9.-]~', '', $_SERVER['HTTP_HOST'] ?? 'maisonbartheau.com'));
+  $headers = [
+    'From: ' . mb_encode_mimeheader('Maison Bartheau Café', 'UTF-8', 'Q') . ' <' . $from . '>',
+    'Reply-To: ' . (filter_var($replyTo, FILTER_VALIDATE_EMAIL) ? $replyTo : ($info['email'] ?? $from)),
+    'MIME-Version: 1.0',
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: 8bit',
+  ];
+  return @mail($to, mb_encode_mimeheader($subject, 'UTF-8', 'Q'), $text, implode("\r\n", $headers), '-f' . $from);
+}
+function bc_admin_email(): string {
+  $a = trim((string)(bc_conf()['mail_admin'] ?? ''));
+  if (filter_var($a, FILTER_VALIDATE_EMAIL)) return $a;
+  $i = bc_site()['info'];
+  return (string)($i['emailCommande'] ?? $i['email'] ?? '');
+}
+
+/* ---------- Anti-doublon : chaque événement Stripe n'est traité qu'une fois ---------- */
+function bc_once(string $id): bool {
+  $dir = __DIR__ . '/data';
+  if (!is_dir($dir)) @mkdir($dir, 0750, true);
+  $f = $dir . '/evt_' . preg_replace('~[^A-Za-z0-9_]~', '', $id);
+  $h = @fopen($f, 'x');              // échoue si le fichier existe déjà
+  if ($h === false) return false;
+  fwrite($h, date('c')); fclose($h);
+  return true;
+}
+function bc_forget(string $id): void { @unlink(__DIR__ . '/data/evt_' . preg_replace('~[^A-Za-z0-9_]~', '', $id)); }
+
+/* ---------- Signature des notifications Stripe ---------- */
+function bc_verify_signature(string $payload, string $header, string $secret, int $tolerance = 300): bool {
+  if ($secret === '' || $header === '') return false;
+  $t = null; $sigs = [];
+  foreach (explode(',', $header) as $part) {
+    $kv = explode('=', trim($part), 2);
+    if (count($kv) !== 2) continue;
+    if ($kv[0] === 't') $t = (int)$kv[1];
+    if ($kv[0] === 'v1') $sigs[] = $kv[1];
+  }
+  if (!$t || !$sigs || abs(time() - $t) > $tolerance) return false;
+  $expected = hash_hmac('sha256', $t . '.' . $payload, $secret);
+  foreach ($sigs as $s) if (hash_equals($expected, $s)) return true;
+  return false;
 }
 
 function bc_json($data, int $status = 200): void {

@@ -1,2 +1,6 @@
 maison-bartheau-site.zip
 apercu-accueil.png
+api/config.php
+api/data/*
+!api/data/.htaccess
+!api/data/.gitkeep

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Maison Bartheau Café · Café de famille, torréfaction artisanale</title>
-<meta name="description" content="Café de famille torréfié en petits lots par un artisan torréfacteur, selon la recette de la Maison. En grains ou moulu pour votre machine, livré partout en France depuis les Pays de la Loire. Sachet 11,90 €, livraison offerte dès 35 €.">
+<meta name="description" content="Café de famille torréfié en petits lots par un artisan torréfacteur, selon la recette de la Maison. En grains ou moulu pour votre machine, livré partout en France depuis les Pays de la Loire. Sachet 11,90 €, point relais offert dès 1 kg.">
 <meta name="theme-color" content="#f6efe3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#120c08" media="(prefers-color-scheme: dark)">
 <meta name="robots" content="index,follow">
@@ -75,7 +75,7 @@
           <a class="btn" href="#offres">Découvrir l'abonnement</a>
         </div>
         <div class="hero-meta">
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Livraison offerte dès 35 €</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Point relais offert dès 1 kg</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Paiement sécurisé</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/></svg>Rétractation 14 jours</span>
         </div>
@@ -170,7 +170,7 @@
           <span class="k">Particuliers</span>
           <h3>Le sachet</h3>
           <div class="pp">11,90 €<small>le sachet de 250 g</small></div>
-          <ul><li><b>Duo 2 × 250 g : 22 €</b> · <b>le kilo : 39 €</b></li><li>En grains ou moulu pour votre machine</li><li>Livraison offerte dès 35 € d'achat</li><li>Fidélité : 1 sachet offert tous les 10</li></ul>
+          <ul><li><b>Duo 2 × 250 g : 22 €</b> · <b>le kilo : 39 €</b></li><li>En grains ou moulu pour votre machine</li><li>Point relais offert dès 1 kg (4 sachets)</li><li>Fidélité : 1 sachet offert tous les 10</li></ul>
           <a class="btn solid" href="#boutique">Commander <span class="arr" aria-hidden="true">→</span></a>
         </div>
         <div class="ocard feat">
@@ -290,7 +290,7 @@
               </div>
               <p class="note" id="aboNote"></p>
             </div>
-            <div class="field"><label for="cRec">Réception</label><select id="cRec"><option value="livraison">Livraison à domicile (colis suivi)</option><option value="retrait">Retrait en main propre (à convenir)</option></select></div>
+            <div class="field"><label for="cRec">Réception</label><select id="cRec"><option value="relais">Point relais Mondial Relay</option><option value="domicile">Colissimo à domicile</option><option value="retrait">Retrait en main propre · gratuit (à convenir)</option></select></div>
             <dl>
               <dt>Sous-total</dt><dd id="subAmt">0,00 €</dd>
               <dt id="discLbl" hidden>Remise abonnement</dt><dd id="discAmt" hidden></dd>
@@ -317,17 +317,6 @@
     </div>
   </section>
 
-  <!-- ================= MERCI ================= -->
-  <section class="band w" id="merci" data-page="merci">
-    <div class="in final">
-      <span class="mark bigmark" aria-hidden="true"></span>
-      <p class="eyebrow">Commande confirmée</p>
-      <h2>Merci, <em>votre café se prépare.</em></h2>
-      <p class="lead">Votre paiement est validé. Vous recevez un reçu par e-mail, et nous vous prévenons dès que votre colis part.</p>
-      <p class="muted" id="merciRef"></p>
-      <div class="cta" style="justify-content:center"><a class="btn solid" href="#produits">Découvrir nos cafés</a><a class="btn" href="#compte">Ma carte de fidélité</a></div>
-    </div>
-  </section>
 
   <!-- ================= PROFESSIONNELS ================= -->
   <section class="band k" id="pro" data-page="pro">
@@ -402,9 +391,9 @@
       <div class="faq">
         <details><summary>Comment se passe une commande ?</summary><p>Choisissez vos cafés et leur format sur la page « Commander », ajoutez-les au panier, puis payez directement par carte bancaire, Apple Pay ou Google Pay. Vous recevez aussitôt un reçu par e-mail ; nous préparons votre colis et vous prévenons de son envoi.</p></details>
         <details><summary>Quelle mouture choisir ?</summary><p>Choisissez « Moulu », puis indiquez la marque et le modèle de votre machine : nous moulons le café au bon format. Si votre machine a un broyeur intégré, prenez des grains, le café garde mieux ses arômes.</p></details>
-        <details><summary>Comment fonctionne l'abonnement ?</summary><p>Vous choisissez un rythme (tous les mois ou toutes les 2 semaines) et une durée d'engagement : 3 mois (−5 %), 6 mois (−10 %) ou 12 mois (−15 %), ou sans engagement. Vous payez au fil des livraisons, jamais la somme totale d'avance, et le prix est garanti pendant tout l'engagement.</p></details>
+        <details><summary>Comment fonctionne l'abonnement ?</summary><p>Vous choisissez un rythme (tous les mois ou toutes les 2 semaines) et une durée : sans engagement, 3 mois (−5 %), 6 mois (−10 %) ou 12 mois (−15 % sur chaque sachet). Vous êtes prélevé automatiquement à chaque livraison, jamais la somme totale d'avance. À la fin de l'engagement, l'abonnement s'arrête tout seul. Vous pouvez le gérer ou le résilier en ligne à tout moment, en quelques clics : <a href="resilier.html">résilier mon abonnement</a>.</p></details>
         <details><summary>Comment conserver le café ?</summary><p>Gardez le sachet bien fermé, à l'abri de la lumière, de l'air et de l'humidité. Une fois ouvert, buvez-le dans les quatre semaines pour garder tout son goût. La date de durabilité minimale est imprimée sur chaque sachet, avec le numéro de lot.</p></details>
-        <details><summary>Comment se passe la livraison ?</summary><p>Nous expédions en France par colis suivi. Le délai et les frais d'envoi vous sont donnés avant tout paiement. Un retrait ou une remise en main propre est aussi possible sur rendez-vous.</p></details>
+        <details><summary>Comment se passe la livraison ?</summary><p>Vous choisissez au moment de commander : point relais Mondial Relay, Colissimo à domicile, ou retrait en main propre gratuit (sur rendez-vous). Les frais d'envoi correspondent au tarif du transporteur et dépendent du poids : 4,15 € en point relais pour 1 sachet, 5,99 € pour 2 ou 3 sachets. <b>Dès 1 kg (4 sachets), le point relais est offert</b> et le domicile ne coûte que 3,20 €. Au-delà de 7 sachets, écrivez-nous : nous vous proposons le meilleur envoi.</p></details>
         <details><summary>Le paiement est-il sécurisé ?</summary><p>Oui. Le paiement se fait sur la page sécurisée de Stripe, l'un des leaders mondiaux du paiement en ligne : connexion chiffrée, validation 3-D Secure par votre banque, carte bancaire (CB, Visa, Mastercard), Apple Pay et Google Pay. Vos données bancaires ne passent jamais par notre site et ne sont jamais conservées par la Maison. Le virement bancaire est aussi possible sur demande. Nous n'acceptons pas les chèques.</p></details>
         <details><summary>Comment marche la carte de fidélité ?</summary><p>Créez votre compte client (sans mot de passe, gardé sur votre appareil) : tous les 10 sachets achetés, le suivant est offert. Seules les commandes confirmées par la Maison comptent ; les achats par abonnement, déjà remisés, ne sont pas comptés.</p></details>
         <details><summary>Puis-je retourner un sachet ?</summary><p>Vous disposez de 14 jours après réception pour vous rétracter, sans donner de motif. Nous reprenons les sachets non ouverts, dans leur emballage d'origine. Pour des raisons d'hygiène, les sachets ouverts ne sont ni repris ni remboursés. Si votre colis arrive abîmé ou si le produit n'est pas conforme, écrivez-nous : la garantie légale de conformité de 2 ans s'applique.</p></details>
@@ -525,7 +514,7 @@
   </div>
   <div class="fbottom">
     <span>© <span data-year></span> Maison Bartheau Café · Pays de la Loire · TVA non applicable, art. 293 B du CGI</span>
-    <span><a href="mentions-legales.html">Mentions légales</a> · <a href="cgv.html">Conditions de vente</a> · <a href="confidentialite.html">Confidentialité</a></span>
+    <span><a href="mentions-legales.html">Mentions légales</a> · <a href="cgv.html">Conditions de vente</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="resilier.html">Résilier mon abonnement</a></span>
   </div>
 </footer>
 
@@ -553,7 +542,7 @@
 <script src="assets/site.js"></script>
 <script>
 (function(){
-  var PAGES = ["accueil","produits","boutique","merci","pro","questions","contact","compte"], ALIAS = {cafes:"accueil", histoire:"accueil", machine:"accueil", haut:"accueil", procede:"accueil", offres:"accueil", preparer:"accueil"};
+  var PAGES = ["accueil","produits","boutique","pro","questions","contact","compte"], ALIAS = {cafes:"accueil", histoire:"accueil", machine:"accueil", haut:"accueil", procede:"accueil", offres:"accueil", preparer:"accueil"};
   var FK = "bc-fid";
   function fLoad(){ try{ var o = JSON.parse(localStorage.getItem(FK) || "null"); if(o && o.orders) return o; }catch(e){} return {orders:[]}; }
   function fSave(o){ try{ localStorage.setItem(FK, JSON.stringify(o)); }catch(e){} }
@@ -884,7 +873,7 @@
   var bar = $("mbar"), txt = $("mbarTxt"), btn = $("mbarBtn");
   function upd(){
     var p = document.body.getAttribute("data-current") || "accueil", y = window.scrollY || 0, show = false;
-    if(p === "accueil"){ show = y > 520; txt.innerHTML = "<b>11,90 €</b>le sachet · livraison offerte dès 35 €"; btn.textContent = "Commander"; btn.setAttribute("href", "#boutique"); }
+    if(p === "accueil"){ show = y > 520; txt.innerHTML = "<b>11,90 €</b>le sachet · point relais offert dès 1 kg"; btn.textContent = "Commander"; btn.setAttribute("href", "#boutique"); }
     else if(p === "boutique"){
       var s = $("slip"), r = s.getBoundingClientRect();
       show = r.top > window.innerHeight * .6 && !$("cartBody").hidden;

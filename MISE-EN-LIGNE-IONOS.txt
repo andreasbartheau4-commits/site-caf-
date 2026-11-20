@@ -23,7 +23,7 @@ d'hébergement web (l'entrée de gamme suffit).
      index.html, pro.html, cgv.html, mentions-legales.html, confidentialite.html,
      404.html, logo.jpg, robots.txt, sitemap.xml, site.webmanifest,
      le dossier assets/, le dossier api/,
-     et les fichiers « .htaccess » (à la racine ET dans api/).
+     et les fichiers « .htaccess » (à la racine, dans api/ et dans api/data/).
    ⚠ Les fichiers qui commencent par un point (.htaccess) sont cachés sur Mac :
      dans le Finder, faites Cmd + Maj + . (point) pour les voir.
    Alternative : FileZilla en SFTP (identifiants dans Hébergement > « SFTP & SSH »).
@@ -48,17 +48,30 @@ d'hébergement web (l'entrée de gamme suffit).
    (identité, SIRET 133 098 566 00010, IBAN où recevoir l'argent).
 2. Stripe > Paramètres > Moyens de paiement : Cartes, Apple Pay, Google Pay activés.
 3. Stripe > Paramètres > E-mails clients : activez « Paiements réussis » (reçu au client).
-4. Stripe > Paramètres > Notifications (votre profil) : cochez les e-mails
-   « Paiements réussis » pour être prévenu de CHAQUE commande.
-5. Stripe > Développeurs > Clés API : copiez la « Clé secrète »
-   (sk_test_... pour essayer d'abord).
-6. Dans le Webspace Explorer, ouvrez api/cle-stripe.php, collez la clé entre
-   les guillemets de 'secret_key' => '', enregistrez.
-7. Frais d'envoi : ouvrez assets/config.js, remplacez fraisEnvoi: null par votre
-   tarif (ex. fraisEnvoi: 6.90,). Tant qu'il reste à null, seul le retrait en main
-   propre se paie en ligne, et la livraison se commande par e-mail.
+4. PORTAIL CLIENT (résiliation en ligne, obligatoire pour les abonnements) :
+   Stripe > Paramètres > Billing > « Portail client » > activez-le, autorisez
+   « Annuler les abonnements » (à la fin de la période de facturation),
+   puis copiez le « Lien de connexion » (https://billing.stripe.com/p/login/...).
+5. WEBHOOK (pour recevoir vos e-mails de commande et arrêter les abonnements
+   à la fin de l'engagement) : Stripe > Développeurs > Webhooks > Ajouter une destination
+     URL : https://www.maisonbartheau.com/api/webhook.php
+     Événements : checkout.session.completed, checkout.session.async_payment_succeeded,
+                  invoice.paid, customer.subscription.deleted
+   Copiez le « Secret de signature » (whsec_...).
+6. E-MAIL D'ENVOI : créez chez IONOS une boîte du domaine, par exemple
+   commandes@maisonbartheau.com (Menu > E-mail). Les mails de la boutique partent
+   de cette adresse : sans elle, ils risquent d'arriver dans les spams.
+7. Dans le Webspace Explorer, dossier api/ : copiez config.exemple.php sous le nom
+   config.php, puis remplissez dans config.php :
+     'secret_key'     => la clé secrète Stripe (sk_test_... pour essayer d'abord)
+     'webhook_secret' => le secret whsec_... de l'étape 5
+     'portal_url'     => le lien du portail client de l'étape 4
+     'mail_from'      => commandes@maisonbartheau.com (étape 6)
+     'mail_admin'     => l'adresse qui reçoit les commandes (vide = celle du site)
+8. Frais d'envoi : ils sont déjà remplis dans assets/config.js (« grille »),
+   aux tarifs publics 2026. Ajustez-les après avoir pesé vos vrais colis.
 
-Tant que la clé est vide, le site reste utilisable : le panier propose
+Tant que config.php n'est pas rempli, le site reste utilisable : le panier propose
 automatiquement d'envoyer la commande par e-mail.
 
 
@@ -66,15 +79,20 @@ automatiquement d'envoyer la commande par e-mail.
 --------------------------------------------------------------------
 1. Avec la clé sk_test_ : ajoutez un café au panier > « Payer ».
    Carte de test : 4242 4242 4242 4242, une date future, code 123.
-2. Vous devez arriver sur la page « Merci », et voir la commande dans Stripe
-   (mode test) avec le détail : format, mouture, machine, adresse.
-3. Remplacez la clé par sk_live_... dans api/cle-stripe.php : c'est en vente.
+2. Vous devez arriver sur la page « Merci », recevoir l'e-mail « Commande payée »
+   (et le client son e-mail de confirmation), et voir la commande dans Stripe.
+3. Testez aussi un abonnement, puis sa résiliation depuis resilier.html.
+4. Passez en réel : remplacez la clé par sk_live_..., refaites le webhook en mode
+   réel (nouveau secret whsec_) et le portail client en mode réel, mettez-les
+   dans config.php. C'est en vente.
 
 
 AU QUOTIDIEN
 --------------------------------------------------------------------
-- Chaque commande : e-mail de Stripe + appli Stripe (iPhone / Android) avec
-  le détail à préparer (cafés, format, mouture, machine, adresse, téléphone).
+- Chaque commande payée : un e-mail « Commande payée » avec tout ce qu'il faut
+  préparer (cafés, format, mouture, machine, point relais souhaité, adresse,
+  téléphone). Chaque renouvellement d'abonnement : un e-mail « Livraison à préparer ».
+  Tout est aussi dans l'appli Stripe (iPhone / Android).
 - Stock : géré par vous. Un café épuisé ? Dans assets/produits.js, mettez
   disponible: false (il s'affiche « Bientôt disponible »), puis déposez le fichier.
 - Modifier le site : modifiez le fichier sur votre ordinateur, puis déposez-le

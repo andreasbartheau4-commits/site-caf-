@@ -1,5 +1,5 @@
-# Dossier du paiement : seul checkout.php est accessible depuis le navigateur.
+# Dossier du paiement : seuls checkout.php, shipping.php et webhook.php sont accessibles.
 Options -Indexes
-<FilesMatch "^(cle-stripe|lib)\.php$">
+<FilesMatch "^(config|config\.exemple|cle-stripe|lib)\.php$">
   Require all denied
 </FilesMatch>

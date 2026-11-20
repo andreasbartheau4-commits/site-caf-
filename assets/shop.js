@@ -23,7 +23,7 @@
   function offOf(l){ return BCOffre(byId[l.id], l.offre); }
   function units(l){ return l.qty * offOf(l).sachets; }
   function inCart(id){ return cart.filter(function(l){ return l.id === id; }).reduce(function(s, l){ return s + units(l); }, 0); }
-  function ship(){ var L = live() ? API.livraison : (window.LIVRAISON || {}); return { frais: typeof L.frais === "number" ? L.frais : (typeof L.fraisEnvoi === "number" ? L.fraisEnvoi : null), offerteDes: typeof L.offerteDes === "number" ? L.offerteDes : null, retrait: L.retrait !== false }; }
+  function livCfg(){ return live() && API.livraison ? API.livraison : (window.LIVRAISON || {}); }
 
   /* ---------- Panier (gardé sur l'appareil) ---------- */
   var cart = lsGet(CART_KEY, []).filter(function(l){ return l && byId[l.id] && byId[l.id].disponible && l.qty > 0; });
@@ -124,13 +124,15 @@
   function totals(){
     var A = aboState(), sub = 0, goods = 0, n = 0;
     cart.forEach(function(l){ var o = offOf(l); sub += o.prix * l.qty; goods += Math.round(o.prix * (1 - A.disc / 100) * 100) / 100 * l.qty; n += units(l); });
-    var S = ship(), retrait = $("cRec").value === "retrait", shipAmt = 0, shipTxt, shipKnown = true;
-    if(retrait){ shipTxt = "offert (retrait)"; }
-    else if(S.frais === null){ shipKnown = false; shipTxt = "à confirmer"; }
-    else if(S.offerteDes !== null && goods >= S.offerteDes){ shipTxt = "offert"; }
-    else { shipAmt = S.frais; shipTxt = eur(S.frais); }
-    var toFree = (!retrait && S.offerteDes !== null && S.frais !== null && goods < S.offerteDes) ? Math.round((S.offerteDes - goods) * 100) / 100 : 0;
-    return {A:A, sub:sub, goods:goods, off:sub - goods, ship:shipAmt, shipTxt:shipTxt, shipKnown:shipKnown, total:goods + shipAmt, n:n, retrait:retrait, toFree:toFree, freeAt:S.offerteDes};
+    var mode = $("cRec").value, L = livCfg(), S = BCShip(n, mode, L), retrait = mode === "retrait";
+    var shipAmt = 0, shipTxt, shipKnown = !!S.ok, trop = !!S.trop;
+    if(trop) shipTxt = "par e-mail";
+    else if(!S.ok) shipTxt = "à confirmer";
+    else if(retrait) shipTxt = "gratuit (retrait)";
+    else if(S.prix === 0) shipTxt = "offert";
+    else { shipAmt = S.prix; shipTxt = eur(S.prix); }
+    var seuil = BCRelaisOffert(L), toFree = (!trop && !retrait && seuil && n < seuil) ? seuil - n : 0;
+    return {A:A, sub:sub, goods:goods, off:sub - goods, ship:shipAmt, shipTxt:shipTxt, shipKnown:shipKnown, total:goods + shipAmt, n:n, retrait:retrait, mode:mode, trop:trop, max:S.max, toFree:toFree, seuil:seuil};
   }
   function lineDetail(l){
     if(l.format === "moulu") return "Moulu" + (l.mouture ? " · " + l.mouture : "") + (l.machine ? " · " + l.machine : "");
@@ -169,8 +171,9 @@
     $("discAmt").textContent = "−" + eur(T.off);
     $("shipAmt").textContent = T.shipTxt;
     var fs = $("freeShip");
-    if(T.toFree > 0){ fs.hidden = false; fs.className = "freeship"; fs.innerHTML = ""; fs.appendChild(document.createTextNode("Plus que ")); fs.appendChild(el("b", null, eur(T.toFree))); fs.appendChild(document.createTextNode(" pour la livraison offerte")); var bar = el("i"); bar.style.setProperty("--p", Math.min(100, Math.round(T.goods / T.freeAt * 100)) + "%"); fs.appendChild(bar); }
-    else if(!T.retrait && T.freeAt !== null && T.shipKnown && T.ship === 0){ fs.hidden = false; fs.className = "freeship ok"; fs.textContent = "Livraison offerte ✓"; }
+    if(T.trop){ fs.hidden = false; fs.className = "freeship"; fs.textContent = "Au-delà de " + T.max + " sachets, envoyez-nous votre commande par e-mail : nous vous proposons le meilleur envoi."; }
+    else if(T.toFree > 0){ fs.hidden = false; fs.className = "freeship"; fs.innerHTML = ""; fs.appendChild(document.createTextNode("Plus que ")); fs.appendChild(el("b", null, T.toFree + (T.toFree > 1 ? " sachets" : " sachet"))); fs.appendChild(document.createTextNode(T.mode === "relais" ? " pour le point relais offert" : " pour la livraison à domicile à " + eur(BCShip(T.seuil, "domicile", livCfg()).prix || 0))); var bar = el("i"); bar.style.setProperty("--p", Math.min(100, Math.round(T.n / T.seuil * 100)) + "%"); fs.appendChild(bar); }
+    else if(T.mode === "relais" && T.shipKnown && T.ship === 0){ fs.hidden = false; fs.className = "freeship ok"; fs.textContent = "Point relais offert ✓"; }
     else fs.hidden = true;
     $("totLbl").textContent = (A.abo ? (A.per === 2 ? "Par livraison" : "Par mois") : "Total") + (T.shipKnown ? "" : " hors envoi");
     $("total").textContent = eur(T.total);
@@ -178,8 +181,8 @@
     if(A.abo && A.months && A.disc){ $("engLbl").textContent = "Économisé sur " + (A.months === 12 ? "l'année" : A.months + " mois"); $("engAmt").textContent = eur(T.off * A.n) + " offerts par la Maison"; }
     $("aboNote").textContent = !A.abo ? "" : "Prélevé " + eur(T.total) + " " + every + ", au fil des livraisons : jamais d'avance." + (A.months ? " Engagement de " + A.months + " mois (" + A.n + " livraisons), prix garanti." : " Sans engagement : vous arrêtez quand vous voulez.");
 
-    var S = ship(); $("cRec").querySelector('option[value="retrait"]').hidden = !S.retrait;
-    if(!S.retrait && $("cRec").value === "retrait") $("cRec").value = "livraison";
+    var Lc = livCfg(); $("cRec").querySelector('option[value="retrait"]').hidden = Lc.retrait === false;
+    if(Lc.retrait === false && $("cRec").value === "retrait") $("cRec").value = "relais";
 
     // Fidélité
     var fn = $("fidNote");
@@ -194,7 +197,7 @@
     } else fn.hidden = true;
 
     // Paiement direct, ou commande par e-mail
-    var direct = live() && T.shipKnown;
+    var direct = live() && T.shipKnown && !T.trop;
     $("payZone").hidden = !direct; $("fallback").hidden = direct;
     $("payLbl").textContent = A.abo ? "S'abonner · " + eur(T.total) + (A.per === 2 ? " / livraison" : " / mois") : "Payer " + eur(T.total);
     if(!direct) buildFallback(T);
@@ -208,7 +211,7 @@
     var A = T.A, lines = cart.map(function(l, i){ var p = byId[l.id]; var o = offOf(l); return (i + 1) + ". " + l.qty + " × " + p.nom + " · " + o.nom + " (" + eur(o.prix) + "), " + lineDetail(l); });
     var txt = (A.abo ? "ABONNEMENT" : "COMMANDE") + " MAISON BARTHEAU CAFÉ, réf. " + REF + "\nDate : " + new Date().toLocaleDateString("fr-FR") + "\n\nÀ PRÉPARER" + (A.abo ? " (à chaque livraison)" : "") + "\n" + lines.join("\n") +
       (A.abo ? "\n\nABONNEMENT\nRythme : " + (A.per === 2 ? "toutes les 2 semaines" : "tous les mois") + "\nEngagement : " + (A.months ? A.months + " mois" : "sans") + "\nRemise : " + A.disc + " %" : "") +
-      "\n\nTOTAL : " + eur(T.total) + " TTC" + (T.shipKnown ? " (envoi : " + T.shipTxt + ")" : " + envoi à confirmer") + "\nRéception : " + (T.retrait ? "retrait en main propre (à convenir)" : "livraison") +
+      "\n\nTOTAL : " + eur(T.total) + " TTC" + (T.shipKnown && !T.trop ? " (envoi : " + T.shipTxt + ")" : " + envoi à confirmer") + "\nRéception : " + ({relais:"point relais Mondial Relay (lequel ?)", domicile:"Colissimo à domicile", retrait:"retrait en main propre (à convenir)"}[T.mode] || "livraison") +
       "\n\nMES COORDONNÉES\nNom :\nTéléphone :\nAdresse :\n\nMerci de me confirmer l'envoi et le paiement.";
     $("orderText").value = txt;
     var to = (window.INFO && (INFO.emailCommande || INFO.email)) || "";
@@ -229,7 +232,7 @@
     fetch("api/checkout.php", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({
       items: cart.map(function(l){ return {id:l.id, offre:offOf(l).id, qty:l.qty, format:l.format, mouture:l.mouture, machine:l.machine}; }),
       mode: A.abo ? "abo" : "unique", rythme: A.per, engagement: A.months,
-      reception: T.retrait ? "retrait" : "livraison",
+      reception: T.mode,
       email: acc && acc.mail ? acc.mail : ""
     })}).then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); }).then(function(res){
       if(res.j && res.j.url){
@@ -262,9 +265,9 @@
     cleanUrl();
   }
 
-  /* ---------- Le paiement en ligne est-il actif ? (api/checkout.php) ---------- */
+  /* ---------- Le paiement en ligne est-il actif ? (api/shipping.php) ---------- */
   function loadStock(){
-    return fetch("api/checkout.php", {cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){ API = j && j.ok ? j : null; }).catch(function(){ API = null; }).then(function(){
+    return fetch("api/shipping.php", {cache:"no-store"}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(j){ API = j && j.ok ? j : null; }).catch(function(){ API = null; }).then(function(){
       fillProducts(); drawComposer(); drawCart();
       stockCbs.forEach(function(cb){ try{ cb(); }catch(e){} });
     });

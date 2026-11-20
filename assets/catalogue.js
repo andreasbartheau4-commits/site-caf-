@@ -48,7 +48,7 @@
     var f = el("div", "pfoot");
     var pr = el("span", "pprice"); pr.appendChild(el("b", null, eurS(fromPrice(p)))); pr.appendChild(document.createTextNode(" · " + (p.poids || "250 g")));
     var more = offs(p).filter(function(o){ return o.sachets > 1; });
-    if(more.length && p.disponible) b.insertBefore(el("p", "pmore", more.map(function(o){ return o.nom.replace(/^(Le|La) /, "").replace(/ · .*$/, "").replace(/^./, function(c){ return c.toUpperCase(); }) + " " + eurS(o.prix); }).join(" · ") + (window.LIVRAISON && typeof LIVRAISON.offerteDes === "number" ? " · livraison offerte dès " + eurS(LIVRAISON.offerteDes) : "")), null);
+    if(more.length && p.disponible) b.insertBefore(el("p", "pmore", more.map(function(o){ return o.nom.replace(/^(Le|La) /, "").replace(/ · .*$/, "").replace(/^./, function(c){ return c.toUpperCase(); }) + " " + eurS(o.prix); }).join(" · ") + (window.BCRelaisOffert && BCRelaisOffert() ? " · point relais offert dès " + BCRelaisOffert() + " sachets" : "")), null);
     f.appendChild(pr);
     var acts = el("span", "pacts");
     var more = el("button", "btn small", "Découvrir"); more.type = "button"; more.addEventListener("click", function(){ openDlg(p); });

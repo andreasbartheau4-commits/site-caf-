@@ -10,7 +10,7 @@ var INFO = {
   adresse:       "11 la Guilbaudière, 44650 Legé",               /* Adresse postale complète (mentions légales) */
   email:         "maisonbartheau.cafe@gmail.com",      /* Contact affiché sur le site */
   emailCommande: "maisonbartheau.cafe@gmail.com",      /* Où arrivent les commandes */
-  tel:           "",                               /* Ex. 06 12 34 56 78 */
+  tel:           "06 13 91 54 97",                               /* Ex. 06 12 34 56 78 */
   instagram:     "",                               /* Ex. https://instagram.com/maisonbartheau */
   hebergeur:     "IONOS SARL, 7 place de la Gare, 57200 Sarreguemines, France · 09 70 80 89 11",                               /* Nom, adresse et téléphone de l'hébergeur */
   mediateur:     ""                                /* Nom et site du médiateur de la consommation */
@@ -20,18 +20,20 @@ var INFO = {
 var PRICE = 11.90;
 
 /* =====================================================================
-   LIVRAISON (utilisé par le site ET par le paiement en ligne)
-   Le paiement par carte, Apple Pay et Google Pay passe par Stripe :
-   la clé secrète va dans api/cle-stripe.php (voir LISEZ-MOI.txt), jamais ici.
+   LIVRAISON · lu par le site ET par le paiement en ligne (api/checkout.php)
+   Les frais dépendent du nombre de sachets de 250 g du colis (un duo = 2,
+   un kilo = 4). Tarifs transporteurs publics 2026, en euros TTC :
+   ajustez-les après avoir pesé vos vrais colis.
    ===================================================================== */
 var LIVRAISON = {
-  /* Frais d'envoi d'un colis en France, en euros TTC, ex. 6.90.
-     OBLIGATOIRE pour vendre en livraison (laissé à null : seul le retrait est payable). */
-  fraisEnvoi: null,
-
-  /* Livraison offerte à partir de ce montant d'achat (ex. 45), ou null */
-  offerteDes: 35,
-
-  /* true = le client peut choisir « Retrait en main propre » (sans frais) */
+  grille: [
+    /* jusqu'à N sachets   point relais Mondial Relay   domicile Colissimo */
+    { jusqua: 1,           relais: 4.15,                domicile: 7.59 },  /* moins de 500 g */
+    { jusqua: 3,           relais: 5.99,                domicile: 9.59 },  /* moins de 1 kg  */
+    { jusqua: 7,           relais: 0,                   domicile: 3.20 }   /* moins de 2 kg : point relais offert */
+  ],
+  /* Au-delà de ce nombre de sachets : commande par e-mail, sans paiement en ligne */
+  maxSachets: 7,
+  /* true = le client peut choisir le retrait en main propre, gratuit */
   retrait: true
 };

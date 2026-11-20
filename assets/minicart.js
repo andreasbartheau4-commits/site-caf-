@@ -34,7 +34,7 @@
     '<div class="mc-body"><ul class="cart" id="mcList"></ul>' +
     '<div class="mc-empty" id="mcEmpty"><span class="mc-bag">' + BAG + '</span><p>Votre panier est vide.</p><a class="btn solid" href="' + (onIndex ? "#produits" : "index.html#produits") + '" data-mc-close>Découvrir nos cafés</a></div></div>' +
     '<div class="mc-foot" id="mcFoot"><p class="freeship" id="mcFree" hidden></p><dl><dt>Sous-total</dt><dd id="mcSub"></dd></dl>' +
-    '<p class="note">Livraison, remise abonnement et code promo à l\'étape suivante.</p>' +
+    '<p class="note">Mode de livraison, remise abonnement et code promo à l\'étape suivante.</p>' +
     '<a class="btn solid" id="mcGo" href="' + (onIndex ? "#boutique" : "index.html#boutique") + '">Voir mon panier et payer <span class="arr" aria-hidden="true">→</span></a>' +
     '<button class="btn" type="button" data-mc-close>Continuer mes achats</button>' +
     '<p class="paymarks"><span>Apple Pay</span><span>Google Pay</span><span>CB</span><span>Visa</span><span>Mastercard</span></p></div>';
@@ -103,12 +103,12 @@
     $("mcEmpty").hidden = cart.length > 0; $("mcFoot").hidden = cart.length === 0; list.hidden = cart.length === 0;
     $("mcCount").textContent = n ? n + (n > 1 ? " sachets" : " sachet") : "";
     $("mcSub").textContent = eur(sub);
-    var L = window.LIVRAISON || {}, fr = $("mcFree");
-    if(typeof L.offerteDes === "number" && typeof L.fraisEnvoi === "number"){
-      fr.hidden = false; fr.textContent = "";
-      if(sub >= L.offerteDes){ fr.className = "freeship ok"; fr.textContent = "Livraison offerte ✓"; }
-      else { fr.className = "freeship"; fr.appendChild(document.createTextNode("Plus que ")); fr.appendChild(el("b", null, eur(L.offerteDes - sub))); fr.appendChild(document.createTextNode(" pour la livraison offerte")); var bar = el("i"); bar.style.setProperty("--p", Math.round(sub / L.offerteDes * 100) + "%"); fr.appendChild(bar); }
-    } else fr.hidden = true;
+    var fr = $("mcFree"), seuil = window.BCRelaisOffert ? BCRelaisOffert() : null, max = (window.LIVRAISON || {}).maxSachets || 7;
+    fr.textContent = "";
+    if(!n || !seuil){ fr.hidden = true; }
+    else if(n > max){ fr.hidden = false; fr.className = "freeship"; fr.textContent = "Au-delà de " + max + " sachets : commande par e-mail."; }
+    else if(n >= seuil){ fr.hidden = false; fr.className = "freeship ok"; fr.textContent = "Point relais offert ✓"; }
+    else { fr.hidden = false; fr.className = "freeship"; fr.appendChild(document.createTextNode("Plus que ")); fr.appendChild(el("b", null, (seuil - n) + (seuil - n > 1 ? " sachets" : " sachet"))); fr.appendChild(document.createTextNode(" pour le point relais offert")); var bar = el("i"); bar.style.setProperty("--p", Math.round(n / seuil * 100) + "%"); fr.appendChild(bar); }
     var b = $("cartBadge"); b.hidden = n === 0; b.textContent = n > 99 ? "99+" : String(n);
     btn.setAttribute("aria-label", n ? "Mon panier : " + n + (n > 1 ? " sachets" : " sachet") + ", " + eur(sub) : "Mon panier (vide)");
     if(lastN !== null && n > lastN){ btn.classList.remove("bump"); void btn.offsetWidth; btn.classList.add("bump"); }

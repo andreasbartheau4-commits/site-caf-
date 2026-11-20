@@ -8,8 +8,9 @@ CE QUE CONTIENT LE DOSSIER
 - assets/config.js ...... VOS COORDONNÉES ET LE PAIEMENT
 - assets/produits.js .... VOS CAFÉS : noms, descriptions, photos, prix
 - assets/catalogue.js, assets/shop.js ... « Nos cafés », panier et paiement (ne pas modifier)
-- api/cle-stripe.php .... VOTRE CLÉ SECRÈTE STRIPE (à remplir, ne jamais la partager)
-- api/checkout.php, api/lib.php ... ouverture du paiement Stripe (ne pas modifier)
+- api/config.php ........ VOS CLÉS STRIPE (à créer depuis config.exemple.php, ne jamais le partager)
+- api/checkout.php, shipping.php, webhook.php, lib.php ... paiement, envois, e-mails (ne pas modifier)
+- merci.html, resilier.html ... page après paiement, page de résiliation d'abonnement
 - MISE-EN-LIGNE-IONOS.txt ... le guide pour mettre le site en ligne chez IONOS
 - assets/style.css ...... le design (couleurs en haut du fichier : --accent, --bg)
 - assets/site.js ........ menu mobile, thème clair/sombre, coordonnées
@@ -39,7 +40,9 @@ NOS CAFÉS (ajouter photos et descriptions)
 - Mettez disponible: true pour qu'un café puisse être commandé ; false l'affiche « Bientôt disponible ».
 - Les champs origine, torréfaction, notes, intensité n'apparaissent que si vous les remplissez.
 - TARIFS ACTUELS : sachet 250 g 11,90 € · duo 2 × 250 g 22 € · kilo (4 × 250 g) 39 €.
-  Livraison offerte dès 35 € (assets/config.js, LIVRAISON.offerteDes).
+  Livraison : point relais Mondial Relay, Colissimo à domicile ou retrait gratuit,
+  selon la grille de assets/config.js (LIVRAISON.grille). Point relais offert dès 4 sachets.
+  Au-delà de 7 sachets : commande par e-mail.
 - Pour changer un tarif : dans assets/produits.js, ligne « formats » du café (prix: ...).
   Le site ET le paiement Stripe suivent automatiquement (api/checkout.php relit ce fichier).
 - Les mentions « 11,90 € » de la page d'accueil (pastille, formule « Le sachet », barre mobile)
@@ -51,7 +54,7 @@ BOUTIQUE EN LIGNE : PAIEMENT DIRECT (carte bancaire, Apple Pay, Google Pay)
   et ne voit jamais les cartes. Coût : environ 1,5 % + 0,25 € par paiement par carte
   européenne, sans abonnement. Samsung Pay n'est pas proposé par Stripe en France :
   les téléphones Samsung paient avec Google Pay ou la carte.
-- La clé secrète Stripe va UNIQUEMENT dans api/cle-stripe.php.
+- Les clés Stripe vont UNIQUEMENT dans api/config.php (jamais dans le code du site).
 - Le stock n'est pas géré en ligne : quand un café est épuisé, mettez
   disponible: false dans assets/produits.js.
 - Fidélité : quand un client réclame son sachet offert, créez un « code promo » dans
