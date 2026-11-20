@@ -30,6 +30,41 @@ function champ_perso($session, $key) {
   foreach (($session['custom_fields'] ?? []) as $f) if (($f['key'] ?? '') === $key) return trim((string)($f['text']['value'] ?? ''));
   return '';
 }
+function adresse_ligne($a) { return str_replace("\n", ', ', adresse_txt($a)); }
+/* Fiche de commande au format lu par l'application de gestion (gestion/index.html) :
+   « COMMANDE / ABONNEMENT MAISON BARTHEAU CAFÉ, réf. … », « À PRÉPARER », « TOTAL : … »,
+   « Nom : », « Contact : », « Adresse : », « Réception : », « Rythme : », « Engagement : ». */
+function fiche_commande(array $f): string {
+  $lignes = array_values(array_filter(array_map('trim', explode('|', (string)($f['detail'] ?? '')))));
+  $moulu = preg_grep('~\(moulu~i', $lignes); $grains = preg_grep('~\(grains~i', $lignes);
+  $forme = $moulu && $grains ? 'GRAINS ET MOULU' : ($moulu ? 'MOULU' : 'GRAINS');
+  $n = (int)($f['sachets'] ?? 0);
+  $t = ($f['abo'] ? 'ABONNEMENT' : 'COMMANDE') . ' MAISON BARTHEAU CAFÉ, réf. ' . $f['ref'] . "\n"
+    . 'Type : particulier' . ($f['abo'] ? ' (abonnement)' : '') . "\n"
+    . 'Statut : PAYÉE en ligne (Stripe)' . (!empty($f['renouvellement']) ? " · renouvellement d'abonnement" : '') . "\n"
+    . 'Date : ' . date('d/m/Y') . "\n\n"
+    . 'À PRÉPARER' . ($f['abo'] ? ' (cette livraison)' : '') . "\n"
+    . "$n × sachet 250 g au total, $forme\n";
+  foreach ($lignes as $i => $l) $t .= ($i + 1) . '. ' . $l . "\n";
+  $t .= "\nENVOI\nRéception : " . ($f['reception'] ?? '') . "\n"
+    . ($f['relais'] !== '' ? 'Point relais souhaité : ' . $f['relais'] . "\n" : (($f['mode_envoi'] ?? '') === 'relais' ? "Point relais souhaité : non précisé (choisir le plus proche de l'adresse)\n" : ''))
+    . ($f['precision'] !== '' ? 'Précision du client : ' . $f['precision'] . "\n" : '')
+    . "Frais d'envoi : " . ((int)$f['envoi'] ? eur_c($f['envoi']) . ' (payés par le client)' : 'offerts') . "\n";
+  if ($f['abo']) {
+    $liv = (int)($f['livraisons'] ?? 0); $mois = (int)($f['engagement_mois'] ?? 0);
+    $rem = preg_match('~remise (\d+) %~', (string)($f['formule'] ?? ''), $x) ? $x[1] : '0';
+    $t .= "\nABONNEMENT\nRythme : " . ((int)($f['rythme'] ?? 1) === 2 ? 'toutes les 2 semaines' : 'tous les mois') . "\n"
+      . 'Engagement : ' . ($mois ? "$mois mois ($liv livraisons)" : 'sans engagement') . "\n"
+      . "Remise : $rem %\n"
+      . (!empty($f['fin']) ? 'Fin automatique : ' . $f['fin'] . "\n" : '');
+  }
+  $t .= "\nTOTAL : " . eur_c($f['total']) . ' TTC (payé' . ($f['abo'] ? ' pour cette livraison' : '') . ")\n\n"
+    . "CLIENT\nNom : " . ($f['nom'] ?? '') . "\n"
+    . 'Contact : ' . implode(' · ', array_filter([$f['email'] ?? '', $f['tel'] ?? ''])) . "\n"
+    . 'Adresse : ' . ($f['adresse'] ?? '') . "\n\n"
+    . "Détail, facture et remboursement : tableau de bord Stripe.";
+  return $t;
+}
 function fin_engagement(array $meta, int $start): int {
   $n = (int)($meta['livraisons'] ?? 0);
   if ($n <= 0) return 0;
@@ -68,16 +103,14 @@ try {
       $total = eur_c($o['amount_total'] ?? 0);
       $envoi = (int)($m['envoi_centimes'] ?? 0);
 
-      // à la Maison
-      $txt = ($abo ? "NOUVEL ABONNEMENT" : "NOUVELLE COMMANDE PAYÉE") . " · " . ($m['reference'] ?? $o['client_reference_id'] ?? '') . "\n\n"
-        . "À PRÉPARER\n  • $lignes\n  Sachets : " . ($m['sachets'] ?? '?') . "\n\n"
-        . "ENVOI : " . ($m['reception'] ?? '') . " (" . ($envoi ? eur_c($envoi) : 'offert') . ")\n"
-        . ($relais ? "Point relais souhaité : $relais\n" : (($m['mode_envoi'] ?? '') === 'relais' ? "Point relais : non précisé, choisir le plus proche de l'adresse\n" : ''))
-        . ($precision ? "Précision du client : $precision\n" : '')
-        . "\nCLIENT\n$nom\n" . ($cd['email'] ?? '') . "\n" . ($cd['phone'] ?? '') . "\n" . ($adr ? "$adr\n" : '')
-        . "\nPAYÉ : $total" . ($abo ? " (1re livraison)\nFormule : " . ($m['formule'] ?? '') . ($fin ? "\nFin automatique de l'abonnement : $fin" : "\nSans engagement") : '')
-        . "\n\nDétail et remboursement : tableau de bord Stripe.";
-      bc_mail(bc_admin_email(), ($abo ? 'Nouvel abonnement ' : 'Commande payée ') . ($m['reference'] ?? '') . ' · ' . ($m['sachets'] ?? '?') . ' sachet(s)', $txt, $cd['email'] ?? '');
+      // à la Maison (format lu par l'application de gestion)
+      $ref = $m['reference'] ?? ($o['client_reference_id'] ?? '');
+      $txt = fiche_commande(['abo' => $abo, 'ref' => $ref, 'detail' => $m['detail'] ?? '', 'sachets' => $m['sachets'] ?? 0,
+        'reception' => $m['reception'] ?? '', 'mode_envoi' => $m['mode_envoi'] ?? '', 'relais' => $relais, 'precision' => $precision,
+        'envoi' => $envoi, 'total' => $o['amount_total'] ?? 0, 'formule' => $m['formule'] ?? '', 'rythme' => $m['rythme'] ?? 1,
+        'engagement_mois' => $m['engagement_mois'] ?? 0, 'livraisons' => $m['livraisons'] ?? 0, 'fin' => $fin,
+        'nom' => $nom, 'email' => $cd['email'] ?? '', 'tel' => $cd['phone'] ?? '', 'adresse' => adresse_ligne($ship['address'] ?? null) ?: adresse_ligne($cd['address'] ?? null)]);
+      bc_mail(bc_admin_email(), ($abo ? 'Nouvel abonnement ' : 'Nouvelle commande ') . $ref . ' · ' . ($m['sachets'] ?? '?') . ' sachet(s) à préparer', $txt, $cd['email'] ?? '');
 
       // au client
       if (!empty($cd['email'])) {
@@ -99,12 +132,14 @@ try {
       if (($o['billing_reason'] ?? '') !== 'subscription_cycle') break;
       $m = $o['parent']['subscription_details']['metadata'] ?? ($o['subscription_details']['metadata'] ?? []);
       $adr = adresse_txt($o['customer_shipping']['address'] ?? null) ?: adresse_txt($o['customer_address'] ?? null);
-      $txt = "LIVRAISON D'ABONNEMENT À PRÉPARER · " . ($m['reference'] ?? '') . "\n\n"
-        . "  • " . str_replace(' | ', "\n  • ", $m['detail'] ?? '') . "\n  Sachets : " . ($m['sachets'] ?? '?') . "\n\n"
-        . "ENVOI : " . ($m['reception'] ?? '') . "\n\n"
-        . "CLIENT\n" . ($o['customer_shipping']['name'] ?? ($o['customer_name'] ?? '')) . "\n" . ($o['customer_email'] ?? '') . "\n" . ($o['customer_phone'] ?? '') . "\n" . ($adr ? "$adr\n" : '')
-        . "\nPAYÉ : " . eur_c($o['amount_paid'] ?? 0) . "\nFormule : " . ($m['formule'] ?? '');
-      bc_mail(bc_admin_email(), "Livraison d'abonnement à préparer · " . ($m['reference'] ?? ''), $txt, $o['customer_email'] ?? '');
+      $ref = ($m['reference'] ?? 'ABO') . '-L' . date('dm');   // une référence par livraison
+      $txt = fiche_commande(['abo' => true, 'renouvellement' => true, 'ref' => $ref, 'detail' => $m['detail'] ?? '', 'sachets' => $m['sachets'] ?? 0,
+        'reception' => $m['reception'] ?? '', 'mode_envoi' => $m['mode_envoi'] ?? '', 'relais' => '', 'precision' => '',
+        'envoi' => $m['envoi_centimes'] ?? 0, 'total' => $o['amount_paid'] ?? 0, 'formule' => $m['formule'] ?? '', 'rythme' => $m['rythme'] ?? 1,
+        'engagement_mois' => $m['engagement_mois'] ?? 0, 'livraisons' => $m['livraisons'] ?? 0, 'fin' => '',
+        'nom' => $o['customer_shipping']['name'] ?? ($o['customer_name'] ?? ''), 'email' => $o['customer_email'] ?? '', 'tel' => $o['customer_phone'] ?? '',
+        'adresse' => str_replace("\n", ', ', $adr)]);
+      bc_mail(bc_admin_email(), "Livraison d'abonnement à préparer · " . $ref, $txt, $o['customer_email'] ?? '');
       break;
 
     /* ---- Fin d'un abonnement (résiliation ou fin d'engagement) ---- */

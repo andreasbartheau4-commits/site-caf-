@@ -209,10 +209,10 @@
   var REF = (function(){ var d = new Date(), z = function(x){ return (x < 10 ? "0" : "") + x; }, a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = ""; for(var i = 0; i < 4; i++) r += a.charAt(Math.floor(Math.random() * a.length)); return "BC-" + z(d.getDate()) + z(d.getMonth() + 1) + "-" + r; })();
   function buildFallback(T){
     var A = T.A, lines = cart.map(function(l, i){ var p = byId[l.id]; var o = offOf(l); return (i + 1) + ". " + l.qty + " × " + p.nom + " · " + o.nom + " (" + eur(o.prix) + "), " + lineDetail(l); });
-    var txt = (A.abo ? "ABONNEMENT" : "COMMANDE") + " MAISON BARTHEAU CAFÉ, réf. " + REF + "\nDate : " + new Date().toLocaleDateString("fr-FR") + "\n\nÀ PRÉPARER" + (A.abo ? " (à chaque livraison)" : "") + "\n" + lines.join("\n") +
+    var txt = (A.abo ? "ABONNEMENT" : "COMMANDE") + " MAISON BARTHEAU CAFÉ, réf. " + REF + "\nDate : " + new Date().toLocaleDateString("fr-FR") + "\nType : particulier" + (A.abo ? " (abonnement)" : "") + "\nStatut : à confirmer (paiement après confirmation)\n\nÀ PRÉPARER" + (A.abo ? " (à chaque livraison)" : "") + "\n" + T.n + " × sachet 250 g au total, " + (cart.some(function(l){ return l.format === "moulu"; }) ? (cart.some(function(l){ return l.format !== "moulu"; }) ? "GRAINS ET MOULU" : "MOULU") : "GRAINS") + "\n" + lines.join("\n") +
       (A.abo ? "\n\nABONNEMENT\nRythme : " + (A.per === 2 ? "toutes les 2 semaines" : "tous les mois") + "\nEngagement : " + (A.months ? A.months + " mois" : "sans") + "\nRemise : " + A.disc + " %" : "") +
       "\n\nTOTAL : " + eur(T.total) + " TTC" + (T.shipKnown && !T.trop ? " (envoi : " + T.shipTxt + ")" : " + envoi à confirmer") + "\nRéception : " + ({relais:"point relais Mondial Relay (lequel ?)", domicile:"Colissimo à domicile", retrait:"retrait en main propre (à convenir)"}[T.mode] || "livraison") +
-      "\n\nMES COORDONNÉES\nNom :\nTéléphone :\nAdresse :\n\nMerci de me confirmer l'envoi et le paiement.";
+      "\n\nCLIENT\nNom : \nContact : \nAdresse : \n(complétez ces trois lignes avant d'envoyer)\n\nMerci de me confirmer l'envoi et le paiement.";
     $("orderText").value = txt;
     var to = (window.INFO && (INFO.emailCommande || INFO.email)) || "";
     if(to) $("mailBtn").href = "mailto:" + to + "?subject=" + encodeURIComponent((A.abo ? "Abonnement " : "Commande ") + REF) + "&body=" + encodeURIComponent(txt);
