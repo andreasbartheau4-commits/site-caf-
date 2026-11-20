@@ -33,7 +33,7 @@ AVANT LA MISE EN LIGNE (obligatoire en France)
 METTRE EN LIGNE
 - Hébergement recommandé : Netlify relié à GitHub (gratuit), voir « BOUTIQUE EN LIGNE » plus bas.
   C'est indispensable pour le paiement direct et le stock.
-- Pour brancher votre nom de domaine : Netlify > Domain management > Add a domain.
+- Pour brancher votre nom de domaine IONOS : suivez DNS-IONOS.txt (pas à pas).
 
 NOS CAFÉS (ajouter photos et descriptions)
 - Ouvrez assets/produits.js : chaque bloc { ... } est un café.

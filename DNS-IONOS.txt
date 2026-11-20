@@ -1,0 +1,76 @@
+RELIER VOTRE NOM DE DOMAINE IONOS AU SITE (hébergé sur Netlify)
+====================================================================
+
+Dans ce fichier :
+  VOTRE-DOMAINE.fr      = le nom de domaine acheté chez IONOS (ex. maisonbartheau.fr)
+  VOTRE-SITE.netlify.app = l'adresse que Netlify a donnée à votre site
+                           (visible en haut de la page du site dans Netlify)
+
+À faire DANS CET ORDRE : d'abord Netlify, ensuite IONOS.
+
+
+ÉTAPE 1 · NETLIFY : annoncer le domaine
+--------------------------------------------------------------------
+1. app.netlify.com > votre site > « Domain management » > « Add a domain ».
+2. Tapez  www.VOTRE-DOMAINE.fr  puis validez.
+   Netlify propose aussi d'ajouter VOTRE-DOMAINE.fr (sans www) : acceptez.
+3. Choisissez « www.VOTRE-DOMAINE.fr » comme domaine principal (« Primary domain »).
+   Le domaine sans www redirigera automatiquement vers celui avec www.
+4. Netlify affiche « Pending DNS verification » avec les valeurs exactes à recopier.
+   Si elles diffèrent de celles ci-dessous, ce sont CELLES DE NETLIFY qui comptent.
+
+
+ÉTAPE 2 · IONOS : les 2 enregistrements DNS
+--------------------------------------------------------------------
+Chemin : ionos.fr > Menu > « Domaines & SSL » > cliquez sur votre domaine > onglet « DNS ».
+
+  ┌─────────┬────────────────┬──────────────────────────────┬────────┐
+  │ Type    │ Nom d'hôte     │ Pointe vers / Valeur         │ TTL    │
+  ├─────────┼────────────────┼──────────────────────────────┼────────┤
+  │ A       │ @              │ 75.2.60.5                    │ 1 heure│
+  │ CNAME   │ www            │ VOTRE-SITE.netlify.app       │ 1 heure│
+  └─────────┴────────────────┴──────────────────────────────┴────────┘
+
+  - « @ » veut dire « le domaine lui-même » (VOTRE-DOMAINE.fr sans www).
+  - Pour le CNAME, écrivez seulement « www » dans le nom d'hôte, IONOS ajoute
+    le reste tout seul.
+
+AVANT d'ajouter ces lignes, dans le même onglet DNS d'IONOS :
+  ✗ SUPPRIMEZ les enregistrements A existants sur « @ » (adresse de la page
+    de parking IONOS). Il ne doit rester QU'UN SEUL enregistrement A : 75.2.60.5.
+  ✗ SUPPRIMEZ les enregistrements AAAA sur « @ » et sur « www »
+    (Netlify ne les utilise pas ; s'ils restent, le cadenas HTTPS échoue).
+  ✗ SUPPRIMEZ un éventuel ancien enregistrement sur « www » (A, AAAA ou CNAME).
+  Si IONOS refuse de modifier : dans les réglages du domaine, changez
+  « Utilisation du domaine » / « Destination » pour « DNS personnalisé »
+  (et non « Site web IONOS » ou « Page de parking »).
+
+NE TOUCHEZ PAS :
+  ✓ aux enregistrements MX, TXT (SPF, « v=spf1 »), DKIM, « autodiscover » :
+    ils font marcher votre adresse e-mail IONOS (contact@VOTRE-DOMAINE.fr).
+    Les supprimer couperait vos e-mails.
+
+
+ÉTAPE 3 · ATTENDRE ET VÉRIFIER
+--------------------------------------------------------------------
+- La mise à jour prend en général de 15 minutes à quelques heures,
+  parfois jusqu'à 24 h (et jusqu'à 48 h dans de rares cas).
+- Dans Netlify > Domain management, le domaine passe en vert,
+  puis « HTTPS » s'active tout seul (certificat gratuit Let's Encrypt).
+  Si ce n'est pas le cas après 24 h : bouton « Verify DNS configuration »,
+  puis « Provision certificate ».
+- Test : ouvrez https://www.VOTRE-DOMAINE.fr et https://VOTRE-DOMAINE.fr :
+  les deux doivent afficher le site avec un cadenas.
+
+
+ÉTAPE 4 · APRÈS LE BRANCHEMENT
+--------------------------------------------------------------------
+1. Stripe > Développeurs > Webhooks : mettez l'adresse
+   https://www.VOTRE-DOMAINE.fr/api/stripe-webhook
+   (à la place de celle en .netlify.app), et vérifiez que le secret whsec_
+   dans Netlify est bien celui de cette destination.
+2. Dites à Claude votre nom de domaine : il le mettra dans robots.txt,
+   sitemap.xml et l'image de partage sur les réseaux sociaux.
+3. Facultatif : Google Search Console (search.google.com/search-console)
+   > ajouter le domaine > envoyer https://www.VOTRE-DOMAINE.fr/sitemap.xml
+   pour être trouvé plus vite sur Google.
