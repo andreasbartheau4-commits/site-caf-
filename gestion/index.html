@@ -773,6 +773,7 @@ VIEW.aujourdhui = () => {
   return `
   <div class="head"><div><h1>${hello} ☕</h1><p>${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · ${ts.length ? `${ts.length} chose${ts.length > 1 ? 's' : ''} à faire` : 'tout est à jour'}</p></div>
   <div class="row"><button class="btn" data-act="newDevis">+ Devis</button><button class="btn pri" data-act="newFacture">+ Facture</button><button class="btn" data-act="newAchat">+ Achat</button><button class="btn" data-act="newFrais">+ Frais</button></div></div>
+  ${['arelier', 'err', 'refuse'].includes(GM.st) ? gmailBanner() : ''}
   ${isEmpty ? `<div class="note" style="margin-bottom:16px">👋 Bienvenue ! Commence par remplir <a href="#reglages">tes infos d'entreprise</a> (SIRET, IBAN, email…), elles apparaîtront sur tes devis, factures et emails. Tu peux aussi <a href="#" data-act="demo">charger des données d'exemple</a> pour tester.</div>` : ''}
   <div class="grid g4" style="margin-bottom:16px">
     <div class="card kpi"><div class="l">Encaissé aujourd'hui</div><div class="v">${eur(encToday.ttc)}</div></div>
@@ -1463,8 +1464,11 @@ async function initGmail() {
   const mcp = await claude.use('mcp').catch(() => null);
   if (!mcp) { GM.st = 'indispo'; if (route() === 'commandes') render(); return; }
   const s = perms ? await perms.state('mcp:Gmail').catch(() => 'prompt') : 'prompt';
-  if (s === 'granted') { gmailSync(false); setInterval(() => { if (document.visibilityState === 'visible') gmailSync(false); }, 10 * 60 * 1000); }
-  else { GM.st = s === 'denied' ? 'refuse' : 'arelier'; if (route() === 'commandes') render(); }
+  if (s === 'denied') { GM.st = 'refuse'; render(); return; }
+  // première fois : l'app demande elle-même l'accès à Gmail (une seule fenêtre d'autorisation)
+  setTimeout(() => gmailSync(false), s === 'granted' ? 0 : 1500);
+  if (!initGmail.timer) initGmail.timer = setInterval(() => { if (document.visibilityState === 'visible' && GM.st === 'ok') gmailSync(false); }, 10 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && GM.st === 'ok' && Date.now() - GM.last > 2 * 60 * 1000) gmailSync(false); });
 }
 function gmailBanner() {
   const acct = esc(S().gmailCompte || 'maisonbartheau.cafe@gmail.com');
